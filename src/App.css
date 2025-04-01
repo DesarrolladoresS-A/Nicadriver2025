@@ -1,0 +1,136 @@
+/* Color de fondo de la navbar */
+.color-navbar {
+  background-color: #FF7E00 !important;
+  background-image: linear-gradient(90deg, #FF7E00 0%, #FFC100 100%);
+}
+
+/* Color del texto en la marca */
+.color-texto-marca {
+  color: #1e3d87 !important;
+}
+
+/* Estilos para los enlaces de navegación (botones) */
+.nav-link {
+  padding: 10px 15px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin-bottom: 5px; /* Separación entre botones */
+  display: flex;
+  align-items: center;
+}
+
+/* Cuando no está seleccionado, los enlaces tienen fondo transparente y texto blanco */
+.nav-link:not(.active) {
+  background-color: transparent;
+  color: white !important;
+}
+
+/* Cuando se selecciona el enlace, el cuadro es negro y el texto blanco */
+.nav-link.active {
+  background-color: #000000; /* Fondo negro */
+  color: #fff !important; /* Texto blanco */
+}
+
+/* Hover effect para los enlaces de navegación */
+.nav-link:hover {
+  background-color: #222; /* Un toque de negro en hover */
+  color: #fff !important;
+}
+
+/* Iconos dentro de los enlaces */
+.nav-link i {
+  font-size: 20px;
+  transition: color 0.3s ease;
+  margin-right: 8px;
+}
+
+/* Ajuste de margen para evitar que el contenido quede detrás del navbar */
+.margen-superior-main {
+  margin-top: 70px; /* Ajusta según la altura del navbar */
+}
+
+/* ===================== */
+/* Estilos para el Login */
+/* ===================== */
+
+/* Contenedor del login centrado */
+.d-flex {
+  display: flex;
+  justify-content: center, center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+
+.vh-100 {
+  height: 100vh;
+}
+
+.login-container {
+  background-color: #333; 
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+  border: 2px solid #FF7E00; 
+}
+
+.login-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 2px solid #444;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #555;
+  color: #fff; 
+  transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+  border-color: #FF7E00; 
+  outline: none;
+}
+
+.form-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #FF7E00;
+  border: 2px solid #FF7E00;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-button:hover {
+  background-color: #FFC100;
+  border-color: #FFC100;
+}
+
+.button-icon {
+  margin-right: 8px;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+  text-align: center;
+}
