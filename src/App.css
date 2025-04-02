@@ -14,61 +14,51 @@
   padding: 10px 15px;
   border-radius: 4px;
   transition: background-color 0.3s ease, color 0.3s ease;
-  margin-bottom: 5px; /* Separación entre botones */
+  margin-bottom: 5px;
   display: flex;
   align-items: center;
 }
 
-/* Cuando no está seleccionado, los enlaces tienen fondo transparente y texto blanco */
 .nav-link:not(.active) {
   background-color: transparent;
   color: white !important;
 }
 
-/* Cuando se selecciona el enlace, el cuadro es negro y el texto blanco */
 .nav-link.active {
-  background-color: #000000; /* Fondo negro */
-  color: #fff !important; /* Texto blanco */
-}
-
-/* Hover effect para los enlaces de navegación */
-.nav-link:hover {
-  background-color: #222; /* Un toque de negro en hover */
+  background-color: #000000;
   color: #fff !important;
 }
 
-/* Iconos dentro de los enlaces */
+.nav-link:hover {
+  background-color: #222;
+  color: #fff !important;
+}
+
 .nav-link i {
   font-size: 20px;
   transition: color 0.3s ease;
   margin-right: 8px;
 }
 
-/* Ajuste de margen para evitar que el contenido quede detrás del navbar */
 .margen-superior-main {
-  margin-top: 70px; /* Ajusta según la altura del navbar */
+  margin-top: 70px;
 }
 
-/* ===================== */
 /* Estilos para el Login */
-/* ===================== */
-
-/* Contenedor del login centrado */
 .d-flex {
   display: flex;
-  justify-content: center; /* Corregido */
+  justify-content: center;
   align-items: center;
   height: 100vh;
   margin: 0;
 }
-
 
 .vh-100 {
   height: 100vh;
 }
 
 .login-container {
-  background-color: #333; 
+  background-color: #333;
   color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -76,7 +66,7 @@
   max-width: 400px;
   width: 100%;
   margin: 0 auto;
-  border: 2px solid #FF7E00; 
+  border: 2px solid #FF7E00;
 }
 
 .login-title {
@@ -95,12 +85,12 @@
   border-radius: 4px;
   font-size: 16px;
   background-color: #555;
-  color: #fff; 
+  color: #fff;
   transition: border-color 0.3s ease;
 }
 
 .form-input:focus {
-  border-color: #FF7E00; 
+  border-color: #FF7E00;
   outline: none;
 }
 
@@ -138,9 +128,83 @@
 body {
   margin: 0;
   display: flex;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center; /* Centra verticalmente */
+  justify-content: center;
+  align-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f0f0f0; /* Asegura que el fondo sea visible */
+  background-color: #f0f0f0;
+}
+
+/* Estilos adicionales para la página de inicio */
+.inicio-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.inicio-header {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1e3d87;
+}
+
+.inicio-seccion {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+}
+
+.inicio-imagen {
+  text-align: center;
+}
+
+.inicio-imagen img {
+  width: 300px;
+  height: auto;
+  border-radius: 10px;
+}
+
+.mision-vision-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 40px 0;
+}
+
+.mision, .vision {
+  width: 45%;
+  text-align: center;
+  padding: 20px;
+  border-radius: 10px;
+  background-color: #f7f7f7;
+}
+
+.mapa-reporte-container {
+  margin: 40px 0;
+}
+
+.mapa-interactivo, .reporte {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+}
+
+.mapa-interactivo img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+button {
+  background-color: #FF7E00;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #FFC100;
 }

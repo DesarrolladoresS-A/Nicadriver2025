@@ -36,8 +36,8 @@ const Encabezado = () => {
     <Navbar expand="md" fixed="top" className="color-navbar">
       <Container>
         <Navbar.Brand onClick={() => handleNavigate("/inicio")} className="text-white" style={{ cursor: "pointer" }}>
-          <img alt="" src="/Logo.png" width="60" height="40" className="d-inline-block align-top" />
-          <strong>NicaDriver</strong>
+        <img alt="" src="/Logo.png" width="60" height="40" className="d-inline-block align-top" />
+        <strong>NicaDriver</strong>
         </Navbar.Brand>
 
         <Navbar.Toggle aria-controls="offcanvasNavbar-expand-sm" onClick={handleToggle} />

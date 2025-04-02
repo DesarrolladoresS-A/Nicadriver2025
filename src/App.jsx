@@ -11,6 +11,7 @@ import EstadodeTrafico from "./views/EstadodeTrafico";
 import Reportes from "./views/Reportes";
 import Contacto from "./views/Contacto";
 
+
 function App() {
   return (
     <AuthProvider>
