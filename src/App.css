@@ -56,7 +56,7 @@
 /* Contenedor del login centrado */
 .d-flex {
   display: flex;
-  justify-content: center, center;
+  justify-content: center; /* Corregido */
   align-items: center;
   height: 100vh;
   margin: 0;
@@ -133,4 +133,14 @@
   font-size: 14px;
   margin-top: 10px;
   text-align: center;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center; /* Centra verticalmente */
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f0f0f0; /* Asegura que el fondo sea visible */
 }
