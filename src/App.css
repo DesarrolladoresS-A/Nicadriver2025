@@ -208,3 +208,28 @@ button {
 button:hover {
   background-color: #FFC100;
 }
+
+/* Boton de Google */
+
+.google-button {
+  background-color: transparent;
+  border: none;
+  color: #fff;
+  text-align: center;
+  font-size: 16px;
+  margin: 10px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.google-button:hover {
+  color: #FFC100;
+}
+
+.google-icon {
+  margin-right: 8px;
+  font-size: 20px;
+}

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import { appfirebase } from "../database/firebaseconfig";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useAuth } from "../database/authcontext";
 import "../App.css";
 
@@ -27,6 +27,21 @@ const Login = () => {
       })
       .catch((error) => {
         setError("Error de autenticación. Verifica tus credenciales.");
+        console.error(error);
+      });
+  };
+
+  const handleGoogleSignIn = () => {
+    const auth = getAuth(appfirebase);
+    const provider = new GoogleAuthProvider();
+
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        console.log("Usuario autenticado con Google:", result.user);
+        navigate("/inicio");
+      })
+      .catch((error) => {
+        setError("Error al iniciar sesión con Google.");
         console.error(error);
       });
   };
@@ -56,6 +71,9 @@ const Login = () => {
           />
           <button type="submit" className="form-button">Iniciar sesión</button>
         </form>
+        <button className="google-button" onClick={handleGoogleSignIn}>
+          <i className="button-icon fa fa-google"></i> Iniciar sesión con Google
+        </button>
         {error && <p className="error-message">{error}</p>}
       </div>
     </Container>

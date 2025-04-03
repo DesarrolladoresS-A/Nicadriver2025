@@ -1,8 +1,9 @@
 import React from "react";
 import { Row, Col, Form, Button, Card, Alert } from "react-bootstrap";
+import { FcGoogle } from "react-icons/fc";
 import "../App.css";
 
-const LoginForm = ({ email, password, error, setEmail, setPassword, handleSubmit }) => {
+const LoginForm = ({ email, password, error, setEmail, setPassword, handleSubmit, handleGoogleLogin }) => {
   return (
     <Row className="w-100 justify-content-center">
       <Col md={6} lg={5} xl={4}>
@@ -34,9 +35,13 @@ const LoginForm = ({ email, password, error, setEmail, setPassword, handleSubmit
               </Form.Group>
 
               <Button variant="primary" type="submit" className="w-100">
-                Iniciar Sesión
+                Iniciar sesión
               </Button>
             </Form>
+            <button className="google-button" onClick={handleGoogleLogin}>
+              <FcGoogle className="google-icon" />
+              Iniciar sesión con Google
+            </button>
           </Card.Body>
         </Card>
       </Col>
