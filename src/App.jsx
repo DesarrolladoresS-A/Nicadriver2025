@@ -8,9 +8,8 @@ import Nosotros from "./views/Nosotros";
 
 import './App.css';
 import EstadodeTrafico from "./views/EstadodeTrafico";
-import Reportes from "./views/Reportes";
+import Reportes from "./views/Reportes";  {/* Asegúrate de importar el componente Reportes */}
 import Contacto from "./views/Contacto";
-
 
 function App() {
   return (
@@ -23,7 +22,7 @@ function App() {
             <Route path="/inicio" element={<ProtectedRoute element={<Inicio />} />} />
             <Route path="/nosotros" element={<ProtectedRoute element={<Nosotros />} />} />
             <Route path="/estadodeTrafico" element={<ProtectedRoute element={<EstadodeTrafico />} />} />
-            <Route path="/reportes" element={<ProtectedRoute element={<Reportes />} />} />
+            <Route path="/reportes" element={<ProtectedRoute element={<Reportes />} />} />  {/* Ruta para el componente Reportes */}
             <Route path="/contacto" element={<ProtectedRoute element={<Contacto />} />} />
           </Routes>
         </main>
