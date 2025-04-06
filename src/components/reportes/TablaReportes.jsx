@@ -26,7 +26,17 @@ const TablaReportes = ({
               <td>{reporte.titulo}</td>
               <td>{reporte.ubicacion}</td>
               <td>{reporte.descripcion}</td>
-              <td>{reporte.fechaHora}</td>
+              <td>
+                {reporte.fechaHora?.seconds
+                  ? new Date(reporte.fechaHora.seconds * 1000).toLocaleString("es-ES", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Sin fecha"}
+              </td>
               <td>
                 {reporte.fotoURL ? (
                   <img

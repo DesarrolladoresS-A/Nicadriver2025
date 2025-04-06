@@ -20,6 +20,8 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       // foto: aquí deberías subir a Firebase Storage y guardar la URL
     };
 
+    
+
     await addDoc(collection(db, "reportes"), nuevoReporte);
     actualizar();
     setModalRegistro(false);
