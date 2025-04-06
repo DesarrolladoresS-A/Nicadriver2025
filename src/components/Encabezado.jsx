@@ -93,8 +93,6 @@ const Encabezado = () => {
                     onClick={() => handleNavigate("/contacto")}
                     className={`nav-link ${location.pathname === "/contacto" ? "active" : ""}`}
                   >
-                    <i className="bi-envelope-fill me-2"></i>
-                    <strong>Contacto</strong>
                   </Nav.Link>
                 </>
               )}

@@ -24,19 +24,11 @@ const Reportes = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Gestión de Reportes</h1>
-      <button
-        className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
-        onClick={() => setModalRegistro(true)}
-      >
+      <h1 className="text-xl font-bold mb-4">Gestión de reportes</h1>
+      <button className="boton-flotante" onClick={() => setModalRegistro(true)}>
         Registrar Reporte
       </button>
-      <button
-        className="bg-green-500 text-white px-4 py-2 rounded mb-4 ml-4"
-        onClick={() => alert("Enviar a correo (función no implementada)")}
-      >
-        Enviar a Correo de la Empresa
-      </button>
+
       <TablaReportes
         reportes={reportes}
         setModalEditar={setModalEditar}

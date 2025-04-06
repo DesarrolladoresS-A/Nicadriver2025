@@ -8,43 +8,61 @@ const TablaReportes = ({
   setReporteSeleccionadoEliminar,
 }) => {
   return (
-    <table className="w-full border">
-      <thead>
-        <tr className="bg-gray-200">
-          <th className="p-2 border">Título</th>
-          <th className="p-2 border">Descripción</th>
-          <th className="p-2 border">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {reportes.map((reporte) => (
-          <tr key={reporte.id}>
-            <td className="p-2 border">{reporte.titulo}</td>
-            <td className="p-2 border">{reporte.descripcion}</td>
-            <td className="p-2 border">
-              <button
-                className="bg-yellow-400 text-white px-3 py-1 rounded"
-                onClick={() => {
-                  setReporteSeleccionado(reporte);
-                  setModalEditar(true);
-                }}
-              >
-                Editar
-              </button>
-              <button
-                className="bg-red-500 text-white px-3 py-1 rounded ml-2"
-                onClick={() => {
-                  setReporteSeleccionadoEliminar(reporte);
-                  setModalEliminar(true);
-                }}
-              >
-                Eliminar
-              </button>
-            </td>
+    <div className="report-table-container">
+      <table className="report-table">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Ubicación</th>
+            <th>Descripción</th>
+            <th>Fecha y Hora</th>
+            <th>Foto</th>
+            <th>Acciones</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {reportes.map((reporte) => (
+            <tr key={reporte.id}>
+              <td>{reporte.titulo}</td>
+              <td>{reporte.ubicacion}</td>
+              <td>{reporte.descripcion}</td>
+              <td>{reporte.fechaHora}</td>
+              <td>
+                {reporte.fotoURL ? (
+                  <img
+                    src={reporte.fotoURL}
+                    alt="Incidente"
+                    style={{ width: "60px", height: "auto", borderRadius: "4px" }}
+                  />
+                ) : (
+                  "Sin imagen"
+                )}
+              </td>
+              <td>
+                <button
+                  className="report-action-button edit"
+                  onClick={() => {
+                    setReporteSeleccionado(reporte);
+                    setModalEditar(true);
+                  }}
+                >
+                  Editar
+                </button>
+                <button
+                  className="report-action-button delete"
+                  onClick={() => {
+                    setReporteSeleccionadoEliminar(reporte);
+                    setModalEliminar(true);
+                  }}
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };
 
