@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import Reportes from './Reportes';
 
 import "../App.css";
 
@@ -50,7 +51,7 @@ const Inicio = () => {
                     <p><strong>Ubicación:</strong> Avenida Central - Managua</p>
                     <p><strong>Tipo de incidente:</strong> accidente, bache, semáforo dañado.</p>
                     <p><strong>Tiempo transcurrido:</strong> hace 10 min, 1 hora.</p>
-                    <button onClick={() => handleNavigate('/detalles')}>Ver más detalles</button>
+                    <button onClick={() => handleNavigate('/Reportes')}>Ver más detalles</button>
                 </div>
             </div>
         </div>

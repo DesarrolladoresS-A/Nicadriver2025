@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, TrafficLayer, Marker, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, TrafficLayer, Marker, InfoWindow, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '100%',
@@ -12,16 +12,53 @@ const defaultCenter = {
   lng: -86.2514,
 };
 
-const EstadodeTrafico = () => {
+const RegistroMapaCarreteras = () => {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY, // Asegúrate de tener tu clave de API aquí
-    libraries: ['places'],
+    libraries: ['places', 'directions'],
   });
 
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [trafficMarkers, setTrafficMarkers] = useState([]);
+  const [userLocation, setUserLocation] = useState(null);
   const [showTraffic, setShowTraffic] = useState(true);
   const [showRoutes, setShowRoutes] = useState(false);
+  const [directions, setDirections] = useState(null);
+
+  // Obtener la ubicación del usuario
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      });
+    } else {
+      alert('Geolocalización no soportada por tu navegador.');
+    }
+  }, []);
+
+  // Obtener direcciones cuando se selecciona un destino
+  const handleGetDirections = () => {
+    if (userLocation && selectedLocation) {
+      const DirectionsServiceInstance = new window.google.maps.DirectionsService();
+
+      DirectionsServiceInstance.route(
+        {
+          origin: userLocation,
+          destination: selectedLocation,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (status === window.google.maps.DirectionsStatus.OK) {
+            setDirections(result);
+          } else {
+            alert('No se pudo obtener la ruta.');
+          }
+        }
+      );
+    }
+  };
 
   const handleMapClick = (event) => {
     setSelectedLocation({
@@ -43,7 +80,7 @@ const EstadodeTrafico = () => {
   return (
     <div style={{ padding: '20px' }}>
       {/* Título de la vista */}
-      <h2 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}>Estado del Tráfico y Rutas</h2>
+      <h2 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}>Registro de Incidentes y Rutas</h2>
 
       {/* Panel de controles de tráfico y rutas */}
       <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
@@ -76,6 +113,21 @@ const EstadodeTrafico = () => {
         >
           {showRoutes ? 'Ocultar Rutas' : 'Mostrar Rutas'}
         </button>
+
+        <button
+          onClick={handleGetDirections}
+          style={{
+            padding: '10px 20px',
+            fontSize: '16px',
+            backgroundColor: '#2196F3',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+        >
+          Obtener Ruta
+        </button>
       </div>
 
       {/* Mapa de tráfico */}
@@ -89,6 +141,11 @@ const EstadodeTrafico = () => {
         >
           {/* Capa de tráfico en tiempo real */}
           {showTraffic && <TrafficLayer />}
+
+          {/* Mostrar la ubicación del usuario */}
+          {userLocation && (
+            <Marker position={userLocation} label="Mi Ubicación" />
+          )}
 
           {/* Mostrar el marcador de la ubicación seleccionada */}
           {selectedLocation && (
@@ -109,15 +166,9 @@ const EstadodeTrafico = () => {
             </InfoWindow>
           )}
 
-          {/* Aquí puedes agregar las rutas si showRoutes es true */}
-          {showRoutes && (
-            // Este es solo un ejemplo. En una implementación real, tendrías que usar una API de direcciones para obtener rutas
-            <Marker
-              position={{ lat: 12.139, lng: -86.255 }} // Esto sería una ruta hacia el destino
-              icon={{
-                url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png', // Cambia el ícono a algo que represente una ruta
-              }}
-            />
+          {/* Mostrar las rutas si showRoutes es true */}
+          {showRoutes && directions && (
+            <DirectionsRenderer directions={directions} />
           )}
         </GoogleMap>
       </div>
@@ -125,4 +176,4 @@ const EstadodeTrafico = () => {
   );
 };
 
-export default EstadodeTrafico;
+export default RegistroMapaCarreteras;
