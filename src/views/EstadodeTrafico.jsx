@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { GoogleMap, useJsApiLoader, TrafficLayer, Marker, InfoWindow } from '@react-google-maps/api';
-
-const containerStyle = {
-  width: '100%',
-  height: '600px',
-  borderRadius: '8px', // Mapa con bordes redondeados
-};
-
-const defaultCenter = {
-  lat: 12.1364,
-  lng: -86.2514,
-};
 
 const EstadodeTrafico = () => {
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY, // Asegúrate de tener tu clave de API aquí
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: ['places'],
   });
 
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [trafficMarkers, setTrafficMarkers] = useState([]);
   const [showTraffic, setShowTraffic] = useState(true);
   const [showRoutes, setShowRoutes] = useState(false);
+
+  const containerStyle = {
+    width: '100%',
+    height: '70vh',
+    borderRadius: '12px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+  };
+
+  const defaultCenter = {
+    lat: 12.1364,  // Managua, Nicaragua
+    lng: -86.2514
+  };
 
   const handleMapClick = (event) => {
     setSelectedLocation({
@@ -38,89 +38,90 @@ const EstadodeTrafico = () => {
     setShowRoutes(!showRoutes);
   };
 
-  if (!isLoaded) return <div>Cargando mapa...</div>;
+  if (!isLoaded) return (
+    <div className="mapa-loading">
+      <div className="spinner"></div>
+      <p>Cargando mapa...</p>
+    </div>
+  );
 
   return (
-    <div style={{ padding: '20px' }}>
-      {/* Título de la vista */}
-      <h2 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}>Estado del Tráfico y Rutas</h2>
-
-      {/* Panel de controles de tráfico y rutas */}
-      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
-        <button
+    <div className="estado-trafico-container">
+      <h1 className="mapa-titulo">Estado del Tráfico en Tiempo Real</h1>
+      
+      {/* Panel de controles */}
+      <div className="mapa-controles">
+        <button 
           onClick={handleToggleTraffic}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            backgroundColor: showTraffic ? '#f44336' : '#4CAF50',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
+          className={`control-button ${showTraffic ? 'active' : ''}`}
         >
           {showTraffic ? 'Ocultar Tráfico' : 'Mostrar Tráfico'}
         </button>
-
-        <button
+        
+        <button 
           onClick={handleToggleRoutes}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            backgroundColor: showRoutes ? '#f44336' : '#4CAF50',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
+          className={`control-button ${showRoutes ? 'active' : ''}`}
         >
           {showRoutes ? 'Ocultar Rutas' : 'Mostrar Rutas'}
         </button>
       </div>
 
-      {/* Mapa de tráfico */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
+      {/* Mapa interactivo */}
+      <div className="mapa-interactivo">
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={defaultCenter}
           zoom={13}
           onClick={handleMapClick}
-          mapTypeId="satellite"
+          options={{
+            streetViewControl: false,
+            mapTypeControl: true,
+            fullscreenControl: false
+          }}
         >
-          {/* Capa de tráfico en tiempo real */}
           {showTraffic && <TrafficLayer />}
-
-          {/* Mostrar el marcador de la ubicación seleccionada */}
+          
           {selectedLocation && (
-            <Marker position={selectedLocation} />
-          )}
-
-          {/* Mostrar información cuando se hace clic en un marcador */}
-          {selectedLocation && (
-            <InfoWindow
-              position={selectedLocation}
-              onCloseClick={() => setSelectedLocation(null)}
-            >
-              <div>
-                <h4>Ubicación Seleccionada</h4>
-                <p>Latitud: {selectedLocation.lat}</p>
-                <p>Longitud: {selectedLocation.lng}</p>
-              </div>
-            </InfoWindow>
-          )}
-
-          {/* Aquí puedes agregar las rutas si showRoutes es true */}
-          {showRoutes && (
-            // Este es solo un ejemplo. En una implementación real, tendrías que usar una API de direcciones para obtener rutas
-            <Marker
-              position={{ lat: 12.139, lng: -86.255 }} // Esto sería una ruta hacia el destino
-              icon={{
-                url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png', // Cambia el ícono a algo que represente una ruta
-              }}
-            />
+            <>
+              <Marker position={selectedLocation} />
+              <InfoWindow
+                position={selectedLocation}
+                onCloseClick={() => setSelectedLocation(null)}
+              >
+                <div className="info-window">
+                  <h3>Ubicación seleccionada</h3>
+                  <p>Lat: {selectedLocation.lat.toFixed(4)}</p>
+                  <p>Lng: {selectedLocation.lng.toFixed(4)}</p>
+                </div>
+              </InfoWindow>
+            </>
           )}
         </GoogleMap>
       </div>
+
+      {/* Leyenda del mapa */}
+      <div className="mapa-leyenda">
+        <div className="leyenda-item">
+          <span className="leyenda-color verde"></span>
+          <p>Tráfico fluido</p>
+        </div>
+        <div className="leyenda-item">
+          <span className="leyenda-color amarillo"></span>
+          <p>Tráfico moderado</p>
+        </div>
+        <div className="leyenda-item">
+          <span className="leyenda-color rojo"></span>
+          <p>Congestión</p>
+        </div>
+      </div>
+
+      {/* Botón flotante para reportes */}
+      <button 
+        className="boton-flotante"
+        onClick={() => console.log('Ir a reportes')}
+      >
+        Reportar Incidencia
+      </button>
     </div>
   );
 };
