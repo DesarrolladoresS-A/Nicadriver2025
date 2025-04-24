@@ -92,7 +92,17 @@ const Encabezado = () => {
                 </>
               )}
 
-              
+              {isLoggedIn ? (
+                <Nav.Link onClick={handleLogout} className="">
+                  <i className=""></i>
+                  <strong></strong>
+                </Nav.Link>
+              ) : location.pathname === "/" && (
+                <Nav.Link onClick={() => handleNavigate("/")} className="">
+                  <i className=""></i>
+                  <strong></strong>
+                </Nav.Link>
+              )}
             </Nav>
           </Offcanvas.Body>
         </Navbar.Offcanvas>
