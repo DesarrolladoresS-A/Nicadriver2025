@@ -18,7 +18,8 @@ function App() {
         <Encabezado />
         <main className="margen-superior-main">
           <Routes>
-            <Route path="/" element={<Inicio />} />
+            <Route path="/" element={<views />} />
+            <Route path="/inicio" element={<ProtectedRoute element={<Inicio />} />} />
             <Route path="/nosotros" element={<ProtectedRoute element={<Nosotros />} />} />
             <Route path="/estadodeTrafico" element={<ProtectedRoute element={<EstadodeTrafico />} />} />
             <Route path="/reportes" element={<ProtectedRoute element={<Reportes />} />} />  {/* Ruta para el componente Reportes */}

@@ -35,7 +35,7 @@ const Encabezado = () => {
   return (
     <Navbar expand="md" fixed="top" className="color-navbar">
       <Container>
-        <Navbar.Brand onClick={() => handleNavigate("/inicio")} className="text-white" style={{ cursor: "pointer" }}>
+        <Navbar.Brand onClick={() => handleNavigate("/")} className="text-white" style={{ cursor: "pointer" }}>
         <img alt="" src="/Logo.png" width="60" height="40" className="d-inline-block align-top" />
         <strong>NicaDriver</strong>
         </Navbar.Brand>
@@ -92,17 +92,7 @@ const Encabezado = () => {
                 </>
               )}
 
-              {isLoggedIn ? (
-                <Nav.Link onClick={handleLogout} className="nav-link">
-                  <i className="bi-box-arrow-right me-2"></i>
-                  <strong>Cerrar Sesión</strong>
-                </Nav.Link>
-              ) : location.pathname === "/" && (
-                <Nav.Link onClick={() => handleNavigate("/")} className="nav-link">
-                  <i className="bi-box-arrow-in-right me-2"></i>
-                  <strong>Iniciar Sesión</strong>
-                </Nav.Link>
-              )}
+              
             </Nav>
           </Offcanvas.Body>
         </Navbar.Offcanvas>
