@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./database/authcontext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Login from "./views/Login";
 import Encabezado from "./components/Encabezado";
 import Inicio from "./views/Inicio";
 import Nosotros from "./views/Nosotros";
@@ -17,7 +18,7 @@ function App() {
         <Encabezado />
         <main className="margen-superior-main">
           <Routes>
-            <Route path="/" element={<views />} />
+            <Route path="/" element={<Login />} />
             <Route path="/inicio" element={<ProtectedRoute element={<Inicio />} />} />
             <Route path="/nosotros" element={<ProtectedRoute element={<Nosotros />} />} />
             <Route path="/estadodeTrafico" element={<ProtectedRoute element={<EstadodeTrafico />} />} />
