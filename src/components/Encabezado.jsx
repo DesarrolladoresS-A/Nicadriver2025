@@ -88,12 +88,7 @@ const Encabezado = () => {
                     <i className="bi-file-earmark-text-fill me-2"></i>
                     <strong>Reportes</strong>
                   </Nav.Link>
-
-                  <Nav.Link
-                    onClick={() => handleNavigate("/contacto")}
-                    className={`nav-link ${location.pathname === "/contacto" ? "active" : ""}`}
-                  >
-                  </Nav.Link>
+                  
                 </>
               )}
 
