@@ -39,6 +39,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       descripcion,
       ubicacion,
       fechaHora,
+      foto,
     };
 
     await addDoc(collection(db, "reportes"), nuevoReporte);

@@ -11,20 +11,23 @@ const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded">
-        <h2 className="text-lg font-bold mb-4">Eliminar Reporte</h2>
-        <p>¿Estás seguro de que quieres eliminar el reporte: "{reporte.titulo}"?</p>
-        <div className="flex justify-end mt-4">
+    <div className="modal-overlay">
+      <div className="registro-reporte-formulario">
+        <h2>Eliminar Reporte</h2>
+        <p className="text-lg">
+          ¿Estás seguro de que quieres eliminar el reporte: <strong>{reporte.titulo}</strong>?
+        </p>
+
+        <div className="flex justify-end space-x-4 mt-6">
           <button
             onClick={() => setModalEliminar(false)}
-            className="mr-2 border border-gray-400 px-4 py-2 rounded"
+            className="border border-gray-400 px-4 py-2 rounded hover:bg-gray-100"
           >
             Cancelar
           </button>
           <button
             onClick={eliminarReporte}
-            className="bg-red-500 text-white px-4 py-2 rounded"
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           >
             Eliminar
           </button>

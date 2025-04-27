@@ -10,68 +10,88 @@
 }
 
 /* ========== ESTILOS MEJORADOS PARA LA TABLA DE REPORTES ========== */
-.report-table-container {
-  padding: 20px;
-  max-width: 100%;
-  overflow-x: auto;
-}
-
+/* General table styles */
 .report-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 8px; /* Espacio entre filas */
-  margin-top: 20px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.report-table th, .report-table td {
+  border: 1px solid #ddd;
 }
 
 .report-table th {
-  background-color: #f8f9fa;
-  color: #333;
-  font-weight: 600;
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 2px solid #FF7E00;
-  font-size: 0.9rem;
+  background-color: #f4f4f4;
+  font-weight: bold;
 }
 
-.report-table td {
-  padding: 12px;
-  background-color: #fff;
-  color: #333;
-  border-bottom: 1px solid #e0e0e0;
-  font-size: 0.9rem;
+/* Responsiveness */
+.report-table-container {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-top: 16px;
 }
 
-.report-table tr:hover td {
-  background-color: #f5f5f5;
+/* For small screens, stack table rows into a list */
+@media screen and (max-width: 768px) {
+  .report-table th,
+  .report-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .report-table td {
+    text-align: right;
+    position: relative;
+    padding-left: 50%;
+  }
+
+  .report-table td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 10px;
+    font-weight: bold;
+  }
+
+  .report-action-button {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+  }
 }
 
-/* Estilo para botones de acciones */
-.report-action-button {
-  padding: 6px 12px;
-  font-size: 0.85rem;
+/* Responsive image size */
+.report-table img {
+  width: 60px;
+  height: auto;
   border-radius: 4px;
-  border: none;
+}
+
+
+/* Botones con íconos */
+.report-action-button {
+  padding: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-right: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.report-action-button.edit {
-  background-color: #1e3d87;
-  color: white;
+.report-action-button:hover {
+  opacity: 0.8;
 }
 
-.report-action-button.edit:hover {
-  background-color: #142b63;
+/* Estilo para los íconos */
+.report-action-button i {
+  font-size: 20px;
+  transition: transform 0.2s ease;
 }
 
-.report-action-button.delete {
-  background-color: #dc3545;
-  color: white;
-}
-
-.report-action-button.delete:hover {
-  background-color: #bb2d3b;
+.report-action-button:hover i {
+  transform: scale(1.1); /* Aumenta ligeramente el tamaño del ícono al pasar el ratón */
 }
 
 /* Botón Registrar Reporte */
