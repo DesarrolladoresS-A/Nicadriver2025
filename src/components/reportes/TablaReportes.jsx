@@ -29,15 +29,21 @@ const TablaReportes = ({
               <td className="px-4 py-2">{reporte.ubicacion}</td>
               <td className="px-4 py-2">{reporte.descripcion}</td>
               <td className="px-4 py-2">
-                {reporte.fechaHora?.seconds
-                  ? new Date(reporte.fechaHora.seconds * 1000).toLocaleString("es-ES", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : "Sin fecha y hora"}
+                {(() => {
+                  const fecha = reporte.fechaHora?.toDate
+                    ? reporte.fechaHora.toDate()
+                    : new Date(reporte.fechaHora?.seconds ? reporte.fechaHora.seconds * 1000 : reporte.fechaHora);
+
+                  return fecha
+                    ? fecha.toLocaleString("es-NI", {
+                        year: "numeric",
+                        month: "short",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Sin fecha y hora";
+                })()}
               </td>
               <td className="px-4 py-2">
                 {reporte.fotoURL ? (

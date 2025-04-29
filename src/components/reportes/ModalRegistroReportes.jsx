@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { db } from "../../database/firebaseconfig";
 import { collection, addDoc } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
+
 
 const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [titulo, setTitulo] = useState("");
@@ -29,9 +31,10 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         titulo,
         descripcion,
         ubicacion,
-        fechaHora,
+        fechaHora: Timestamp.fromDate(new Date(fechaHora)),
         foto: null, // Imagen desactivada por ahora
       };
+      
 
       await addDoc(collection(db, "reportes"), nuevoReporte);
       alert("✅ Reporte guardado con éxito.");
