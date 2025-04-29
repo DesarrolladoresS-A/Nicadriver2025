@@ -37,7 +37,7 @@ const TablaReportes = ({
                       hour: "2-digit",
                       minute: "2-digit",
                     })
-                  : "Sin fecha"}
+                  : "Sin fecha y hora"}
               </td>
               <td className="px-4 py-2">
                 {reporte.fotoURL ? (

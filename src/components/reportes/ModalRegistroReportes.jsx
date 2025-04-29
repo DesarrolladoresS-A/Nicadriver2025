@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { db } from "../../database/firebaseconfig";
 import { collection, addDoc } from "firebase/firestore";
-
 
 const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [titulo, setTitulo] = useState("");
@@ -9,52 +8,40 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [ubicacion, setUbicacion] = useState("");
   const [fechaHora, setFechaHora] = useState("");
   const [foto, setFoto] = useState(null);
-
   const [errores, setErrores] = useState({});
-  const [formEnviado, setFormEnviado] = useState(false);
 
   const validarCampos = () => {
     let erroresTemp = {};
-
     if (!titulo.trim()) erroresTemp.titulo = "El título es obligatorio.";
     if (!ubicacion.trim()) erroresTemp.ubicacion = "La ubicación es obligatoria.";
     if (!descripcion.trim()) erroresTemp.descripcion = "La descripción es obligatoria.";
     if (!fechaHora) erroresTemp.fechaHora = "La fecha y hora son obligatorias.";
-    if (!foto) erroresTemp.foto = "La fotografía es obligatoria.";
-    else if (!foto.type.startsWith("image/")) erroresTemp.foto = "El archivo debe ser una imagen.";
-
     setErrores(erroresTemp);
-
     return Object.keys(erroresTemp).length === 0;
   };
 
   const guardarReporte = async () => {
-    if (!validarCampos()) {
-      setFormEnviado(false);
-      return;
+    const esValido = validarCampos();
+    if (!esValido) return;
+
+    try {
+      const nuevoReporte = {
+        titulo,
+        descripcion,
+        ubicacion,
+        fechaHora,
+        foto: null, // Imagen desactivada por ahora
+      };
+
+      await addDoc(collection(db, "reportes"), nuevoReporte);
+      alert("✅ Reporte guardado con éxito.");
+      actualizar();
+      setModalRegistro(false);
+    } catch (error) {
+      console.error("❌ Error al guardar el reporte:", error);
+      alert("Error al guardar el reporte.");
     }
-
-    const nuevoReporte = {
-      titulo,
-      descripcion,
-      ubicacion,
-      fechaHora,
-      foto,
-    };
-
-    await addDoc(collection(db, "reportes"), nuevoReporte);
-    actualizar();
-    setModalRegistro(false);
   };
-
-  useEffect(() => {
-    if (formEnviado && Object.keys(errores).length === 0) {
-      const timer = setTimeout(() => {
-        setErrores({});
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [errores, formEnviado]);
 
   return (
     <div className="modal-overlay">
@@ -65,7 +52,6 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
           <label>Título del incidente</label>
           <input
             type="text"
-            placeholder="Título breve"
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             className={`input ${errores.titulo ? "input-error shake" : titulo ? "input-success" : ""}`}
@@ -77,7 +63,6 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
           <label>Ubicación del incidente</label>
           <input
             type="text"
-            placeholder="Ej. Calle 123, Zona A"
             value={ubicacion}
             onChange={(e) => setUbicacion(e.target.value)}
             className={`input ${errores.ubicacion ? "input-error shake" : ubicacion ? "input-success" : ""}`}
@@ -88,7 +73,6 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         <div>
           <label>Descripción</label>
           <textarea
-            placeholder="Describe lo sucedido"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
             className={`input ${errores.descripcion ? "input-error shake" : descripcion ? "input-success" : ""}`}
@@ -107,7 +91,8 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
           {errores.fechaHora && <p className="error-message">{errores.fechaHora}</p>}
         </div>
 
-        <div>
+        {/* Campo de foto deshabilitado temporalmente */}
+        {<div>
           <label>Subir foto</label>
           <input
             type="file"
@@ -115,20 +100,11 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             onChange={(e) => setFoto(e.target.files[0])}
             className="input"
           />
-          {errores.foto && <p className="error-message">{errores.foto}</p>}
-        </div>
+        </div>}
 
         <div className="flex justify-end space-x-4 mt-4">
           <button onClick={() => setModalRegistro(false)}>Cancelar</button>
-          <button
-            onClick={() => {
-              setFormEnviado(true);
-              guardarReporte();
-            }}
-            disabled={Object.keys(errores).length > 0}
-          >
-            Guardar reporte
-          </button>
+          <button onClick={guardarReporte}>Guardar reporte</button>
         </div>
       </div>
     </div>

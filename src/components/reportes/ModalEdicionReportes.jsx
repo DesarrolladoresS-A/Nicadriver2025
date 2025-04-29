@@ -1,16 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../../database/firebaseconfig";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, Timestamp } from "firebase/firestore";
 
 const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
   const [titulo, setTitulo] = useState(reporte.titulo || "");
   const [descripcion, setDescripcion] = useState(reporte.descripcion || "");
   const [ubicacion, setUbicacion] = useState(reporte.ubicacion || "");
-  const [fechaHora, setFechaHora] = useState(reporte.fechaHora || "");
-  const [foto, setFoto] = useState(null); // Para nueva foto, si el usuario quiere cambiarla
+  const [fechaHora, setFechaHora] = useState("");
+  const [foto, setFoto] = useState(null);
 
   const [errores, setErrores] = useState({});
   const [formEnviado, setFormEnviado] = useState(false);
+
+  useEffect(() => {
+    if (reporte.fechaHora) {
+      let fechaFormateada = "";
+
+      if (typeof reporte.fechaHora === "string") {
+        fechaFormateada = reporte.fechaHora.substring(0, 16); // si es string, corta
+      } else if (reporte.fechaHora?.seconds) {
+        const fecha = new Date(reporte.fechaHora.seconds * 1000);
+        fechaFormateada = fecha.toISOString().substring(0, 16); // si es Timestamp, convierte
+      }
+
+      setFechaHora(fechaFormateada);
+    }
+  }, [reporte]);
 
   const validarCampos = () => {
     let erroresTemp = {};
@@ -19,7 +34,6 @@ const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
     if (!ubicacion.trim()) erroresTemp.ubicacion = "La ubicación es obligatoria.";
     if (!descripcion.trim()) erroresTemp.descripcion = "La descripción es obligatoria.";
     if (!fechaHora) erroresTemp.fechaHora = "La fecha y hora son obligatorias.";
-    // La foto es opcional al editar
 
     setErrores(erroresTemp);
 
@@ -38,11 +52,11 @@ const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
       titulo,
       descripcion,
       ubicacion,
-      fechaHora,
+      fechaHora: fechaHora, // lo mandamos como string. Puedes convertirlo a Timestamp si quieres.
     };
 
     await updateDoc(reporteRef, datosActualizados);
-    actualizar();
+    actualizar(); // Debe volver a traer los datos
     setModalEditar(false);
   };
 

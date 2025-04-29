@@ -1,63 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, TrafficLayer, Marker, InfoWindow, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { GoogleMap, useJsApiLoader, TrafficLayer, Marker, InfoWindow, DirectionsRenderer } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '100%',
   height: '600px',
-  borderRadius: '8px', // Mapa con bordes redondeados
+  borderRadius: '8px',
 };
 
 const defaultCenter = {
-  lat: 12.1364,
+  lat: 12.1364, // Managua
   lng: -86.2514,
 };
 
 const RegistroMapaCarreteras = () => {
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY, // Asegúrate de tener tu clave de API aquí
-    libraries: ['places', 'directions'],
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    libraries: ['places'], // SOLO places
   });
 
+  const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
-  const [showTraffic, setShowTraffic] = useState(true);
-  const [showRoutes, setShowRoutes] = useState(false);
   const [directions, setDirections] = useState(null);
+  const [showTraffic, setShowTraffic] = useState(true);
 
-  // Obtener la ubicación del usuario
+  // Obtener ubicación del usuario
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
-        setUserLocation({
+        const current = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-        });
+        };
+        setUserLocation(current);
       });
-    } else {
-      alert('Geolocalización no soportada por tu navegador.');
     }
   }, []);
 
-  // Obtener direcciones cuando se selecciona un destino
-  const handleGetDirections = () => {
-    if (userLocation && selectedLocation) {
-      const DirectionsServiceInstance = new window.google.maps.DirectionsService();
-
-      DirectionsServiceInstance.route(
-        {
-          origin: userLocation,
-          destination: selectedLocation,
-          travelMode: window.google.maps.TravelMode.DRIVING,
-        },
-        (result, status) => {
-          if (status === window.google.maps.DirectionsStatus.OK) {
-            setDirections(result);
-          } else {
-            alert('No se pudo obtener la ruta.');
-          }
-        }
-      );
-    }
+  const handleMapLoad = (map) => {
+    mapRef.current = map;
   };
 
   const handleMapClick = (event) => {
@@ -67,113 +48,100 @@ const RegistroMapaCarreteras = () => {
     });
   };
 
-  const handleToggleTraffic = () => {
-    setShowTraffic(!showTraffic);
+  const handleGetRoute = () => {
+    if (userLocation && selectedLocation) {
+      const directionsService = new window.google.maps.DirectionsService();
+      directionsService.route(
+        {
+          origin: userLocation,
+          destination: selectedLocation,
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (status === 'OK') {
+            setDirections(result);
+          } else {
+            console.error('Error obteniendo la ruta:', status);
+          }
+        }
+      );
+    }
   };
 
-  const handleToggleRoutes = () => {
-    setShowRoutes(!showRoutes);
+  const handleCenterUser = () => {
+    if (mapRef.current && userLocation) {
+      mapRef.current.panTo(userLocation);
+      mapRef.current.setZoom(15);
+    }
   };
 
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
   return (
     <div style={{ padding: '20px' }}>
-      {/* Título de la vista */}
-      <h2 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '20px' }}>Registro de Incidentes y Rutas</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Registro de Incidentes y Rutas</h2>
 
-      {/* Panel de controles de tráfico y rutas */}
-      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
-        <button
-          onClick={handleToggleTraffic}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            backgroundColor: showTraffic ? '#f44336' : '#4CAF50',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
-        >
+      {/* Botones de control */}
+      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+        <button onClick={handleGetRoute} style={styles.boton}>Obtener Ruta</button>
+        <button onClick={() => setShowTraffic(!showTraffic)} style={styles.boton}>
           {showTraffic ? 'Ocultar Tráfico' : 'Mostrar Tráfico'}
         </button>
-
-        <button
-          onClick={handleToggleRoutes}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            backgroundColor: showRoutes ? '#f44336' : '#4CAF50',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
-        >
-          {showRoutes ? 'Ocultar Rutas' : 'Mostrar Rutas'}
-        </button>
-
-        <button
-          onClick={handleGetDirections}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            backgroundColor: '#2196F3',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
-        >
-          Obtener Ruta
-        </button>
+        <button onClick={handleCenterUser} style={styles.boton}>Ir a Mi Ubicación</button>
       </div>
 
-      {/* Mapa de tráfico */}
+      {/* Mapa */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <GoogleMap
           mapContainerStyle={containerStyle}
-          center={defaultCenter}
+          center={userLocation || defaultCenter}
           zoom={13}
+          onLoad={handleMapLoad}
           onClick={handleMapClick}
-          mapTypeId="satellite"
+          mapTypeId="satellite" // Mapa satelital tipo Waze
+          options={{
+            streetViewControl: false,
+            fullscreenControl: true,
+            zoomControl: true,
+          }}
         >
-          {/* Capa de tráfico en tiempo real */}
           {showTraffic && <TrafficLayer />}
 
-          {/* Mostrar la ubicación del usuario */}
-          {userLocation && (
-            <Marker position={userLocation} label="Mi Ubicación" />
-          )}
+          {userLocation && <Marker position={userLocation} label="Yo" />}
 
-          {/* Mostrar el marcador de la ubicación seleccionada */}
           {selectedLocation && (
-            <Marker position={selectedLocation} />
+            <>
+              <Marker position={selectedLocation} />
+              <InfoWindow
+                position={selectedLocation}
+                onCloseClick={() => setSelectedLocation(null)}
+              >
+                <div>
+                  <h4>Destino seleccionado</h4>
+                  <p>Lat: {selectedLocation.lat.toFixed(4)}</p>
+                  <p>Lng: {selectedLocation.lng.toFixed(4)}</p>
+                </div>
+              </InfoWindow>
+            </>
           )}
 
-          {/* Mostrar información cuando se hace clic en un marcador */}
-          {selectedLocation && (
-            <InfoWindow
-              position={selectedLocation}
-              onCloseClick={() => setSelectedLocation(null)}
-            >
-              <div>
-                <h4>Ubicación Seleccionada</h4>
-                <p>Latitud: {selectedLocation.lat}</p>
-                <p>Longitud: {selectedLocation.lng}</p>
-              </div>
-            </InfoWindow>
-          )}
-
-          {/* Mostrar las rutas si showRoutes es true */}
-          {showRoutes && directions && (
-            <DirectionsRenderer directions={directions} />
-          )}
+          {directions && <DirectionsRenderer directions={directions} />}
         </GoogleMap>
       </div>
     </div>
   );
+};
+
+const styles = {
+  boton: {
+    padding: '10px 15px',
+    backgroundColor: '#4285F4',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '15px',
+  },
 };
 
 export default RegistroMapaCarreteras;
