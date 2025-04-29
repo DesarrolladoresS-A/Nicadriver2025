@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { db } from "../../database/firebaseconfig";
 import { collection, addDoc } from "firebase/firestore";
-import { Timestamp } from "firebase/firestore";
-
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../database/firebaseconfig"; // usa el storage inicializado
 
 const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [titulo, setTitulo] = useState("");
@@ -13,7 +13,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [errores, setErrores] = useState({});
 
   const validarCampos = () => {
-    let erroresTemp = {};
+    const erroresTemp = {};
     if (!titulo.trim()) erroresTemp.titulo = "El título es obligatorio.";
     if (!ubicacion.trim()) erroresTemp.ubicacion = "La ubicación es obligatoria.";
     if (!descripcion.trim()) erroresTemp.descripcion = "La descripción es obligatoria.";
@@ -22,28 +22,53 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
     return Object.keys(erroresTemp).length === 0;
   };
 
-  const guardarReporte = async () => {
-    const esValido = validarCampos();
-    if (!esValido) return;
+  const registrarReporte = async () => {
+    if (!validarCampos()) return;
+
+    const datosReporte = {
+      titulo,
+      descripcion,
+      ubicacion,
+      fechaHora,
+    };
 
     try {
-      const nuevoReporte = {
-        titulo,
-        descripcion,
-        ubicacion,
-        fechaHora: Timestamp.fromDate(new Date(fechaHora)),
-        foto: null, // Imagen desactivada por ahora
-      };
-      
+      if (foto) {
+        const nombreArchivo = `${Date.now()}-${foto.name}`;
+        const storageRef = ref(storage, `fotosReportes/${nombreArchivo}`);
+        
+        // Sube la imagen a Firebase Storage
+        await uploadBytes(storageRef, foto);
 
-      await addDoc(collection(db, "reportes"), nuevoReporte);
-      alert("✅ Reporte guardado con éxito.");
+        // Obtiene la URL de la imagen subida
+        const urlFoto = await getDownloadURL(storageRef);
+
+        // Añade la URL de la foto al reporte
+        datosReporte.foto = urlFoto;
+      }
+
+      // Guarda el reporte en Firestore
+      await addDoc(collection(db, "reportes"), datosReporte);
+
+      // Actualiza la lista de reportes
       actualizar();
+
+      // Cierra el modal de registro
       setModalRegistro(false);
     } catch (error) {
-      console.error("❌ Error al guardar el reporte:", error);
-      alert("Error al guardar el reporte.");
+      console.error("Error al registrar reporte:", error);
     }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (file && !allowedTypes.includes(file.type)) {
+      alert('Solo se permiten imágenes JPG o PNG');
+      return;
+    }
+    console.log("Imagen seleccionada:", file); // Para depuración
+    setFoto(file);
   };
 
   return (
@@ -74,7 +99,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         </div>
 
         <div>
-          <label>Descripción</label>
+          <label>Descripción del incidente</label>
           <textarea
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
@@ -94,20 +119,19 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
           {errores.fechaHora && <p className="error-message">{errores.fechaHora}</p>}
         </div>
 
-        {/* Campo de foto deshabilitado temporalmente */}
-        {<div>
-          <label>Subir foto</label>
+        <div>
+          <label>Foto (opcional)</label>
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setFoto(e.target.files[0])}
+            onChange={handleFileChange}
             className="input"
           />
-        </div>}
+        </div>
 
         <div className="flex justify-end space-x-4 mt-4">
           <button onClick={() => setModalRegistro(false)}>Cancelar</button>
-          <button onClick={guardarReporte}>Guardar reporte</button>
+          <button onClick={registrarReporte}>Guardar</button>
         </div>
       </div>
     </div>

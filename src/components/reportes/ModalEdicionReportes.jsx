@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../../database/firebaseconfig";
-import { doc, updateDoc, Timestamp } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../database/firebaseconfig";
 
 const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
   const [titulo, setTitulo] = useState(reporte.titulo || "");
@@ -8,66 +10,75 @@ const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
   const [ubicacion, setUbicacion] = useState(reporte.ubicacion || "");
   const [fechaHora, setFechaHora] = useState("");
   const [foto, setFoto] = useState(null);
-
   const [errores, setErrores] = useState({});
-  const [formEnviado, setFormEnviado] = useState(false);
 
   useEffect(() => {
     if (reporte.fechaHora) {
       let fechaFormateada = "";
-
       if (typeof reporte.fechaHora === "string") {
-        fechaFormateada = reporte.fechaHora.substring(0, 16); // si es string, corta
+        fechaFormateada = reporte.fechaHora.substring(0, 16);
       } else if (reporte.fechaHora?.seconds) {
         const fecha = new Date(reporte.fechaHora.seconds * 1000);
-        fechaFormateada = fecha.toISOString().substring(0, 16); // si es Timestamp, convierte
+        fechaFormateada = fecha.toISOString().substring(0, 16);
       }
-
       setFechaHora(fechaFormateada);
     }
   }, [reporte]);
 
   const validarCampos = () => {
-    let erroresTemp = {};
-
+    const erroresTemp = {};
     if (!titulo.trim()) erroresTemp.titulo = "El título es obligatorio.";
     if (!ubicacion.trim()) erroresTemp.ubicacion = "La ubicación es obligatoria.";
     if (!descripcion.trim()) erroresTemp.descripcion = "La descripción es obligatoria.";
     if (!fechaHora) erroresTemp.fechaHora = "La fecha y hora son obligatorias.";
-
     setErrores(erroresTemp);
-
     return Object.keys(erroresTemp).length === 0;
   };
 
   const editarReporte = async () => {
-    if (!validarCampos()) {
-      setFormEnviado(false);
-      return;
-    }
+    if (!validarCampos()) return;
 
     const reporteRef = doc(db, "reportes", reporte.id);
-
-    const datosActualizados = {
+    let datosActualizados = {
       titulo,
       descripcion,
       ubicacion,
-      fechaHora: fechaHora, // lo mandamos como string. Puedes convertirlo a Timestamp si quieres.
+      fechaHora: new Date(fechaHora), // Conversión importante
     };
 
-    await updateDoc(reporteRef, datosActualizados);
-    actualizar(); // Debe volver a traer los datos
-    setModalEditar(false);
+    try {
+      if (foto) {
+        try {
+          const nombreArchivo = `${Date.now()}-${foto.name}`;
+          const storageRef = ref(storage, `fotosReportes/${nombreArchivo}`);
+          await uploadBytes(storageRef, foto);
+          const urlFoto = await getDownloadURL(storageRef);
+          datosActualizados.foto = urlFoto;
+        } catch (error) {
+          console.error("Error al subir la imagen:", error);
+          // Mostrar un mensaje de error o manejar el fallo de alguna manera
+        }
+      }
+
+      await updateDoc(reporteRef, datosActualizados);
+      actualizar();            // Refrescar la lista
+      setModalEditar(false);   // Cerrar modal
+    } catch (error) {
+      console.error("Error al editar el reporte:", error);
+    }
   };
 
-  useEffect(() => {
-    if (formEnviado && Object.keys(errores).length === 0) {
-      const timer = setTimeout(() => {
-        setErrores({});
-      }, 3000);
-      return () => clearTimeout(timer);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    console.log(file); // Verifica si el archivo está correctamente cargado
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (file && !allowedTypes.includes(file.type)) {
+      alert('Solo se permiten imágenes JPG o PNG');
+      return;
     }
-  }, [errores, formEnviado]);
+    setFoto(file);
+  };
+  
 
   return (
     <div className="modal-overlay">
@@ -78,7 +89,6 @@ const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
           <label>Título del incidente</label>
           <input
             type="text"
-            placeholder="Título breve"
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             className={`input ${errores.titulo ? "input-error shake" : titulo ? "input-success" : ""}`}
@@ -90,7 +100,6 @@ const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
           <label>Ubicación del incidente</label>
           <input
             type="text"
-            placeholder="Ej. Calle 123, Zona A"
             value={ubicacion}
             onChange={(e) => setUbicacion(e.target.value)}
             className={`input ${errores.ubicacion ? "input-error shake" : ubicacion ? "input-success" : ""}`}
@@ -101,7 +110,6 @@ const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
         <div>
           <label>Descripción del incidente</label>
           <textarea
-            placeholder="Describe lo sucedido"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
             className={`input ${errores.descripcion ? "input-error shake" : descripcion ? "input-success" : ""}`}
@@ -121,26 +129,19 @@ const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
         </div>
 
         <div>
-          <label>Actualizar foto (opcional)</label>
+          <label>Foto (opcional)</label>
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setFoto(e.target.files[0])}
+            onChange={handleFileChange}
             className="input"
           />
         </div>
 
         <div className="flex justify-end space-x-4 mt-4">
           <button onClick={() => setModalEditar(false)}>Cancelar</button>
-          <button
-            onClick={() => {
-              setFormEnviado(true);
-              editarReporte();
-            }}
-            disabled={Object.keys(errores).length > 0}
-          >
-            Guardar cambios
-          </button>
+          <button onClick={editarReporte}>Guardar cambios</button>
+
         </div>
       </div>
     </div>
