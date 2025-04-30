@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import GenerarPDFButton from "../GenerarPDFButton"; // Asegúrate que el archivo exista y la ruta sea correcta
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const TablaReportes = ({
@@ -7,6 +8,7 @@ const TablaReportes = ({
   setReporteSeleccionado,
   setModalEliminar,
   setReporteSeleccionadoEliminar,
+  generarPDF,
 }) => {
   const [imagenModal, setImagenModal] = useState(null);
 
@@ -88,13 +90,20 @@ const TablaReportes = ({
                 >
                   <i className="bi bi-trash-fill text-red-500"></i>
                 </button>
+                {/* Botón PDF con estilo similar */}
+                <button
+                  className="report-action-button pdf flex items-center justify-center"
+                  onClick={() => generarPDF(reporte)}
+                >
+                  <i className="bi bi-file-earmark-pdf-fill text-red-600"></i>
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {/* Modal para mostrar imagen en grande */}
+      {/* Modal para imagen ampliada */}
       {imagenModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50"

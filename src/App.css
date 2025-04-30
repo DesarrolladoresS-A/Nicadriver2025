@@ -841,7 +841,7 @@ button:hover {
 
 .guardar-cambios-btn {
   display: inline-block;
-  padding: 10px 20px;
+  padding: 30px 30px;
   background-color: #FF7E00;
   color: white;
   border: none;
@@ -852,4 +852,63 @@ button:hover {
 
 .guardar-cambios-btn:hover {
   background-color: #e67300;
+}
+
+/* Estilos para el contenedor de botones */
+.boton-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem; /* Espaciado entre los botones */
+}
+
+/* Estilos para los botones */
+.boton {
+  min-width: 120px; /* Ajusta el tamaño mínimo de los botones */
+  padding: 10px 20px;
+  background-color: #4CAF50; /* Color de fondo */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.boton:hover {
+  background-color: #45a049;
+}
+
+/* Estilos específicos para el botón de Generar PDF */
+.boton-pdf {
+  background-color: #007bff; /* Color azul para el botón PDF */
+}
+.boton-pdf:hover {
+  background-color: #0056b3;
+}
+
+.boton-pdf {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.boton-pdf:hover {
+  background-color: #0056b3;
+}
+
+.report-action-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.5rem;
+  background-color: rgb(245, 110, 0);
+  border: 1px solid #ffffff;
+  transition: background-color 0.2s ease;
+}
+
+.report-action-button:hover {
+  background-color: #ffe600;
 }
