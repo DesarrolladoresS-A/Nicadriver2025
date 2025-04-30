@@ -912,3 +912,93 @@ button:hover {
 .report-action-button:hover {
   background-color: #ffe600;
 }
+
+
+.report-action-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.375rem;
+  background-color: #f1f5f9;
+  transition: 0.2s ease-in-out;
+}
+.report-action-button:hover {
+  transform: scale(1.1);
+}
+
+/* Estilo general del contenedor de la tabla */
+.report-table-container {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border: 1px solid #d1d5db; /* gris claro */
+}
+
+/* Estilo de la tabla */
+table.table-auto {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table th,
+table td {
+  border: 1px solid #d1d5db;
+  padding: 12px;
+  text-align: center;
+}
+
+/* Encabezado */
+thead {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Hover en filas */
+tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Botones circulares */
+td .flex button {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Animación de hover */
+td .flex button:hover {
+  transform: scale(1.05);
+}
+
+/* Colores específicos (ya aplicados en clase JSX, esto solo refuerza) */
+.bg-blue-100 { background-color: #dbeafe; }
+.text-blue-600 { color: #2563eb; }
+
+.bg-red-100 { background-color: #fee2e2; }
+.text-red-600 { color: #dc2626; }
+
+.bg-green-100 { background-color: #d1fae5; }
+.text-green-600 { color: #059669; }
+
+/* Responsivo para pantallas pequeñas */
+@media (max-width: 768px) {
+  table th,
+  table td {
+    font-size: 0.9rem;
+    padding: 8px;
+  }
+
+  td .flex {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  td .flex button {
+    width: 36px;
+    height: 36px;
+  }
+}

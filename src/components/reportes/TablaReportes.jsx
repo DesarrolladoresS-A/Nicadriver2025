@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GenerarPDFButton from "../GenerarPDFButton"; // Asegúrate que el archivo exista y la ruta sea correcta
+import jsPDF from "jspdf";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const TablaReportes = ({
@@ -8,25 +8,17 @@ const TablaReportes = ({
   setReporteSeleccionado,
   setModalEliminar,
   setReporteSeleccionadoEliminar,
-  generarPDF,
 }) => {
   const [imagenModal, setImagenModal] = useState(null);
 
   const formatearFechaHora = (fechaHora) => {
     try {
-      let fecha;
-
       if (!fechaHora) return "Sin fecha y hora";
-      if (fechaHora.toDate) {
-        fecha = fechaHora.toDate();
-      } else if (fechaHora.seconds) {
-        fecha = new Date(fechaHora.seconds * 1000);
-      } else if (typeof fechaHora === "string" || typeof fechaHora === "number") {
-        fecha = new Date(fechaHora);
-      } else {
-        return "Fecha no válida";
-      }
-
+      const fecha = fechaHora.toDate
+        ? fechaHora.toDate()
+        : fechaHora.seconds
+        ? new Date(fechaHora.seconds * 1000)
+        : new Date(fechaHora);
       return fecha.toLocaleString("es-NI", {
         year: "numeric",
         month: "short",
@@ -39,91 +31,88 @@ const TablaReportes = ({
     }
   };
 
+  const generarPDF = async (reporte) => {
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text("Reporte de Incidente", 20, 20);
+    doc.text(`Título: ${reporte.titulo}`, 20, 30);
+    doc.text(`Ubicación: ${reporte.ubicacion}`, 20, 40);
+    doc.text(`Descripción: ${reporte.descripcion}`, 20, 50);
+    doc.text(`Fecha y Hora: ${formatearFechaHora(reporte.fechaHora)}`, 20, 60);
+
+    if (reporte.foto) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = reporte.foto;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const imgData = canvas.toDataURL("image/png");
+        doc.addImage(imgData, "PNG", 20, 70, 160, 100);
+        doc.save(`${reporte.titulo}.pdf`);
+      };
+    } else {
+      doc.text("Sin imagen", 20, 75);
+      doc.save(`${reporte.titulo}.pdf`);
+    }
+  };
+
   return (
-    <div className="report-table-container overflow-x-auto">
-      <table className="report-table table-auto min-w-full">
-        <thead>
+    <div className="report-table-container overflow-x-auto p-4 bg-white rounded shadow border border-gray-300">
+      <table className="table-auto min-w-full border border-gray-300">
+        <thead className="bg-gray-100 text-gray-800">
           <tr>
-            <th className="px-4 py-2">Título</th>
-            <th className="px-4 py-2">Ubicación</th>
-            <th className="px-4 py-2">Descripción</th>
-            <th className="px-4 py-2">Fecha y Hora</th>
-            <th className="px-4 py-2">Foto</th>
-            <th className="px-4 py-2">Acciones</th>
+            <th className="px-4 py-2 border">Título</th>
+            <th className="px-4 py-2 border">Ubicación</th>
+            <th className="px-4 py-2 border">Descripción</th>
+            <th className="px-4 py-2 border">Fecha y Hora</th>
+            <th className="px-4 py-2 border">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {reportes.map((reporte) => (
-            <tr key={reporte.id}>
-              <td className="px-4 py-2">{reporte.titulo}</td>
-              <td className="px-4 py-2">{reporte.ubicacion}</td>
-              <td className="px-4 py-2">{reporte.descripcion}</td>
-              <td className="px-4 py-2">{formatearFechaHora(reporte.fechaHora)}</td>
-              <td className="px-4 py-2">
-                {reporte.foto ? (
-                  <img
-                    src={reporte.foto}
-                    alt="Incidente"
-                    className="w-16 h-16 object-cover rounded cursor-pointer border hover:scale-105 transition-transform"
-                    onClick={() => setImagenModal(reporte.foto)}
-                  />
-                ) : (
-                  "Sin imagen"
-                )}
+            <tr key={reporte.id} className="text-center hover:bg-gray-50">
+              <td className="px-4 py-2 border">{reporte.titulo}</td>
+              <td className="px-4 py-2 border">{reporte.ubicacion}</td>
+              <td className="px-4 py-2 border">{reporte.descripcion}</td>
+              <td className="px-4 py-2 border">
+                {formatearFechaHora(reporte.fechaHora)}
               </td>
-              <td className="px-4 py-2 flex gap-2">
-                <button
-                  className="report-action-button edit flex items-center justify-center"
-                  onClick={() => {
-                    setReporteSeleccionado(reporte);
-                    setModalEditar(true);
-                  }}
-                >
-                  <i className="bi bi-pencil-fill text-blue-500"></i>
-                </button>
-                <button
-                  className="report-action-button delete flex items-center justify-center"
-                  onClick={() => {
-                    setReporteSeleccionadoEliminar(reporte);
-                    setModalEliminar(true);
-                  }}
-                >
-                  <i className="bi bi-trash-fill text-red-500"></i>
-                </button>
-                {/* Botón PDF con estilo similar */}
-                <button
-                  className="report-action-button pdf flex items-center justify-center"
-                  onClick={() => generarPDF(reporte)}
-                >
-                  <i className="bi bi-file-earmark-pdf-fill text-red-600"></i>
-                </button>
+              <td className="px-4 py-2 border">
+                <div className="flex justify-center gap-3">
+                  <button
+                    className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center"
+                    onClick={() => {
+                      setReporteSeleccionado(reporte);
+                      setModalEditar(true);
+                    }}
+                  >
+                    <i className="bi bi-pencil-fill"></i>
+                  </button>
+                  <button
+                    className="w-10 h-10 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"
+                    onClick={() => {
+                      setReporteSeleccionadoEliminar(reporte);
+                      setModalEliminar(true);
+                    }}
+                  >
+                    <i className="bi bi-trash-fill"></i>
+                  </button>
+                  <button
+                    className="w-10 h-10 rounded-full bg-green-100 text-green-600 hover:bg-green-200 flex items-center justify-center"
+                    onClick={() => generarPDF(reporte)}
+                  >
+                    <i className="bi bi-file-earmark-pdf-fill"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      {/* Modal para imagen ampliada */}
-      {imagenModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50"
-          onClick={() => setImagenModal(null)}
-        >
-          <div className="relative">
-            <img
-              src={imagenModal}
-              alt="Vista ampliada"
-              className="max-w-4xl max-h-[90vh] rounded shadow-lg"
-            />
-            <button
-              onClick={() => setImagenModal(null)}
-              className="absolute top-2 right-2 text-white bg-red-600 rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-700"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
