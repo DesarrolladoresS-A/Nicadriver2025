@@ -28,6 +28,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   };
 
   return (
+    <div className="modal-overlay">
     <div className="registro-reporte-formulario">
       <h2>Registrar reporte</h2>
 
@@ -40,6 +41,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
           onChange={(e) => setTitulo(e.target.value)}
         />
       </div>
+      
 
       <div>
         <label>Ubicación del incidente</label>
@@ -82,6 +84,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         <button onClick={() => setModalRegistro(false)}>Cancelar</button>
         <button onClick={guardarReporte}>Guardar reporte</button>
       </div>
+    </div>
     </div>
   );
 };
