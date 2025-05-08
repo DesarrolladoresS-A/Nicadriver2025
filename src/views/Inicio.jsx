@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleMap, useJsApiLoader, TrafficLayer } from '@react-google-maps/api';
+import CuadrosDeReportes from "../components/CuadrosDeReportes"; // ← nuevo componente
 
 import "../App.css";
+import "bootstrap-icons/font/bootstrap-icons.css"; // ← para los iconos
 
 const mapContainerStyle = {
   width: '100%',
@@ -67,12 +69,12 @@ const Inicio = () => {
         </div>
       </div>
 
-      {/* Mapa en tiempo real directamente visible */}
+      {/* Mapa en tiempo real */}
       <div className="mapa-reporte-container">
         <div className="mapa-interactivo">
           <h2>Mapa interactivo</h2>
           <p>Información en tiempo real sobre el tráfico y condiciones viales.</p>
-          
+
           {isLoaded ? (
             <GoogleMap
               mapContainerStyle={mapContainerStyle}
@@ -86,16 +88,14 @@ const Inicio = () => {
             <div>Cargando mapa...</div>
           )}
         </div>
+        
+      </div>
 
-        {/* Reporte */}
-        <div className="reporte">
-          <h2>Reporte</h2>
-          <p>"Tu reporte ayuda a mejorar la seguridad vial. ¡Informa cualquier incidente!"</p>
-          <p><strong>Ubicación:</strong> Avenida Central - Managua</p>
-          <p><strong>Tipo de incidente:</strong> accidente, bache, semáforo dañado.</p>
-          <p><strong>Tiempo transcurrido:</strong> hace 10 min, 1 hora.</p>
-          <button onClick={() => handleNavigate('/Reportes')}>Ver más detalles</button>
-        </div>
+      {/* Cuadros / iconos de reportes para descargar PDF */}
+      <div className="cuadros-reportes-section mt-5">
+        <h2 className="text-center mb-3">Documentos de reportes</h2>
+        <p className="text-center text-muted mb-4">Haz clic en un icono para descargar el reporte en PDF</p>
+        <CuadrosDeReportes />
       </div>
     </div>
   );

@@ -1003,3 +1003,37 @@ td .flex button:hover {
   }
 }
 
+.cuadros-container {
+  margin: 20px auto;
+  padding: 16px;
+  background: #f7f7f7;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cuadros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.cuadro-reporte {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cuadro-reporte:hover {
+  background: #e3f2fd;
+}
+
+.icono-pdf {
+  font-size: 2rem;
+  color: #e53935;
+  margin-bottom: 8px;
+}
