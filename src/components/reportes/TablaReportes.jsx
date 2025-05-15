@@ -92,14 +92,14 @@ const TablaReportes = ({
                   >
                     <i className="bi bi-pencil-fill"></i>
                   </button>
-                  <button
-                    className="w-10 h-10 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"
-                    onClick={() => {
-                      setReporteSeleccionadoEliminar(reporte);
-                      setModalEliminar(true);
+                 <button
+                  className="w-10 h-10 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"onClick={() => {
+                  console.log("Preparando para eliminar reporte:", reporte.id);
+                  setReporteSeleccionado(reporte);
+                  setModalEliminar(true);
                     }}
                   >
-                    <i className="bi bi-trash-fill"></i>
+                  <i className="bi bi-trash-fill"></i>
                   </button>
                   <button
                     className="w-10 h-10 rounded-full bg-green-100 text-green-600 hover:bg-green-200 flex items-center justify-center"

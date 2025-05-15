@@ -1224,3 +1224,60 @@ td .flex button:hover {
     padding: 20px 15px;
   }
 }
+
+/* Estilos para la barra de búsqueda */
+.search-container {
+  position: relative;
+  margin-right: 20px;
+}
+
+.search-input {
+  padding: 10px 15px 10px 40px;
+  border-radius: 25px;
+  border: 1px solid #ddd;
+  width: 300px;
+  outline: none;
+  transition: all 0.3s;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  border-color: #FF7E00;
+  box-shadow: 0 0 0 2px rgba(255, 126, 0, 0.2);
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+/* Ajustes para el header */
+.reportes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .reportes-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .search-container {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+  
+  .search-input {
+    width: 100%;
+  }
+}
