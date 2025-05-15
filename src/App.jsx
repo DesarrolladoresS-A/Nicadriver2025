@@ -10,6 +10,7 @@ import './App.css';
 import EstadodeTrafico from "./views/EstadodeTrafico";
 import Reportes from "./views/Reportes";  {/* Asegúrate de importar el componente Reportes */}
 import Contacto from "./views/Contacto";
+ 
 
 function App() {
   return (
@@ -32,3 +33,4 @@ function App() {
 }
 
 export default App;
+

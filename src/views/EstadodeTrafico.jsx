@@ -1,197 +1,199 @@
-import React, { useState, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, TrafficLayer, Marker, InfoWindow } from '@react-google-maps/api';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  GoogleMap,
+  useJsApiLoader,
+  Marker,
+  InfoWindow
+} from '@react-google-maps/api';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  serverTimestamp
+} from 'firebase/firestore';
+import { db } from '../database/firebaseconfig';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-// Estilos del contenedor del mapa
+const libraries = ['places']; // <-- evitar que se re-cargue
+
 const containerStyle = {
-  width: '100%',
-  height: '70vh',
-  borderRadius: '12px',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+  width: '150%',
+  height: '600px'
 };
 
-// Coordenadas por defecto (Managua, Nicaragua)
-const defaultCenter = {
+const center = {
   lat: 12.1364,
-  lng: -86.2514,
+  lng: -86.2514
+};
+
+const getIconUrl = (tipo) => {
+  if (!tipo || typeof tipo !== 'string') {
+    return 'https://img.icons8.com/color/48/marker.png';
+  }
+
+  const lowerTipo = tipo.toLowerCase();
+
+  switch (lowerTipo) {
+    case 'accidente':
+      return 'https://img.icons8.com/color/48/car-crash.png';
+    case 'tráfico':
+    case 'trafico':
+      return 'https://img.icons8.com/color/48/traffic-jam.png';
+    case 'emergencia':
+      return 'https://img.icons8.com/color/48/ambulance.png';
+    case 'policía':
+    case 'policia':
+      return 'https://img.icons8.com/color/48/policeman-male.png';
+    default:
+      return 'https://img.icons8.com/color/48/marker.png';
+  }
 };
 
 const EstadodeTrafico = () => {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ['places'],
+    libraries: libraries
   });
 
-  const [selectedLocation, setSelectedLocation] = useState(null);
-  const [showTraffic, setShowTraffic] = useState(true);
-  const [showIcons, setShowIcons] = useState(false);
-  const [incidents, setIncidents] = useState([]);
-  const [reportingMode, setReportingMode] = useState(false);
+  const [map, setMap] = useState(null);
+  const [incidentes, setIncidentes] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [descripcion, setDescripcion] = useState('');
+  const [tipo, setTipo] = useState('');
+  const [imagen, setImagen] = useState(null);
 
-  // Función para manejar el clic en el mapa
-  const handleMapClick = (event) => {
-    if (reportingMode) {
-      const lat = event.latLng.lat();
-      const lng = event.latLng.lng();
+  useEffect(() => {
+    const fetchData = async () => {
+      const querySnapshot = await getDocs(collection(db, 'incidentes'));
+      const data = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setIncidentes(data);
+    };
 
-      const tipo = prompt('¿Qué tipo de incidencia quieres reportar? (Accidente, Tráfico, Emergencia, Policía)');
-      
-      if (tipo) {
-        setIncidents((prev) => [...prev, { lat, lng, tipo }]);
+    fetchData();
+  }, []);
+
+  const onMapClick = useCallback((event) => {
+    setSelected({
+      lat: event.latLng.lat(),
+      lng: event.latLng.lng()
+    });
+  }, []);
+
+  const handleImagenChange = (e) => {
+    if (e.target.files[0]) {
+      setImagen(e.target.files[0]);
+    }
+  };
+
+  const handleReporte = async () => {
+    if (!selected || !tipo || !descripcion) {
+      alert('Completa todos los campos.');
+      return;
+    }
+
+    try {
+      let urlImagen = '';
+      if (imagen) {
+        const storage = getStorage();
+        const storageRef = ref(storage, `incidentes/${selected.lat}_${selected.lng}.jpg`);
+        await uploadBytes(storageRef, imagen);
+        urlImagen = await getDownloadURL(storageRef);
       }
-      setReportingMode(false);
-    } else {
-      setSelectedLocation({
-        lat: event.latLng.lat(),
-        lng: event.latLng.lng(),
+
+      const docRef = await addDoc(collection(db, 'incidentes'), {
+        descripcion,
+        tipo,
+        lat: selected.lat,
+        lng: selected.lng,
+        imagen: urlImagen,
+        timestamp: serverTimestamp()
       });
+
+      setIncidentes(prev => [
+        ...prev,
+        { id: docRef.id, descripcion, tipo, lat: selected.lat, lng: selected.lng, imagen: urlImagen }
+      ]);
+
+      setDescripcion('');
+      setTipo('');
+      setImagen(null);
+      setSelected(null);
+      alert('Reporte enviado correctamente.');
+    } catch (error) {
+      console.error('Error al guardar reporte:', error);
+      alert('Error al guardar el reporte.');
     }
   };
 
-  // Función para alternar la visibilidad del tráfico
-  const handleToggleTraffic = () => {
-    setShowTraffic(!showTraffic);
-  };
-
-  // Verificar si el mapa está cargado
-  if (!isLoaded) return (
-    <div className="mapa-loading">
-      <div className="spinner"></div>
-      <p>Cargando mapa...</p>
-    </div>
-  );
-
-  // Función para manejar el ícono de "+" y mostrar los íconos
-  const handleToggleIcons = () => {
-    setShowIcons(!showIcons);
-  };
-
-  // Función para obtener íconos personalizados
-  const getIconUrl = (tipo) => {
-    switch (tipo.toLowerCase()) {
-      case 'accidente':
-        return 'https://img.icons8.com/color/48/car-crash.png';
-      case 'tráfico':
-        return 'https://img.icons8.com/color/48/traffic-jam.png';
-      case 'emergencia':
-        return 'https://img.icons8.com/color/48/ambulance.png';
-      case 'policía':
-        return 'https://img.icons8.com/color/48/police-badge.png';
-      default:
-        return 'https://img.icons8.com/color/48/marker.png';
-    }
-  };
+  if (!isLoaded) return <div>Cargando mapa...</div>;
 
   return (
-    <div className="estado-trafico-container">
-      <h1 className="mapa-titulo">Estado del Tráfico en Tiempo Real</h1>
-      
-      {/* Panel de controles */}
-      <div className="mapa-controles">
-        <button 
-          onClick={handleToggleTraffic}
-          className={`control-button ${showTraffic ? 'active' : ''}`}
-        >
-          {showTraffic ? 'Ocultar Tráfico' : 'Mostrar Tráfico'}
-        </button>
-      </div>
-
-      {/* Mapa interactivo */}
-      <div className="mapa-interactivo" style={{ height: '100%' }}>
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={defaultCenter}
-          zoom={13}
-          onClick={handleMapClick}
-          options={{
-            streetViewControl: false,
-            mapTypeControl: true,
-            fullscreenControl: false,
-            mapTypeId: 'satellite', // Mapa de satélite
-          }}
-        >
-          {showTraffic && <TrafficLayer />}
-          
-          {/* Mostrar marcadores de ubicación seleccionada */}
-          {selectedLocation && (
-            <>
-              <Marker position={selectedLocation} />
-              <InfoWindow
-                position={selectedLocation}
-                onCloseClick={() => setSelectedLocation(null)}
-              >
-                <div className="info-window">
-                  <h3>Ubicación seleccionada</h3>
-                  <p>Lat: {selectedLocation.lat.toFixed(4)}</p>
-                  <p>Lng: {selectedLocation.lng.toFixed(4)}</p>
-                </div>
-              </InfoWindow>
-            </>
-          )}
-
-          {/* Mostrar incidencias reportadas */}
-          {incidents.map((inc, index) => (
-            <Marker
-              key={index}
-              position={{ lat: inc.lat, lng: inc.lng }}
-              label={{
-                text: inc.tipo[0], // Primera letra del tipo de incidencia
-                color: "white",
-                fontSize: "16px",
-                fontWeight: "bold",
-              }}
-              icon={{
-                url: getIconUrl(inc.tipo),
-                scaledSize: new window.google.maps.Size(40, 40),
-              }}
-            />
-          ))}
-        </GoogleMap>
-      </div>
-
-      {/* Botón flotante de "+" para mostrar los íconos */}
-      <button 
-        style={{
-          position: 'fixed',
-          bottom: '80px',
-          right: '20px',
-          padding: '15px 20px',
-          backgroundColor: '#ff4d4d',
-          color: 'white',
-          fontSize: '24px',
-          border: 'none',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-        }}
-        onClick={handleToggleIcons}
+    <div>
+      <h2>Estado de Tráfico</h2>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={center}
+        zoom={13}
+        onLoad={map => setMap(map)}
+        onClick={onMapClick}
+        options={{ mapTypeId: 'satellite', streetViewControl: false }}
       >
-        +
-      </button>
+        {incidentes.map((incidente, index) => (
+          <Marker
+            key={index}
+            position={{ lat: incidente.lat, lng: incidente.lng }}
+            icon={{
+              url: getIconUrl(incidente.tipo),
+              scaledSize: new window.google.maps.Size(40, 40)
+            }}
+            onClick={() => setSelected(incidente)}
+          />
+        ))}
 
-      {/* Íconos para seleccionar el tipo de incidencia */}
-      <div style={{
-        position: 'fixed',
-        bottom: '140px',
-        right: '20px',
-        display: showIcons ? 'block' : 'none',
-        backgroundColor: '#fff',
-        borderRadius: '12px',
-        boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-        padding: '10px',
-      }}>
-        <button onClick={() => setIncidents((prev) => [...prev, { lat: selectedLocation.lat, lng: selectedLocation.lng, tipo: 'Accidente' }])}>
-          🚗 Accidente
-        </button>
-        <button onClick={() => setIncidents((prev) => [...prev, { lat: selectedLocation.lat, lng: selectedLocation.lng, tipo: 'Tráfico' }])}>
-          🚦 Tráfico
-        </button>
-        <button onClick={() => setIncidents((prev) => [...prev, { lat: selectedLocation.lat, lng: selectedLocation.lng, tipo: 'Emergencia' }])}>
-          🚑 Emergencia
-        </button>
-        <button onClick={() => setIncidents((prev) => [...prev, { lat: selectedLocation.lat, lng: selectedLocation.lng, tipo: 'Policía' }])}>
-          🚓 Policía
-        </button>
-      </div>
+        {selected && !selected.id && (
+          <InfoWindow
+            position={{ lat: selected.lat, lng: selected.lng }}
+            onCloseClick={() => setSelected(null)}
+          >
+            <div style={{ maxWidth: '250px' }}>
+              <h3>Reportar Incidente</h3>
+              <select value={tipo} onChange={e => setTipo(e.target.value)}>
+                <option value="">Seleccionar tipo</option>
+                <option value="accidente">Accidente</option>
+                <option value="tráfico">Tráfico</option>
+                <option value="emergencia">Emergencia</option>
+                <option value="policía">Policía</option>
+              </select>
+              <br />
+              <textarea
+                placeholder="Descripción del incidente"
+                value={descripcion}
+                onChange={e => setDescripcion(e.target.value)}
+              />
+              <br />
+              <input type="file" onChange={handleImagenChange} />
+              <br />
+              <button onClick={handleReporte}>Enviar</button>
+            </div>
+          </InfoWindow>
+        )}
+
+        {selected && selected.id && (
+          <InfoWindow
+            position={{ lat: selected.lat, lng: selected.lng }}
+            onCloseClick={() => setSelected(null)}
+          >
+            <div>
+              <h4>{selected.tipo}</h4>
+              <p>{selected.descripcion}</p>
+              {selected.imagen && <img src={selected.imagen} alt="Incidente" style={{ width: '100%' }} />}
+            </div>
+          </InfoWindow>
+        )}
+      </GoogleMap>
     </div>
   );
 };
