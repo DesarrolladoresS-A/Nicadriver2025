@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../database/firebaseconfig";
 import { collection, getDocs } from "firebase/firestore";
-
 import ModalRegistroReportes from "../components/reportes/ModalRegistroReportes";
-import ModalEdicionReportes from "../components/reportes/ModalEdicionReportes";
-import ModalEliminarReportes from "../components/reportes/ModalEliminacionReportes";
 import TablaReportes from "../components/reportes/TablaReportes";
+import Paginacion from "../components/ordenamiento/Paginacion";
 
 const Reportes = () => {
   const [reportes, setReportes] = useState([]);
   const [modalRegistro, setModalRegistro] = useState(false);
-  const [modalEditar, setModalEditar] = useState(false);
-  const [modalEliminar, setModalEliminar] = useState(false);
-  const [reporteSeleccionadoEditar, setReporteSeleccionadoEditar] = useState(null);
-  const [reporteSeleccionadoEliminar, setReporteSeleccionadoEliminar] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   const obtenerReportes = async () => {
     try {
@@ -28,41 +24,35 @@ const Reportes = () => {
     obtenerReportes();
   }, []);
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = reportes.slice(indexOfFirstItem, indexOfLastItem);
+
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">Gestión de reportes</h1>
+    <div className="reportes-container">
+      <div className="reportes-header">
+        <h1>Gestión de reportes</h1>
+        <button 
+          className="btn-registro"
+          onClick={() => setModalRegistro(true)}
+        >
+          Registrar Reporte
+        </button>
+      </div>
 
-      <button className="boton-flotante" onClick={() => setModalRegistro(true)}>
-        Registrar Reporte
-      </button>
-
-      <TablaReportes
-        reportes={reportes}
-        setModalEditar={setModalEditar}
-        setReporteSeleccionado={setReporteSeleccionadoEditar}
-        setModalEliminar={setModalEliminar}
-        setReporteSeleccionadoEliminar={setReporteSeleccionadoEliminar}
-      />
+      <div className="tabla-paginacion-container">
+        <TablaReportes reportes={currentItems} />
+        <Paginacion
+          totalItems={reportes.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+        />
+      </div>
 
       {modalRegistro && (
         <ModalRegistroReportes
           setModalRegistro={setModalRegistro}
-          actualizar={obtenerReportes}
-        />
-      )}
-
-      {modalEditar && reporteSeleccionadoEditar && (
-        <ModalEdicionReportes
-          setModalEditar={setModalEditar}
-          reporte={reporteSeleccionadoEditar}
-          actualizar={obtenerReportes}
-        />
-      )}
-
-      {modalEliminar && reporteSeleccionadoEliminar && (
-        <ModalEliminarReportes
-          setModalEliminar={setModalEliminar}
-          reporte={reporteSeleccionadoEliminar}
           actualizar={obtenerReportes}
         />
       )}

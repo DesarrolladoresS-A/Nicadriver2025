@@ -1,6 +1,5 @@
 import React from "react";
-import Pagination from "react-bootstrap/Pagination";
-import { Row, Col } from "react-bootstrap";
+import { Pagination as BootstrapPagination } from "react-bootstrap";
 
 const Paginacion = ({
   totalItems,
@@ -16,58 +15,37 @@ const Paginacion = ({
     }
   };
 
-  // Generar los ítems de paginación
-  const paginationItems = [];
-  const maxPagesToShow = 10; // máximo de páginas visibles a la vez
-  let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-  let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-
-  if (endPage - startPage < maxPagesToShow - 1) {
-    startPage = Math.max(1, endPage - maxPagesToShow + 1);
-  }
-
-  for (let page = startPage; page <= endPage; page++) {
-    paginationItems.push(
-      <Pagination.Item
-        key={page}
-        active={page === currentPage}
-        onClick={() => handlePageChange(page)}
-      >
-        {page}
-      </Pagination.Item>
-    );
-  }
-
   return (
-    <Row className="mt-3">
-      <Col className="d-flex justify-content-center">
-        <Pagination>
-          <Pagination.First
-            onClick={() => handlePageChange(1)}
-            disabled={currentPage === 1}
-          />
-          <Pagination.Prev
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          />
+    <BootstrapPagination className="mt-0">
+      <BootstrapPagination.First 
+        onClick={() => handlePageChange(1)} 
+        disabled={currentPage === 1}
+      />
+      <BootstrapPagination.Prev 
+        onClick={() => handlePageChange(currentPage - 1)} 
+        disabled={currentPage === 1}
+      />
 
-          {startPage > 1 && <Pagination.Ellipsis disabled />}
-          {paginationItems}
-          {endPage < totalPages && <Pagination.Ellipsis disabled />}
+      {Array.from({ length: totalPages }, (_, i) => (
+        <BootstrapPagination.Item
+          key={i + 1}
+          active={i + 1 === currentPage}
+          onClick={() => handlePageChange(i + 1)}
+        >
+          {i + 1}
+        </BootstrapPagination.Item>
+      ))}
 
-          <Pagination.Next
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          />
-          <Pagination.Last
-            onClick={() => handlePageChange(totalPages)}
-            disabled={currentPage === totalPages}
-          />
-        </Pagination>
-      </Col>
-    </Row>
+      <BootstrapPagination.Next 
+        onClick={() => handlePageChange(currentPage + 1)} 
+        disabled={currentPage === totalPages}
+      />
+      <BootstrapPagination.Last 
+        onClick={() => handlePageChange(totalPages)} 
+        disabled={currentPage === totalPages}
+      />
+    </BootstrapPagination>
   );
 };
 
 export default Paginacion;
- 
