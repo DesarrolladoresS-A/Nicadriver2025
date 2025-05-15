@@ -27,7 +27,7 @@ const Nosotros = () => {
             </p>
           </div>
           <img 
-            src="/imagen/Carretera4.jpg" 
+            src="/imagen/Nosotros.jpg" 
             alt="Equipo NicaDriver" 
             className="imagen-seccion"
           />
