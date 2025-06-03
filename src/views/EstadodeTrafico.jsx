@@ -6,7 +6,12 @@ import {
   Marker,
   InfoWindow,
 } from '@react-google-maps/api';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  onSnapshot,
+} from 'firebase/firestore';
 import { db } from '../database/firebaseconfig';
 
 const containerStyle = {
@@ -18,6 +23,13 @@ const containerStyle = {
 const defaultCenter = {
   lat: 12.1364,
   lng: -86.2514,
+};
+
+const iconMap = {
+  Accidente: 'https://img.icons8.com/color/48/car-crash.png',
+  Tráfico: 'https://img.icons8.com/color/48/traffic-jam.png',
+  Emergencia: 'https://img.icons8.com/color/48/ambulance.png',
+  Policía: 'https://img.icons8.com/color/48/policeman-male.png',
 };
 
 const EstadoTrafico = () => {
@@ -33,8 +45,12 @@ const EstadoTrafico = () => {
 
   const [tipo, setTipo] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [imagenBase64, setImagenBase64] = useState(null);
+  const [imagen, setImagen] = useState(null);
 
+  const [reportes, setReportes] = useState([]);
+  const [selectedReporte, setSelectedReporte] = useState(null);
+
+  // Obtener ubicación actual
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
@@ -45,6 +61,16 @@ const EstadoTrafico = () => {
         setUserLocation(current);
       });
     }
+  }, []);
+
+  // Cargar reportes en tiempo real
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'incidentes'), (snapshot) => {
+      const datos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setReportes(datos);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleMapLoad = (map) => {
@@ -58,38 +84,33 @@ const EstadoTrafico = () => {
     });
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagenBase64(reader.result); // base64
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleGuardarReporte = async () => {
-    if (!tipo || !descripcion || !selectedLocation || !imagenBase64) {
+    if (!tipo || !descripcion || !selectedLocation || !imagen) {
       alert('Completa todos los campos y selecciona una ubicación en el mapa.');
       return;
     }
 
     try {
-      await addDoc(collection(db, 'incidentes'), {
-        tipo,
-        descripcion,
-        imagenBase64, // aquí guardamos la imagen en base64
-        lat: selectedLocation.lat,
-        lng: selectedLocation.lng,
-        fecha: serverTimestamp(),
-      });
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result;
 
-      alert('Reporte guardado exitosamente');
-      setTipo('');
-      setDescripcion('');
-      setImagenBase64(null);
-      setSelectedLocation(null);
+        await addDoc(collection(db, 'incidentes'), {
+          tipo,
+          descripcion,
+          imagenBase64: base64Image,
+          lat: selectedLocation.lat,
+          lng: selectedLocation.lng,
+          fecha: serverTimestamp(),
+        });
+
+        alert('Reporte guardado exitosamente');
+        setTipo('');
+        setDescripcion('');
+        setImagen(null);
+        setSelectedLocation(null);
+      };
+      reader.readAsDataURL(imagen);
     } catch (error) {
       console.error('Error guardando el reporte:', error);
       alert('Hubo un error al guardar el reporte.');
@@ -118,7 +139,7 @@ const EstadoTrafico = () => {
           rows={3}
           style={styles.input}
         />
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+        <input type="file" accept="image/*" onChange={(e) => setImagen(e.target.files[0])} />
         <button onClick={handleGuardarReporte} style={styles.boton}>
           Guardar Reporte
         </button>
@@ -136,6 +157,8 @@ const EstadoTrafico = () => {
         >
           {showTraffic && <TrafficLayer />}
           {userLocation && <Marker position={userLocation} label="Tú" />}
+
+          {/* Nueva ubicación seleccionada */}
           {selectedLocation && (
             <>
               <Marker position={selectedLocation} />
@@ -150,6 +173,35 @@ const EstadoTrafico = () => {
                 </div>
               </InfoWindow>
             </>
+          )}
+
+          {/* Reportes guardados */}
+          {reportes.map((reporte) => (
+            <Marker
+              key={reporte.id}
+              position={{ lat: reporte.lat, lng: reporte.lng }}
+              icon={iconMap[reporte.tipo] || undefined}
+              onClick={() => setSelectedReporte(reporte)}
+            />
+          ))}
+
+          {selectedReporte && (
+            <InfoWindow
+              position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
+              onCloseClick={() => setSelectedReporte(null)}
+            >
+              <div style={{ maxWidth: '200px' }}>
+                <h4>{selectedReporte.tipo}</h4>
+                <p>{selectedReporte.descripcion}</p>
+                {selectedReporte.imagenBase64 && (
+                  <img
+                    src={selectedReporte.imagenBase64}
+                    alt="Incidente"
+                    style={{ width: '100%', borderRadius: '5px' }}
+                  />
+                )}
+              </div>
+            </InfoWindow>
           )}
         </GoogleMap>
       </div>
