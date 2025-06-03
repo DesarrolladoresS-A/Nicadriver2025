@@ -1,201 +1,179 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   GoogleMap,
   useJsApiLoader,
+  TrafficLayer,
   Marker,
-  InfoWindow
+  InfoWindow,
 } from '@react-google-maps/api';
-import {
-  collection,
-  getDocs,
-  addDoc,
-  serverTimestamp
-} from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../database/firebaseconfig';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-
-const libraries = ['places']; // <-- evitar que se re-cargue
 
 const containerStyle = {
-  width: '150%',
-  height: '600px'
+  width: '100%',
+  height: '600px',
+  borderRadius: '8px',
 };
 
-const center = {
+const defaultCenter = {
   lat: 12.1364,
-  lng: -86.2514
+  lng: -86.2514,
 };
 
-const getIconUrl = (tipo) => {
-  if (!tipo || typeof tipo !== 'string') {
-    return 'https://img.icons8.com/color/48/marker.png';
-  }
-
-  const lowerTipo = tipo.toLowerCase();
-
-  switch (lowerTipo) {
-    case 'accidente':
-      return 'https://img.icons8.com/color/48/car-crash.png';
-    case 'tráfico':
-    case 'trafico':
-      return 'https://img.icons8.com/color/48/traffic-jam.png';
-    case 'emergencia':
-      return 'https://img.icons8.com/color/48/ambulance.png';
-    case 'policía':
-    case 'policia':
-      return 'https://img.icons8.com/color/48/policeman-male.png';
-    default:
-      return 'https://img.icons8.com/color/48/marker.png';
-  }
-};
-
-const EstadodeTrafico = () => {
+const EstadoTrafico = () => {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: libraries
+    libraries: ['places'],
   });
 
-  const [map, setMap] = useState(null);
-  const [incidentes, setIncidentes] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [descripcion, setDescripcion] = useState('');
+  const mapRef = useRef(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [showTraffic, setShowTraffic] = useState(true);
+
   const [tipo, setTipo] = useState('');
-  const [imagen, setImagen] = useState(null);
+  const [descripcion, setDescripcion] = useState('');
+  const [imagenBase64, setImagenBase64] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const querySnapshot = await getDocs(collection(db, 'incidentes'));
-      const data = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setIncidentes(data);
-    };
-
-    fetchData();
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const current = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setUserLocation(current);
+      });
+    }
   }, []);
 
-  const onMapClick = useCallback((event) => {
-    setSelected({
+  const handleMapLoad = (map) => {
+    mapRef.current = map;
+  };
+
+  const handleMapClick = (event) => {
+    setSelectedLocation({
       lat: event.latLng.lat(),
-      lng: event.latLng.lng()
+      lng: event.latLng.lng(),
     });
-  }, []);
+  };
 
-  const handleImagenChange = (e) => {
-    if (e.target.files[0]) {
-      setImagen(e.target.files[0]);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagenBase64(reader.result); // base64
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleReporte = async () => {
-    if (!selected || !tipo || !descripcion) {
-      alert('Completa todos los campos.');
+  const handleGuardarReporte = async () => {
+    if (!tipo || !descripcion || !selectedLocation || !imagenBase64) {
+      alert('Completa todos los campos y selecciona una ubicación en el mapa.');
       return;
     }
 
     try {
-      let urlImagen = '';
-      if (imagen) {
-        const storage = getStorage();
-        const storageRef = ref(storage, `incidentes/${selected.lat}_${selected.lng}.jpg`);
-        await uploadBytes(storageRef, imagen);
-        urlImagen = await getDownloadURL(storageRef);
-      }
-
-      const docRef = await addDoc(collection(db, 'incidentes'), {
-        descripcion,
+      await addDoc(collection(db, 'incidentes'), {
         tipo,
-        lat: selected.lat,
-        lng: selected.lng,
-        imagen: urlImagen,
-        timestamp: serverTimestamp()
+        descripcion,
+        imagenBase64, // aquí guardamos la imagen en base64
+        lat: selectedLocation.lat,
+        lng: selectedLocation.lng,
+        fecha: serverTimestamp(),
       });
 
-      setIncidentes(prev => [
-        ...prev,
-        { id: docRef.id, descripcion, tipo, lat: selected.lat, lng: selected.lng, imagen: urlImagen }
-      ]);
-
-      setDescripcion('');
+      alert('Reporte guardado exitosamente');
       setTipo('');
-      setImagen(null);
-      setSelected(null);
-      alert('Reporte enviado correctamente.');
+      setDescripcion('');
+      setImagenBase64(null);
+      setSelectedLocation(null);
     } catch (error) {
-      console.error('Error al guardar reporte:', error);
-      alert('Error al guardar el reporte.');
+      console.error('Error guardando el reporte:', error);
+      alert('Hubo un error al guardar el reporte.');
     }
   };
 
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
   return (
-    <div>
-      <h2>Estado de Tráfico</h2>
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={13}
-        onLoad={map => setMap(map)}
-        onClick={onMapClick}
-        options={{ mapTypeId: 'satellite', streetViewControl: false }}
-      >
-        {incidentes.map((incidente, index) => (
-          <Marker
-            key={index}
-            position={{ lat: incidente.lat, lng: incidente.lng }}
-            icon={{
-              url: getIconUrl(incidente.tipo),
-              scaledSize: new window.google.maps.Size(40, 40)
-            }}
-            onClick={() => setSelected(incidente)}
-          />
-        ))}
+    <div style={{ padding: '20px' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Estado del Tráfico</h2>
 
-        {selected && !selected.id && (
-          <InfoWindow
-            position={{ lat: selected.lat, lng: selected.lng }}
-            onCloseClick={() => setSelected(null)}
-          >
-            <div style={{ maxWidth: '250px' }}>
-              <h3>Reportar Incidente</h3>
-              <select value={tipo} onChange={e => setTipo(e.target.value)}>
-                <option value="">Seleccionar tipo</option>
-                <option value="accidente">Accidente</option>
-                <option value="tráfico">Tráfico</option>
-                <option value="emergencia">Emergencia</option>
-                <option value="policía">Policía</option>
-              </select>
-              <br />
-              <textarea
-                placeholder="Descripción del incidente"
-                value={descripcion}
-                onChange={e => setDescripcion(e.target.value)}
-              />
-              <br />
-              <input type="file" onChange={handleImagenChange} />
-              <br />
-              <button onClick={handleReporte}>Enviar</button>
-            </div>
-          </InfoWindow>
-        )}
+      {/* Formulario */}
+      <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={styles.input}>
+          <option value="">Selecciona el tipo de incidente</option>
+          <option value="Accidente">Accidente</option>
+          <option value="Tráfico">Tráfico</option>
+          <option value="Emergencia">Emergencia</option>
+          <option value="Policía">Policía</option>
+        </select>
+        <textarea
+          placeholder="Descripción del incidente"
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          rows={3}
+          style={styles.input}
+        />
+        <input type="file" accept="image/*" onChange={handleImageChange} />
+        <button onClick={handleGuardarReporte} style={styles.boton}>
+          Guardar Reporte
+        </button>
+      </div>
 
-        {selected && selected.id && (
-          <InfoWindow
-            position={{ lat: selected.lat, lng: selected.lng }}
-            onCloseClick={() => setSelected(null)}
-          >
-            <div>
-              <h4>{selected.tipo}</h4>
-              <p>{selected.descripcion}</p>
-              {selected.imagen && <img src={selected.imagen} alt="Incidente" style={{ width: '100%' }} />}
-            </div>
-          </InfoWindow>
-        )}
-      </GoogleMap>
+      {/* Mapa */}
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={userLocation || defaultCenter}
+          zoom={13}
+          onLoad={handleMapLoad}
+          onClick={handleMapClick}
+          mapTypeId="roadmap"
+        >
+          {showTraffic && <TrafficLayer />}
+          {userLocation && <Marker position={userLocation} label="Tú" />}
+          {selectedLocation && (
+            <>
+              <Marker position={selectedLocation} />
+              <InfoWindow
+                position={selectedLocation}
+                onCloseClick={() => setSelectedLocation(null)}
+              >
+                <div>
+                  <h4>Ubicación Seleccionada</h4>
+                  <p>Lat: {selectedLocation.lat.toFixed(4)}</p>
+                  <p>Lng: {selectedLocation.lng.toFixed(4)}</p>
+                </div>
+              </InfoWindow>
+            </>
+          )}
+        </GoogleMap>
+      </div>
     </div>
   );
 };
 
-export default EstadodeTrafico;
+const styles = {
+  input: {
+    padding: '10px',
+    fontSize: '16px',
+    width: '100%',
+    borderRadius: '5px',
+    border: '1px solid #ccc',
+  },
+  boton: {
+    padding: '10px 15px',
+    backgroundColor: '#28a745',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '16px',
+  },
+};
+
+export default EstadoTrafico;
