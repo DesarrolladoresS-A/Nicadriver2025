@@ -10,6 +10,7 @@ import './App.css';
 import EstadodeTrafico from "./views/EstadodeTrafico";
 import Reportes from "./views/Reportes";  {/* Asegúrate de importar el componente Reportes */}
 import Contacto from "./views/Contacto";
+import Catalogo from "./views/Catalogorepor";
  
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
             <Route path="/estadodeTrafico" element={<ProtectedRoute element={<EstadodeTrafico />} />} />
             <Route path="/reportes" element={<ProtectedRoute element={<Reportes />} />} />  {/* Ruta para el componente Reportes */}
             <Route path="/contacto" element={<ProtectedRoute element={<Contacto />} />} />
+            <Route path="/catalogo" element={<ProtectedRoute element={<Catalogo />} />} />
           </Routes>
         </main>
       </Router>
