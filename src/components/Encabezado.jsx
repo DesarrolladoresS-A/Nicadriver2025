@@ -90,12 +90,13 @@ const Encabezado = () => {
                     <strong>Reportes</strong>
                   </Nav.Link>
 
+                  
                   <Nav.Link
                     onClick={() => handleNavigate("/catalogo")}
-                    className={`nav-link ${location.pathname === "/reportes" ? "active" : ""}`}
+                    className={`nav-link ${location.pathname === "/catalogo" ? "active" : ""}`}
                   >
-                    <i className="bi-file-earmark-text-fill me-2"></i>
-                    <strong>Catalogo</strong>
+                   <i className="bi-collection-fill me-2"></i>
+                   <strong>Catálogo</strong>
                   </Nav.Link>
                   
                 </>
