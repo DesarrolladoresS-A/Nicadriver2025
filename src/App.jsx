@@ -5,13 +5,12 @@ import Login from "./views/Login";
 import Encabezado from "./components/Encabezado";
 import Inicio from "./views/Inicio";
 import Nosotros from "./views/Nosotros";
-
 import './App.css';
 import EstadodeTrafico from "./views/EstadodeTrafico";
-import Reportes from "./views/Reportes";  {/* Asegúrate de importar el componente Reportes */}
+import Reportes from "./views/Reportes";
 import Contacto from "./views/Contacto";
 import Catalogo from "./views/Catalogorepor";
- 
+
 
 function App() {
   return (
@@ -24,9 +23,11 @@ function App() {
             <Route path="/inicio" element={<ProtectedRoute element={<Inicio />} />} />
             <Route path="/nosotros" element={<ProtectedRoute element={<Nosotros />} />} />
             <Route path="/estadodeTrafico" element={<ProtectedRoute element={<EstadodeTrafico />} />} />
-            <Route path="/reportes" element={<ProtectedRoute element={<Reportes />} />} />  {/* Ruta para el componente Reportes */}
+            <Route path="/reportes" element={<ProtectedRoute element={<Reportes />} />} />
             <Route path="/contacto" element={<ProtectedRoute element={<Contacto />} />} />
             <Route path="/catalogo" element={<ProtectedRoute element={<Catalogo />} />} />
+
+            {/* Eliminé la ruta duplicada /reporte */}
           </Routes>
         </main>
       </Router>
@@ -35,4 +36,3 @@ function App() {
 }
 
 export default App;
-

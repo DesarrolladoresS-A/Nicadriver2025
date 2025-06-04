@@ -1279,3 +1279,24 @@ body {
     display: none;
   }
 }
+
+.mision-vision-container {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+  padding: 2rem;
+  gap: 2rem;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+.mision, .vision {
+  flex: 1;
+  min-width: 300px;
+  padding: 2rem;
+  text-align: center;
+  background-color: #f0f0f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
