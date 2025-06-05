@@ -7,6 +7,7 @@ import ModalEliminarReportes from "../components/reportes/ModalEliminacionReport
 import TablaReportes from "../components/reportes/TablaReportes";
 import Paginacion from "../components/ordenamiento/Paginacion";
 import { FaSearch } from "react-icons/fa";
+import "../styles/Reporte.css"
 
 const Reportes = () => {
   const [reportes, setReportes] = useState([]);
