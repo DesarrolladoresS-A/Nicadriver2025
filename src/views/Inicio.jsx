@@ -22,7 +22,7 @@ const customIcon = new L.Icon({
 const Inicio = () => {
   const [reportes, setReportes] = useState([]);
   const [currentDocPage, setCurrentDocPage] = useState(1);
-  const [docsPerPage] = useState(4); // Mostrar 4 reportes por página
+  const [docsPerPage] = useState(4);
   const [userPosition, setUserPosition] = useState({ lat: 12.1364, lng: -86.2514 });
   const [clima, setClima] = useState(null);
   const [loading, setLoading] = useState(true);

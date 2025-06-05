@@ -6,8 +6,8 @@ import ModalEdicionReportes from "../components/reportes/ModalEdicionReportes";
 import ModalEliminarReportes from "../components/reportes/ModalEliminacionReportes";
 import TablaReportes from "../components/reportes/TablaReportes";
 import Paginacion from "../components/ordenamiento/Paginacion";
-import { FaSearch } from "react-icons/fa";
-import "../styles/Reporte.css"
+import { FaSearch, FaPlus, FaFilter } from "react-icons/fa";
+import "../styles/Reporte.css";
 
 const Reportes = () => {
   const [reportes, setReportes] = useState([]);
@@ -20,6 +20,7 @@ const Reportes = () => {
   const [itemsPerPage] = useState(5);
   const [errorEliminacion, setErrorEliminacion] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const [filtroActivo, setFiltroActivo] = useState(false);
 
   const obtenerReportes = async () => {
     try {
@@ -40,6 +41,7 @@ const Reportes = () => {
   useEffect(() => {
     if (busqueda.trim() === "") {
       setReportesFiltrados(reportes);
+      setFiltroActivo(false);
     } else {
       const resultados = reportes.filter((reporte) => {
         return (
@@ -49,9 +51,15 @@ const Reportes = () => {
         );
       });
       setReportesFiltrados(resultados);
+      setFiltroActivo(true);
     }
     setCurrentPage(1);
   }, [busqueda, reportes]);
+
+  const limpiarFiltros = () => {
+    setBusqueda("");
+    setFiltroActivo(false);
+  };
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -59,68 +67,75 @@ const Reportes = () => {
 
   return (
     <div className="reportes-container">
-      <div className="reportes-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-        <h1 style={{ margin: 0 }}>Gestión de reportes</h1>
+      {/* Header con título y controles */}
+      <div className="reportes-header">
+        <div className="header-title">
+          <h1>Gestión de Reportes</h1>
+          <p className="subtitle">Administra y revisa todos los reportes de incidentes</p>
+        </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ position: 'relative' }}>
-            <FaSearch style={{ 
-              position: 'absolute', 
-              left: '15px', 
-              top: '50%', 
-              transform: 'translateY(-50%)', 
-              color: '#666',
-              zIndex: 1
-            }} />
+        <div className="header-controls">
+          {/* Barra de búsqueda */}
+          <div className="search-container">
+            <div className="search-icon">
+              <FaSearch />
+            </div>
             <input
               type="text"
               placeholder="Buscar reportes..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              style={{
-                padding: '10px 15px 10px 40px',
-                borderRadius: '25px',
-                border: '1px solid #ddd',
-                width: '300px',
-                outline: 'none',
-                transition: 'all 0.3s',
-                fontSize: '14px',
-                position: 'relative'
-              }}
+              className="search-input"
             />
+            {filtroActivo && (
+              <button 
+                onClick={limpiarFiltros}
+                className="clear-filter-btn"
+              >
+                Limpiar
+              </button>
+            )}
           </div>
           
+          {/* Botón de filtros (puedes implementar funcionalidad después) */}
+          <button className="filter-btn">
+            <FaFilter /> Filtros
+          </button>
+          
+          {/* Botón de registro */}
           <button 
             className="btn-registro"
             onClick={() => setModalRegistro(true)}
-            style={{
-              backgroundColor: '#FF7E00',
-              color: 'white',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              transition: 'background-color 0.3s',
-              whiteSpace: 'nowrap'
-            }}
           >
-            Registrar Reporte
+            <FaPlus /> Nuevo Reporte
           </button>
         </div>
       </div>
 
+      {/* Resumen de estadísticas */}
+      <div className="stats-container">
+        <div className="stat-card">
+          <h3>Total Reportes</h3>
+          <p>{reportes.length}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Mostrando</h3>
+          <p>{reportesFiltrados.length}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Página Actual</h3>
+          <p>{currentPage} de {Math.ceil(reportesFiltrados.length / itemsPerPage)}</p>
+        </div>
+      </div>
+
+      {/* Mensaje de error */}
       {errorEliminacion && (
-        <div className="error-message" style={{ 
-          backgroundColor: '#ffebee',
-          padding: '10px',
-          borderRadius: '4px',
-          margin: '10px 0',
-          color: '#f44336'
-        }}>
+        <div className="error-message">
           {errorEliminacion}
         </div>
       )}
 
+      {/* Tabla y paginación */}
       <div className="tabla-paginacion-container">
         <TablaReportes 
           reportes={currentItems}
@@ -128,14 +143,23 @@ const Reportes = () => {
           setModalEliminar={setModalEliminar}
           setReporteSeleccionado={setReporteSeleccionado}
         />
-        <Paginacion
-          totalItems={reportesFiltrados.length}
-          itemsPerPage={itemsPerPage}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-        />
+        
+        {reportesFiltrados.length > 0 ? (
+          <Paginacion
+            totalItems={reportesFiltrados.length}
+            itemsPerPage={itemsPerPage}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+        ) : (
+          <div className="no-results">
+            <p>No se encontraron reportes con los criterios de búsqueda</p>
+            <button onClick={limpiarFiltros}>Limpiar filtros</button>
+          </div>
+        )}
       </div>
 
+      {/* Modales */}
       {modalRegistro && (
         <ModalRegistroReportes
           setModalRegistro={setModalRegistro}

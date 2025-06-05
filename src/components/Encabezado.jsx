@@ -90,6 +90,7 @@ const Encabezado = () => {
                     onClick={handleLogout}
                     className="nav-link"
                   >
+                    
                     <i className="bi-box-arrow-right me-2"></i>
                     <strong>Cerrar Sesión</strong>
                   </Nav.Link>

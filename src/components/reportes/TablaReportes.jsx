@@ -61,53 +61,70 @@ const TablaReportes = ({
   };
 
   return (
-    <div className="report-table-container overflow-x-auto p-4 bg-white rounded shadow border border-gray-300">
-      <table className="table-auto min-w-full border border-gray-300">
-        <thead className="bg-gray-100 text-gray-800">
+    <div className="tabla-reportes-container">
+      <div className="tabla-reportes-header">
+        <h2>Lista de Reportes</h2>
+        <p>Administra los reportes de incidentes</p>
+        <div className="tabla-reportes-actions">
+          <button className="btn-pdf" onClick={() => generarPDF(reportes[0])}>
+            <i className="bi bi-file-earmark-pdf-fill"></i>
+            PDF
+          </button>
+          <button className="btn-export">
+            <i className="bi bi-file-earmark-excel-fill"></i>
+            Exportar
+          </button>
+        </div>
+      </div>
+
+      <table className="tabla-reportes">
+        <thead>
           <tr>
-            <th className="px-4 py-2 border">Título</th>
-            <th className="px-4 py-2 border">Ubicación</th>
-            <th className="px-4 py-2 border">Descripción</th>
-            <th className="px-4 py-2 border">Fecha y Hora</th>
-            <th className="px-4 py-2 border">Acciones</th>
+            <th>Título</th>
+            <th>Ubicación</th>
+            <th>Descripción</th>
+            <th>Fecha y Hora</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {reportes.map((reporte) => (
-            <tr key={reporte.id} className="text-center hover:bg-gray-50">
-              <td className="px-4 py-2 border">{reporte.titulo}</td>
-              <td className="px-4 py-2 border">{reporte.ubicacion}</td>
-              <td className="px-4 py-2 border">{reporte.descripcion}</td>
-              <td className="px-4 py-2 border">
-                {formatearFechaHora(reporte.fechaHora)}
-              </td>
-              <td className="px-4 py-2 border">
-                <div className="flex justify-center gap-3">
-                  <button
-                    className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center"
-                    onClick={() => {
-                      setReporteSeleccionado(reporte);
-                      setModalEditar(true);
-                    }}
-                  >
-                    <i className="bi bi-pencil-fill"></i>
-                  </button>
-                 <button
-                  className="w-10 h-10 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center"onClick={() => {
-                  console.log("Preparando para eliminar reporte:", reporte.id);
-                  setReporteSeleccionado(reporte);
-                  setModalEliminar(true);
-                    }}
-                  >
+            <tr key={reporte.id}>
+              <td>{reporte.titulo}</td>
+              <td>{reporte.ubicacion}</td>
+              <td>{reporte.descripcion}</td>
+              <td>{formatearFechaHora(reporte.fechaHora)}</td>
+              <td className="acciones">
+                <button
+                  className="btn-accion btn-editar"
+                  onClick={() => {
+                    setReporteSeleccionado(reporte);
+                    setModalEditar(true);
+                  }}
+                  title="Editar"
+                >
+                  <i className="bi bi-pencil-fill"></i>
+                </button>
+                <button
+                  className="btn-accion btn-eliminar"
+                  onClick={() => {
+                    console.log("Preparando para eliminar reporte:", reporte.id);
+                    setReporteSeleccionado(reporte);
+                    setModalEliminar(true);
+                  }}
+                  title="Eliminar"
+                >
                   <i className="bi bi-trash-fill"></i>
-                  </button>
-                  <button
-                    className="w-10 h-10 rounded-full bg-green-100 text-green-600 hover:bg-green-200 flex items-center justify-center"
-                    onClick={() => generarPDF(reporte)}
-                  >
-                    <i className="bi bi-file-earmark-pdf-fill"></i>
-                  </button>
-                </div>
+                </button>
+                <button
+                  className="btn-accion btn-ver"
+                  onClick={() => {
+                    // Implementar vista detallada
+                  }}
+                  title="Ver"
+                >
+                  <i className="bi bi-eye-fill"></i>
+                </button>
               </td>
             </tr>
           ))}
