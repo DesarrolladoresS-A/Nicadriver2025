@@ -13,6 +13,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../database/firebaseconfig';
+import '../styles/EstadodeTrafico.css';
 
 const containerStyle = {
   width: '100%',

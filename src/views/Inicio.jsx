@@ -7,7 +7,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import jsPDF from 'jspdf';
 import Paginacion from '../components/ordenamiento/Paginacion';
 import GraficosClima from '../components/GraficoClima';
-import '../App.css';
+import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const { BaseLayer, Overlay } = LayersControl;
@@ -26,11 +26,13 @@ const Inicio = () => {
   const [userPosition, setUserPosition] = useState({ lat: 12.1364, lng: -86.2514 });
   const [clima, setClima] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const images = [
     "/imagen/Carretera1.jpeg",
-    "/imagen/Carretera2.jpg",
-    "/imagen/Carretera3.jpg",
+    "/imagen/Calle-1.jpg",
+    "/imagen/calle-2.jpeg",
+    "/imagen/calle-3.webp",
   ];
 
   useEffect(() => {
@@ -44,6 +46,18 @@ const Inicio = () => {
 
     fetchReportes();
   }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 4000); // Cambiar cada 4 segundos
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleIndicatorClick = (index) => {
+    setCurrentImageIndex(index);
+  };
 
   const indexOfLastDoc = currentDocPage * docsPerPage;
   const indexOfFirstDoc = indexOfLastDoc - docsPerPage;
@@ -75,17 +89,38 @@ const Inicio = () => {
       </div>
 
       <div className="inicio-seccion">
-        <img src={images[0]} alt="Imagen descriptiva" className="inicio-img" />
+        <div className="carousel-container">
+          <img 
+            src={images[currentImageIndex]} 
+            alt="Imagen descriptiva" 
+            className="inicio-img"
+          />
+          <div className="carousel-indicators">
+            {images.map((_, index) => (
+              <div
+                key={index}
+                className={`carousel-indicator ${currentImageIndex === index ? 'active' : ''}`}
+                onClick={() => handleIndicatorClick(index)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="mision-vision-container">
         <div className="mision">
-          <h2>Misión</h2>
-          <p>Optimizar la movilidad y gestión del transporte en Nicaragua mediante una solución digital innovadora basada en inteligencia artificial e IoT.</p>
+          <div className="icon-container">
+            <i className="bi bi-compass-fill" style={{ fontSize: '2.5rem', color: '#1e3d87' }}></i>
+          </div>
+          <h2 className="text-center">Misión</h2>
+          <p className="text-center">Optimizar la movilidad y gestión del transporte en Nicaragua mediante una solución digital innovadora basada en inteligencia artificial e IoT.</p>
         </div>
         <div className="vision">
-          <h2>Visión</h2>
-          <p>Contribuir a una infraestructura vial más eficiente y sostenible, promoviendo un transporte más seguro y accesible para ciudadanos, transportistas y autoridades gubernamentales.</p>
+          <div className="icon-container">
+            <i className="bi bi-rocket-fill" style={{ fontSize: '2.5rem', color: '#1e3d87' }}></i>
+          </div>
+          <h2 className="text-center">Visión</h2>
+          <p className="text-center">Contribuir a una infraestructura vial más eficiente y sostenible, promoviendo un transporte más seguro y accesible para ciudadanos, transportistas y autoridades gubernamentales.</p>
         </div>
       </div>
 
@@ -122,8 +157,10 @@ const Inicio = () => {
       </div>
 
       <div className="cuadros-reportes-section">
-        <h2 className="text-center mb-3">Documentos de reportes</h2>
-        <p className="text-center text-muted mb-4">Haz clic en un icono para descargar el reporte en PDF</p>
+        <div className="section-header">
+          <h2 className="text-center mb-3">Documentos de reportes</h2>
+          <p className="text-center text-muted mb-4">Haz clic en un icono para descargar el reporte en PDF</p>
+        </div>
         
         <div className="cuadros-grid">
           {currentDocs.map((reporte) => (
@@ -132,9 +169,13 @@ const Inicio = () => {
               className="cuadro-reporte"
               onClick={() => generarPDF(reporte)}
             >
-              <i className="bi bi-file-earmark-pdf-fill icono-pdf" />
-              <h4>{reporte.titulo}</h4>
-              <p>{formatearFechaHora(reporte.fechaHora)}</p>
+              <div className="reporte-icon">
+                <i className="bi bi-file-earmark-pdf-fill" style={{ fontSize: '1.5rem', color: '#dc3545' }}></i>
+              </div>
+              <div className="reporte-info">
+                <h4>{reporte.titulo}</h4>
+                <p className="fecha-reporte">{formatearFechaHora(reporte.fechaHora)}</p>
+              </div>
             </div>
           ))}
         </div>

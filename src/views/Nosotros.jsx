@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import '../styles/Nosotros.css';
 
 const Nosotros = () => {
     const navigate = useNavigate();
