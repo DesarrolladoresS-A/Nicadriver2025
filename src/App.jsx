@@ -1,6 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./database/authcontext";
-import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./views/Login";
 import Encabezado from "./components/Encabezado";
 import Inicio from "./views/Inicio";
@@ -11,7 +10,6 @@ import Reportes from "./views/Reportes";
 import Contacto from "./views/Contacto";
 import Catalogo from "./views/Catalogorepor";
 
-
 function App() {
   return (
     <AuthProvider>
@@ -19,15 +17,14 @@ function App() {
         <Encabezado />
         <main className="margen-superior-main">
           <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/inicio" element={<ProtectedRoute element={<Inicio />} />} />
-            <Route path="/nosotros" element={<ProtectedRoute element={<Nosotros />} />} />
-            <Route path="/estadodeTrafico" element={<ProtectedRoute element={<EstadodeTrafico />} />} />
-            <Route path="/reportes" element={<ProtectedRoute element={<Reportes />} />} />
-            <Route path="/contacto" element={<ProtectedRoute element={<Contacto />} />} />
-            <Route path="/catalogo" element={<ProtectedRoute element={<Catalogo />} />} />
-
-            {/* Eliminé la ruta duplicada /reporte */}
+            <Route path="/" element={<Navigate to="/inicio" replace />} />
+            <Route path="/inicio" element={<Inicio />} />
+            <Route path="/nosotros" element={<Nosotros />} />
+            <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
+            <Route path="/reportes" element={<Reportes />} />
+            <Route path="/contacto" element={<Contacto />} />
+            <Route path="/catalogo" element={<Catalogo />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </main>
       </Router>

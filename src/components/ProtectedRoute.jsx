@@ -2,10 +2,10 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../database/authcontext";
 
-const protectedRoute = ({ element }) => {
-  const { user } = useAuth();
+const ProtectedRoute = ({ element }) => {
+  const { isLoggedIn } = useAuth();
 
-  return user ? element : <Navigate to="/" replace />;
+  return isLoggedIn ? element : <Navigate to="/login" replace />;
 };
 
-export default protectedRoute;
+export default ProtectedRoute;

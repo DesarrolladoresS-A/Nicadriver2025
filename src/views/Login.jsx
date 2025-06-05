@@ -4,7 +4,7 @@ import { Modal, Alert } from "react-bootstrap";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useAuth } from "../database/authcontext";
 import { appfirebase } from "../database/firebaseconfig";
-import "../App.css";
+import "../styles/Login.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -180,10 +180,10 @@ const Login = () => {
   }
 
   return (
-    <div className="login-page-container animate-fade">
-      <div className="login-card">
+    <div className="login-background">
+      <div className="login-container">
         <div className="login-header">
-          <h1 className="login-title">Inicio de Sesión</h1>
+          <h1>Inicio de Sesión</h1>
         </div>
         <div className="login-body">
           {error && <Alert variant="danger" className="alert-danger">{error}</Alert>}
