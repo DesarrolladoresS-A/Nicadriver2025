@@ -97,11 +97,6 @@ const Reportes = () => {
             )}
           </div>
           
-          {/* Botón de filtros (puedes implementar funcionalidad después) */}
-          <button className="filter-btn">
-            <FaFilter /> Filtros
-          </button>
-          
           {/* Botón de registro */}
           <button 
             className="btn-registro"

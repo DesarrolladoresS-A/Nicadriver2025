@@ -138,10 +138,19 @@ const ModalEdicionReportes = ({ setModalEditar, reporte, actualizar }) => {
           />
         </div>
 
-        <div className="flex justify-end space-x-4 mt-4">
-          <button onClick={() => setModalEditar(false)}>Cancelar</button>
-          <button onClick={editarReporte}>Guardar cambios</button>
-
+        <div className="modal-buttons">
+          <button 
+            className="btn-cancelar"
+            onClick={() => setModalEditar(false)}
+          >
+            Cancelar
+          </button>
+          <button 
+            className="btn-guardar"
+            onClick={editarReporte}
+          >
+            Guardar cambios
+          </button>
         </div>
       </div>
     </div>

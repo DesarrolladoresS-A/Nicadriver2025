@@ -18,20 +18,19 @@
 }
 
 .header-title {
+  flex: 1;
   color: white;
   margin-bottom: 1.5rem;
 }
 
 .header-title h1 {
-  font-size: 2.5rem;
   margin: 0;
-  font-weight: 700;
+  font-size: 1.8rem;
 }
 
-.header-title .subtitle {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  margin-top: 0.5rem;
+.header-title p {
+  margin: 0.3rem 0 0;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Controles del header */
@@ -41,10 +40,11 @@
   align-items: center;
 }
 
-/* Barra de búsqueda */
+/* Barra de búsqueda y botones */
 .search-container {
   position: relative;
   flex: 1;
+  margin-left: 1rem;
 }
 
 .search-icon {
@@ -53,15 +53,48 @@
   top: 50%;
   transform: translateY(-50%);
   color: #6c757d;
+  pointer-events: none;
+  transition: none;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
+  padding: 0.6rem 1rem 0.6rem 2.3rem;
+  border: 1px solid #82b1ff;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: none;
+  background: white;
+  box-shadow: none;
+}
+
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #82b1ff;
+}
+
+.search-input:focus + .search-icon {
+  color: #0d47a1;
+}
+
+/* Ajuste para el icono de lupa */
+.search-icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  transition: none;
+}
+
+/* Responsive para la barra de búsqueda */
+@media (max-width: 768px) {
+  .search-input {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem 0.6rem 2.3rem;
+  }
+  
+  .search-icon {
+    left: 0.8rem;
+  }
 }
 
 .search-input:focus {
@@ -136,16 +169,155 @@
 }
 
 /* Tabla de reportes */
-.tabla-paginacion-container {
+.tabla-reportes {
   width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1rem;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.tabla-reportes {
+/* Encabezado de la tabla */
+.tabla-reportes th {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #212529;
+  border-bottom: 2px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tabla-reportes th:first-child {
+  border-left: 1px solid #dee2e6;
+}
+
+/* Estilo para el texto del encabezado */
+.tabla-reportes th::before {
+  content: attr(data-title);
+  display: block;
+  font-weight: 700;
+  color: #0d47a1;
+  margin-bottom: 0.25rem;
+}
+
+.tabla-reportes th span {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  opacity: 0.8;
+}
+
+/* Celdas de la tabla */
+.tabla-reportes td {
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
+}
+
+.tabla-reportes td:first-child {
+  border-left: 1px solid #dee2e6;
+}
+
+/* Fila par */
+.tabla-reportes tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+/* Fila impar */
+.tabla-reportes tr:nth-child(odd) {
+  background-color: white;
+}
+
+/* Fila de encabezado fija */
+.tabla-reportes thead {
   background: white;
-  border-radius: 15px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  width: 100%;
+}
+
+.tabla-reportes thead th {
+  background: #f8f9fa;
+}
+
+/* Celdas de acciones */
+.tabla-reportes .acciones {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding: 0.5rem;
+}
+
+/* Estilos base para los botones de acción */
+.tabla-reportes .acciones button {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+/* Botón de editar */
+.tabla-reportes .acciones button.editar {
+  background-color: #0d47a1;
+  color: white;
+}
+
+.tabla-reportes .acciones button.editar:hover {
+  background-color: #0b3d91;
+  transform: scale(1.05);
+}
+
+.tabla-reportes .acciones button.editar svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: white;
+}
+
+/* Botón de eliminar */
+.tabla-reportes .acciones button.eliminar {
+  background-color: #dc3545;
+  color: white;
+}
+
+.tabla-reportes .acciones button.eliminar:hover {
+  background-color: #c82333;
+  transform: scale(1.05);
+}
+
+.tabla-reportes .acciones button.eliminar svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: white;
+}
+
+/* Botón de copiar */
+.tabla-reportes .acciones button.copiar {
+  background-color: #28a745;
+  color: white;
+}
+
+.tabla-reportes .acciones button.copiar:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}
+
+.tabla-reportes .acciones button.copiar svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: white;
 }
 
 .tabla-reportes thead {
@@ -228,31 +400,450 @@
   border-color: #0d47a1;
 }
 
-/* Modales */
-.modal-content {
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+/* Overlay del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 9999;
+  padding: 2rem;
+  margin-top: 60px; /* Altura del encabezado */
 }
 
-.modal-header {
+/* Formulario de registro de reporte */
+.registro-reporte-formulario {
+  background-color: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  position: relative;
+  transform: translateY(0);
+  margin-top: 1rem;
+}
+
+/* Botones del modal de edición */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-cancelar {
+  background: none;
+  border: 2px solid #dee2e6;
+  color: #6c757d;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover {
+  background: #f8f9fa;
+  color: #495057;
+  border-color: #dee2e6;
+}
+
+.btn-guardar {
+  background: linear-gradient(135deg, #0d47a1, #1a237e);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-guardar:hover {
+  background: linear-gradient(135deg, #0b3d91, #151b54);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-guardar:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación de desplazamiento */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos para el botón de cierre */
+.close-modal-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6c757d;
+  transition: color 0.3s ease;
+}
+
+.close-modal-btn:hover {
+  color: #0d47a1;
+}
+
+/* Estilos para el título del modal */
+.modal-title {
+  position: relative;
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border: 2px solid #dee2e6;
+  border-radius: 15px 15px 0 0;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.modal-title h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #212529;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: none;
+  background: linear-gradient(135deg, #0d47a1, #1a237e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Encabezado del formulario */
+.registro-reporte-formulario h2 {
+  color: #0d47a1;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #1a237e, #0d47a1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 0.5rem;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+/* Contenedor de campos */
+.form-field-container {
+  margin-bottom: 1.75rem;
+  position: relative;
+}
+
+.form-field-container label {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: #495057;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* Campos de entrada */
+.form-field-container input,
+.form-field-container textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
+}
+
+.form-field-container textarea {
+  min-height: 180px;
+  resize: vertical;
+}
+
+.form-field-container input:focus,
+.form-field-container textarea:focus {
+  border-color: #82b1ff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  outline: none;
+  background-color: white;
+}
+
+/* Botones de acción */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.action-buttons button {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.action-buttons .btn-cancelar {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.action-buttons .btn-cancelar:hover {
+  background-color: #ff5252;
+}
+
+.action-buttons .btn-guardar {
   background: linear-gradient(135deg, #1a237e, #0d47a1);
   color: white;
-  border-radius: 15px 15px 0 0;
 }
 
-.modal-header h5 {
-  margin: 0;
-  font-weight: 600;
+.action-buttons .btn-guardar:hover {
+  background: linear-gradient(135deg, #0b3d91, #0d47a1);
 }
 
-.modal-body {
-  padding: 1.5rem;
+/* Estilos para campos con error */
+.form-field-container .campo-error {
+  border-color: #dc3545 !important;
+  background-color: #fff3f3 !important;
 }
 
-.modal-footer {
-  border-top: 1px solid #dee2e6;
-  padding: 1rem;
-  text-align: right;
+.form-field-container .mensaje-error {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Botón de subir foto */
+.file-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.file-input-container input[type="file"] {
+  display: none;
+}
+
+.file-input-container label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border: 2px dashed #82b1ff;
+  border-radius: 10px;
+  color: #0d47a1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-input-container label:hover {
+  background-color: #f8f9fa;
+  border-color: #0d47a1;
+}
+
+/* Botón de registro de reportes */
+.btn-registro {
+  background: linear-gradient(135deg, #0d47a1, #1a237e);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-registro:hover {
+  background: linear-gradient(135deg, #0b3d91, #151b54);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-registro:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-registro svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-registro:hover svg {
+  transform: scale(1.2);
+}
+
+/* Responsive para el botón de registro */
+@media (max-width: 768px) {
+  .btn-registro {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .registro-reporte-formulario {
+    width: 95%;
+    padding: 2rem;
+  }
+  
+  .registro-reporte-formulario h2 {
+    font-size: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-buttons button {
+    width: 100%;
+  }
+}
+
+.registro-reporte-formulario h2 {
+  color: #0d47a1;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+/* Campos del formulario */
+.registro-reporte-formulario div {
+  margin-bottom: 1.5rem;
+}
+
+.registro-reporte-formulario label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #495057;
+  font-weight: 500;
+}
+
+.registro-reporte-formulario input,
+.registro-reporte-formulario textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.registro-reporte-formulario textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.registro-reporte-formulario input:focus,
+.registro-reporte-formulario textarea:focus {
+  border-color: #82b1ff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  outline: none;
+}
+
+/* Estilos para campos con error */
+.registro-reporte-formulario .campo-error {
+  border: 1px solid #dc3545 !important;
+  background-color: #fff3f3 !important;
+}
+
+.registro-reporte-formulario .mensaje-error {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Botones del formulario */
+.registro-reporte-formulario button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.registro-reporte-formulario .btn-cancelar {
+  background-color: #6c757d;
+  color: white;
+  margin-right: 1rem;
+}
+
+.registro-reporte-formulario .btn-cancelar:hover {
+  background-color: #5a6268;
+}
+
+.registro-reporte-formulario .btn-guardar {
+  background-color: #0d47a1;
+  color: white;
+}
+
+.registro-reporte-formulario .btn-guardar:hover {
+  background-color: #0b3d91;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .registro-reporte-formulario {
+    width: 95%;
+    padding: 1.5rem;
+  }
+  
+  .registro-reporte-formulario h2 {
+    font-size: 1.25rem;
+  }
 }
 
 /* Estilos responsive */

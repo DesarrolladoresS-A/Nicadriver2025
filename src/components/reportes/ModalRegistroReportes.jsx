@@ -61,90 +61,94 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   };
 
   // Estilo para campos con error
-  const estiloError = {
-    border: "1px solid red",
-    backgroundColor: "#fff0f0"
-  };
-
-  return (
+    return (
     <div className="modal-overlay">
       <div className="registro-reporte-formulario">
-        <h2>Registrar reporte</h2>
+        <div className="modal-title">
+          <h2>Registrar reporte</h2>
+          <button className="close-modal-btn" onClick={() => setModalRegistro(false)}>
+            ×
+          </button>
+        </div>
 
-        <div>
+        <div className="form-field-container">
           <label>Título del incidente</label>
           <input
             type="text"
             placeholder="Título breve"
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
-            style={errores.titulo ? estiloError : {}}
+            className={errores.titulo ? 'campo-error' : ''}
           />
           {errores.titulo && (
-            <p className="mensaje-error" style={{color: "red", fontSize: "0.8rem", marginTop: "0.2rem"}}>
+            <p className="mensaje-error">
               {mensajesError.titulo}
             </p>
           )}
         </div>
 
-        <div>
+        <div className="form-field-container">
           <label>Ubicación del incidente</label>
           <input
             type="text"
             placeholder="Ej. Calle 123, Zona A"
             value={ubicacion}
             onChange={(e) => setUbicacion(e.target.value)}
-            style={errores.ubicacion ? estiloError : {}}
+            className={errores.ubicacion ? 'campo-error' : ''}
           />
           {errores.ubicacion && (
-            <p className="mensaje-error" style={{color: "red", fontSize: "0.8rem", marginTop: "0.2rem"}}>
+            <p className="mensaje-error">
               {mensajesError.ubicacion}
             </p>
           )}
         </div>
 
-        <div>
+        <div className="form-field-container">
           <label>Descripción</label>
           <textarea
             placeholder="Describe lo sucedido"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
-            style={errores.descripcion ? estiloError : {}}
+            className={errores.descripcion ? 'campo-error' : ''}
           />
           {errores.descripcion && (
-            <p className="mensaje-error" style={{color: "red", fontSize: "0.8rem", marginTop: "0.2rem"}}>
+            <p className="mensaje-error">
               {mensajesError.descripcion}
             </p>
           )}
         </div>
 
-        <div>
+        <div className="form-field-container">
           <label>Fecha y hora del incidente</label>
           <input
             type="datetime-local"
             value={fechaHora}
             onChange={(e) => setFechaHora(e.target.value)}
-            style={errores.fechaHora ? estiloError : {}}
+            className={errores.fechaHora ? 'campo-error' : ''}
           />
           {errores.fechaHora && (
-            <p className="mensaje-error" style={{color: "red", fontSize: "0.8rem", marginTop: "0.2rem"}}>
+            <p className="mensaje-error">
               {mensajesError.fechaHora}
             </p>
           )}
         </div>
 
-        <div>
-          <label>Subir foto</label>
+        <div className="file-input-container">
+          <label htmlFor="foto">
+            <i className="bi bi-camera-fill"></i>
+            Subir foto
+          </label>
           <input
+            id="foto"
             type="file"
             accept="image/*"
             onChange={(e) => setFoto(e.target.files[0])}
           />
         </div>
 
-        <div className="flex justify-end space-x-4 mt-4">
-          <button onClick={() => setModalRegistro(false)}>Cancelar</button>
-          <button onClick={guardarReporte}>Guardar reporte</button>
+        <div className="action-buttons">
+          <button className="btn-cancelar" onClick={() => setModalRegistro(false)}>Cancelar</button>
+          <button className="btn-guardar" onClick={guardarReporte}>Guardar reporte</button>
         </div>
       </div>
     </div>
