@@ -65,16 +65,6 @@ const TablaReportes = ({
       <div className="tabla-reportes-header">
         <h2>Lista de Reportes</h2>
         <p>Administra los reportes de incidentes</p>
-        <div className="tabla-reportes-actions">
-          <button className="btn-pdf" onClick={() => generarPDF(reportes[0])}>
-            <i className="bi bi-file-earmark-pdf-fill"></i>
-            PDF
-          </button>
-          <button className="btn-export">
-            <i className="bi bi-file-earmark-excel-fill"></i>
-            Exportar
-          </button>
-        </div>
       </div>
 
       <table className="tabla-reportes">
