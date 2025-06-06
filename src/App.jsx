@@ -9,6 +9,7 @@ import EstadodeTrafico from "./views/EstadodeTrafico";
 import Reportes from "./views/Reportes";
 import Contacto from "./views/Contacto";
 import Catalogo from "./views/Catalogorepor";
+import Perfil from "./views/Perfil"; // Agregado la importación de Perfil
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
                   <Nosotros />
                 </div>
               } />
+              <Route path="/perfil" element={<Perfil />} /> // Agregado la ruta del perfil
               <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
               <Route path="/reportes" element={<Reportes />} />
               <Route path="/contacto" element={<Contacto />} />
