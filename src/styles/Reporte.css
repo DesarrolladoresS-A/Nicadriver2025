@@ -223,55 +223,44 @@
 }
 
 /* Columna de acciones */
+.tabla-reportes th:nth-child(5),
+.tabla-reportes td:nth-child(5) {
+  width: 20%;
+  border-right: 1px solid #000000;
+  padding: 1rem;
+}
+
 .tabla-reportes td.acciones {
   text-align: center;
-  width: 120px;
   padding: 0.5rem;
   border-right: 1px solid #000000;
+}
+
+/* Estilos generales para los botones de acciones */
+.tabla-reportes .acciones .btn-acciones {
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
-  gap: 0.5rem;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-}
-
-.tabla-reportes td.acciones button {
-  margin: 0;
+  gap: 1rem;
   padding: 0.5rem;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  width: 36px;
-  height: 36px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-  position: relative;
-  z-index: 1;
+  min-height: 40px;
 }
 
-.tabla-reportes td.acciones button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.tabla-reportes td.acciones button i {
-  font-size: 1.1rem;
-  color: #212529;
+.tabla-reportes .acciones .btn-acciones i {
+  font-size: 1.2rem;
 }
 
 /* Botón de editar */
 .tabla-reportes .acciones .btn-editar {
-  background-color: #e7f1ff;
-  color: #0d47a1;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 0.75rem;
+  border-radius: 8px;
+  min-width: 40px;
 }
 
 .tabla-reportes .acciones .btn-editar:hover {
-  background-color: #0d47a1;
+  background-color: #1976d2;
   color: white;
 }
 
@@ -279,6 +268,9 @@
 .tabla-reportes .acciones .btn-eliminar {
   background-color: #fff3f3;
   color: #dc3545;
+  padding: 0.75rem;
+  border-radius: 8px;
+  min-width: 40px;
 }
 
 .tabla-reportes .acciones .btn-eliminar:hover {
@@ -290,6 +282,9 @@
 .tabla-reportes .acciones .btn-ver {
   background-color: #fff9e6;
   color: #ffc107;
+  padding: 0.75rem;
+  border-radius: 8px;
+  min-width: 40px;
 }
 
 .tabla-reportes .acciones .btn-ver:hover {
@@ -301,6 +296,9 @@
 .tabla-reportes .acciones .btn-imprimir {
   background-color: #f3f0ff;
   color: #6610f2;
+  padding: 0.75rem;
+  border-radius: 8px;
+  min-width: 40px;
 }
 
 .tabla-reportes .acciones .btn-imprimir:hover {
@@ -330,12 +328,6 @@
 .tabla-reportes th:nth-child(4),
 .tabla-reportes td:nth-child(4) {
   width: 20%;
-  border-right: 1px solid #000000;
-}
-
-.tabla-reportes th:nth-child(5),
-.tabla-reportes td:nth-child(5) {
-  width: 10%;
   border-right: 1px solid #000000;
 }
 
