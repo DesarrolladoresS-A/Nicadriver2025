@@ -9,7 +9,8 @@ import EstadodeTrafico from "./views/EstadodeTrafico";
 import Reportes from "./views/Reportes";
 import Contacto from "./views/Contacto";
 import Catalogo from "./views/Catalogorepor";
-import Perfil from "./views/Perfil"; // Agregado la importación de Perfil
+import Perfil from "./views/Perfil"; 
+import Administrador from "./views/Administrador";
 
 function App() {
   return (
@@ -30,12 +31,17 @@ function App() {
                   <Nosotros />
                 </div>
               } />
-              <Route path="/perfil" element={<Perfil />} /> // Agregado la ruta del perfil
+              <Route path="/perfil" element={<Perfil />} /> 
               <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
               <Route path="/reportes" element={<Reportes />} />
               <Route path="/contacto" element={<Contacto />} />
               <Route path="/catalogo" element={<Catalogo />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/administrador" element={
+                <div className="inicio-container">
+                  <Administrador />
+                </div>
+              } />
             </Routes>
           </main>
         </div>

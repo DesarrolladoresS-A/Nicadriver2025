@@ -1,0 +1,79 @@
+.administrador-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.stats-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  color: #FF7E00;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #1e3d87;
+}
+
+.chart-placeholder {
+  height: 300px;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  border: 1px dashed #ddd;
+}
+
+.activities-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.activity-icon {
+  font-size: 1.5rem;
+  margin-right: 10px;
+  color: #FF7E00;
+}
+
+.activity-time {
+  font-size: 0.9rem;
+  color: #666;
+  margin-left: auto;
+}
+
+/* Scrollbar personalizado */
+.activities-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.activities-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.activities-list::-webkit-scrollbar-thumb {
+  background: #FF7E00;
+  border-radius: 4px;
+}
+
+.activities-list::-webkit-scrollbar-thumb:hover {
+  background: #FFC100;
+}

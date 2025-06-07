@@ -95,48 +95,103 @@ const Encabezado = () => {
                 {/* Vista Usuario - Cuando ESTÁ logueado */}
                 {isLoggedIn && (
                   <>
-                    <Nav.Link
-                      onClick={() => handleNavigate("/inicio")}
-                      className={`nav-link ${location.pathname === "/inicio" ? "active" : ""}`}
-                    >
-                      <i className="bi-house-door-fill me-2"></i>
-                      <strong>Inicio</strong>
-                    </Nav.Link>
-                    <Nav.Link
-                      onClick={() => handleNavigate("/estadodetrafico")}
-                      className={`nav-link ${location.pathname === "/estadodetrafico" ? "active" : ""}`}
-                    >
-                      <i className="bi-cone-striped me-2"></i>
-                      <strong>Estado del Trafico</strong>
-                    </Nav.Link>
-                    <Nav.Link
-                      onClick={() => handleNavigate("/reportes")}
-                      className={`nav-link ${location.pathname === "/reportes" ? "active" : ""}`}
-                    >
-                      <i className="bi-file-earmark-text-fill me-2"></i>
-                      <strong>Reportes</strong>
-                    </Nav.Link>
-                    <Nav.Link
-                      onClick={() => handleNavigate("/nosotros")}
-                      className={`nav-link ${location.pathname === "/nosotros" ? "active" : ""}`}
-                    >
-                      <i className="bi-person-fill me-2"></i>
-                      <strong>Nosotros</strong>
-                    </Nav.Link>
-                    
-                    {/* Botón de Mi Perfil con foto de perfil */}
-                    <Nav.Link
-                      onClick={() => setShowPerfilModal(true)}
-                      className="nav-link d-flex align-items-center gap-2"
-                    >
-                      <img 
-                        src={user?.photoURL || '/default-avatar.png'} 
-                        alt="Perfil"
-                        className="rounded-circle"
-                        style={{ width: '30px', height: '30px', objectFit: 'cover' }}
-                      />
-                      <strong>Mi Perfil</strong>
-                    </Nav.Link>
+                    {/* Verificar si es administrador */}
+                    {user?.email === "desarrolladoressa2000@gmail.com" ? (
+                      // Menú de Administrador
+                      <>
+                        <Nav.Link
+                          onClick={() => handleNavigate("/administrador")}
+                          className={`nav-link ${location.pathname === "/administrador" ? "active" : ""}`}
+                        >
+                          <i className="bi-speedometer2 me-2"></i>
+                          <strong>Inicio Admin</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={() => handleNavigate("/estadodetrafico")}
+                          className={`nav-link ${location.pathname === "/estadodetrafico" ? "active" : ""}`}
+                        >
+                          <i className="bi-cone-striped me-2"></i>
+                          <strong>Estado del Trafico</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={() => handleNavigate("/reportes")}
+                          className={`nav-link ${location.pathname === "/reportes" ? "active" : ""}`}
+                        >
+                          <i className="bi-file-earmark-text-fill me-2"></i>
+                          <strong>Reportes</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={() => handleNavigate("/graficos")}
+                          className={`nav-link ${location.pathname === "/graficos" ? "active" : ""}`}
+                        >
+                          <i className="bi-graph-up me-2"></i>
+                          <strong>Gráficos</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={() => handleNavigate("/catalogo")}
+                          className={`nav-link ${location.pathname === "/catalogo" ? "active" : ""}`}
+                        >
+                          <i className="bi-bookmarks me-2"></i>
+                          <strong>Catalogos</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={() => setShowPerfilModal(true)}
+                          className="nav-link d-flex align-items-center gap-2"
+                        >
+                          <img 
+                            src={user?.photoURL || '/default-avatar.png'} 
+                            alt="Perfil"
+                            className="rounded-circle"
+                            style={{ width: '30px', height: '30px', objectFit: 'cover' }}
+                          />
+                          <strong>Mi Perfil Admin</strong>
+                        </Nav.Link>
+                      </>
+                    ) : (
+                      // Menú de Usuario Normal
+                      <>
+                        <Nav.Link
+                          onClick={() => handleNavigate("/inicio")}
+                          className={`nav-link ${location.pathname === "/inicio" ? "active" : ""}`}
+                        >
+                          <i className="bi-house-door-fill me-2"></i>
+                          <strong>Inicio</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={() => handleNavigate("/estadodetrafico")}
+                          className={`nav-link ${location.pathname === "/estadodetrafico" ? "active" : ""}`}
+                        >
+                          <i className="bi-cone-striped me-2"></i>
+                          <strong>Estado del Trafico</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={() => handleNavigate("/reportes")}
+                          className={`nav-link ${location.pathname === "/reportes" ? "active" : ""}`}
+                        >
+                          <i className="bi-file-earmark-text-fill me-2"></i>
+                          <strong>Reportes</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={() => handleNavigate("/nosotros")}
+                          className={`nav-link ${location.pathname === "/nosotros" ? "active" : ""}`}
+                        >
+                          <i className="bi-person-fill me-2"></i>
+                          <strong>Nosotros</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={() => setShowPerfilModal(true)}
+                          className="nav-link d-flex align-items-center gap-2"
+                        >
+                          <img 
+                            src={user?.photoURL || '/default-avatar.png'} 
+                            alt="Perfil"
+                            className="rounded-circle"
+                            style={{ width: '30px', height: '30px', objectFit: 'cover' }}
+                          />
+                          <strong>Mi Perfil</strong>
+                        </Nav.Link>
+                      </>
+                    )}
                   </>
                 )}
               </Nav>

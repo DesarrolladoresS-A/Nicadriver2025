@@ -108,7 +108,13 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       localStorage.setItem("adminEmail", email);
-      navigate("/inicio");
+      
+      // Verificar si es administrador y redirigir a la vista correspondiente
+      if (email === "desarrolladoressa2000@gmail.com") {
+        navigate("/administrador");
+      } else {
+        navigate("/inicio");
+      }
     } catch (error) {
       setError("Credenciales incorrectas. Por favor verifica.");
     } finally {
