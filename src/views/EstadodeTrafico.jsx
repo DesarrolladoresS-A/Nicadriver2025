@@ -5,15 +5,18 @@ import {
   TrafficLayer,
   Marker,
   InfoWindow,
+  DirectionsService,
+  DirectionsRenderer
 } from '@react-google-maps/api';
 import {
   collection,
   addDoc,
   serverTimestamp,
   onSnapshot,
+  deleteDoc,
+  doc,
 } from 'firebase/firestore';
 import { db } from '../database/firebaseconfig';
-import { deleteDoc, doc } from 'firebase/firestore';
 import '../styles/EstadodeTrafico.css';
 
 const containerStyle = {
@@ -35,6 +38,14 @@ const iconMap = {
   Policía: 'https://img.icons8.com/color/48/policeman-male.png',
 };
 
+const ciudadesNicaragua = [
+  { nombre: 'Managua', lat: 12.1364, lng: -86.2514 },
+  { nombre: 'León', lat: 12.4345, lng: -86.8794 },
+  { nombre: 'Granada', lat: 11.9344, lng: -85.956 },
+  { nombre: 'Matagalpa', lat: 12.9256, lng: -85.9175 },
+  { nombre: 'Estelí', lat: 13.091, lng: -86.3538 },
+];
+
 const EstadoTrafico = () => {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -44,21 +55,16 @@ const EstadoTrafico = () => {
   const mapRef = useRef(null);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
-  const [showTraffic, setShowTraffic] = useState(true);
-
   const [tipo, setTipo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [imagen, setImagen] = useState(null);
   const [reportes, setReportes] = useState([]);
   const [selectedReporte, setSelectedReporte] = useState(null);
-
-  const [puntoInicio, setPuntoInicio] = useState(null);
-  const [puntoDestino, setPuntoDestino] = useState(null);
-  const [showRutaMenu, setShowRutaMenu] = useState(false);
-  const [seleccionandoInicio, setSeleccionandoInicio] = useState(true);
-
-  // Detectar dispositivo móvil
-  const esMovil = window.innerWidth <= 768;
+  const [showRutaModal, setShowRutaModal] = useState(false);
+  const [ciudadDestino, setCiudadDestino] = useState('');
+  const [usarUbicacionActual, setUsarUbicacionActual] = useState(true);
+  const [ciudadOrigenSeleccionada, setCiudadOrigenSeleccionada] = useState('');
+  const [directions, setDirections] = useState(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -85,21 +91,10 @@ const EstadoTrafico = () => {
   };
 
   const handleMapClick = (event) => {
-    const latLng = {
+    setSelectedLocation({
       lat: event.latLng.lat(),
       lng: event.latLng.lng(),
-    };
-
-    if (showRutaMenu) {
-      if (seleccionandoInicio) {
-        setPuntoInicio(latLng);
-        setSeleccionandoInicio(false);
-      } else {
-        setPuntoDestino(latLng);
-      }
-    } else {
-      setSelectedLocation(latLng);
-    }
+    });
   };
 
   const handleGuardarReporte = async () => {
@@ -134,22 +129,36 @@ const EstadoTrafico = () => {
     }
   };
 
-  const handleIniciarViaje = () => {
-    if (esMovil) {
-      setShowRutaMenu(true);
-      setSeleccionandoInicio(true);
-    } else {
-      alert('Esta función solo está disponible en dispositivos móviles.');
-    }
-  };
+  const iniciarViaje = () => {
+    const origen = usarUbicacionActual
+      ? userLocation
+      : ciudadesNicaragua.find((c) => c.nombre === ciudadOrigenSeleccionada);
 
-  const handleConfirmarRuta = () => {
-    if (!puntoInicio || !puntoDestino) {
-      alert('Selecciona un punto de inicio y uno de destino tocando el mapa.');
+    const destino = ciudadesNicaragua.find((c) => c.nombre === ciudadDestino);
+
+    if (!origen || !destino) {
+      alert('Debes seleccionar el origen y destino correctamente.');
       return;
     }
-    alert(`Ruta iniciada de (${puntoInicio.lat.toFixed(4)}, ${puntoInicio.lng.toFixed(4)}) a (${puntoDestino.lat.toFixed(4)}, ${puntoDestino.lng.toFixed(4)})`);
-    setShowRutaMenu(false);
+
+    const directionsService = new google.maps.DirectionsService();
+    directionsService.route(
+      {
+        origin: origen,
+        destination: destino,
+        travelMode: google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          setDirections(result);
+          mapRef.current.panTo(origen);
+          mapRef.current.setZoom(8);
+        } else {
+          console.error('Error obteniendo ruta:', status);
+        }
+      }
+    );
+    setShowRutaModal(false);
   };
 
   if (!isLoaded) return <div>Cargando mapa...</div>;
@@ -165,9 +174,9 @@ const EstadoTrafico = () => {
           zoom={13}
           onLoad={handleMapLoad}
           onClick={handleMapClick}
-          mapTypeId="roadmap"
+          mapTypeId="hybrid"
         >
-          {showTraffic && <TrafficLayer />}
+          <TrafficLayer />
           {userLocation && <Marker position={userLocation} label="Yo" />}
           {selectedLocation && <Marker position={selectedLocation} />}
           {reportes.map((reporte) => (
@@ -178,94 +187,111 @@ const EstadoTrafico = () => {
               onClick={() => setSelectedReporte(reporte)}
             />
           ))}
-         {selectedReporte && (
-  <InfoWindow
-    position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
-    onCloseClick={() => setSelectedReporte(null)}
-  >
-    <div style={{ maxWidth: '220px' }}>
-      <h4>{selectedReporte.tipo}</h4>
-      <p>{selectedReporte.descripcion}</p>
-      {selectedReporte.imagenBase64 && (
-        <img
-          src={selectedReporte.imagenBase64}
-          alt="Incidente"
-          style={{ width: '100%', borderRadius: '5px', marginBottom: '10px' }}
-        />
-      )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <button
-          onClick={async () => {
-            await addDoc(collection(db, 'confirmaciones'), {
-              incidenteId: selectedReporte.id,
-              confirmadoEn: serverTimestamp(),
-            });
-            alert('Se ha confirmado que el incidente sigue ocurriendo.');
-            setSelectedReporte(null);
-          }}
-          style={{
-            backgroundColor: '#ffc107',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '6px',
-            color: '#333',
-            cursor: 'pointer',
-          }}
-        >
-          Sigue ocurriendo
-        </button>
-        <button
-          onClick={async () => {
-            if (confirm('¿Estás seguro de que deseas eliminar este reporte?')) {
-              await deleteDoc(doc(db, 'incidentes', selectedReporte.id));
-              alert('Reporte eliminado');
-              setSelectedReporte(null);
-            }
-          }}
-          style={{
-            backgroundColor: '#dc3545',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '6px',
-            color: '#fff',
-            cursor: 'pointer',
-          }}
-        >
-          Eliminar reporte
-        </button>
-      </div>
-    </div>
-  </InfoWindow>
-)}
+          {selectedReporte && (
+            <InfoWindow
+              position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
+              onCloseClick={() => setSelectedReporte(null)}
+            >
+              <div style={{ maxWidth: '220px' }}>
+                <h4>{selectedReporte.tipo}</h4>
+                <p>{selectedReporte.descripcion}</p>
+                {selectedReporte.imagenBase64 && (
+                  <img
+                    src={selectedReporte.imagenBase64}
+                    alt="Incidente"
+                    style={{ width: '100%', borderRadius: '5px', marginBottom: '10px' }}
+                  />
+                )}
+                <button onClick={async () => {
+                  await addDoc(collection(db, 'confirmaciones'), {
+                    incidenteId: selectedReporte.id,
+                    confirmadoEn: serverTimestamp(),
+                  });
+                  alert('Se ha confirmado que el incidente sigue ocurriendo.');
+                  setSelectedReporte(null);
+                }}>
+                  Sigue ocurriendo
+                </button>
+                <button onClick={async () => {
+                  if (confirm('¿Deseas eliminar este reporte?')) {
+                    await deleteDoc(doc(db, 'incidentes', selectedReporte.id));
+                    alert('Reporte eliminado');
+                    setSelectedReporte(null);
+                  }
+                }}>
+                  Eliminar
+                </button>
+              </div>
+            </InfoWindow>
+          )}
 
+          {directions && <DirectionsRenderer directions={directions} />}
         </GoogleMap>
 
-        {/* Botón iniciar viaje (móvil) */}
+        {/* Icono para iniciar viaje */}
         <button
-          onClick={handleIniciarViaje}
-          className="boton-iniciar-viaje"
+          onClick={() => setShowRutaModal(true)}
+          style={{
+            position: 'absolute',
+            bottom: 20,
+            left: 20,
+            zIndex: 10,
+            fontSize: '24px',
+            backgroundColor: '#ffffffdd',
+            borderRadius: '50%',
+            padding: '10px',
+            border: '2px solid #007bff',
+            cursor: 'pointer'
+          }}
+          title="Iniciar viaje"
         >
-          🚗 Iniciar Viaje
+          🚗
         </button>
-
-        {/* Menú de ruta (desplegable) */}
-        {showRutaMenu && (
-          <div className="ruta-sidebar">
-            <h3>Iniciar Ruta</h3>
-            <p><strong>Inicio:</strong> {puntoInicio ? `${puntoInicio.lat.toFixed(4)}, ${puntoInicio.lng.toFixed(4)}` : 'No seleccionado'}</p>
-            <p><strong>Destino:</strong> {puntoDestino ? `${puntoDestino.lat.toFixed(4)}, ${puntoDestino.lng.toFixed(4)}` : 'No seleccionado'}</p>
-            <p style={{ fontSize: '14px', color: '#555' }}>
-              Toca en el mapa para seleccionar primero el inicio y luego el destino.
-            </p>
-            <div className="button-group">
-              <button onClick={handleConfirmarRuta} className="button-guardar">Confirmar Ruta</button>
-              <button onClick={() => setShowRutaMenu(false)} className="button-cancelar">Cancelar</button>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Modal de reporte */}
+      {/* Modal de selección de ruta */}
+      {showRutaModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Seleccionar Ruta</h3>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={usarUbicacionActual}
+                onChange={() => setUsarUbicacionActual(!usarUbicacionActual)}
+              /> Usar ubicación actual como origen
+            </label>
+
+            {!usarUbicacionActual && (
+              <>
+                <label>Ciudad de origen</label>
+                <select value={ciudadOrigenSeleccionada} onChange={(e) => setCiudadOrigenSeleccionada(e.target.value)}>
+                  <option value="">Selecciona una ciudad</option>
+                  {ciudadesNicaragua.map((ciudad) => (
+                    <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
+                  ))}
+                </select>
+              </>
+            )}
+
+            <label>Ciudad de destino</label>
+            <select value={ciudadDestino} onChange={(e) => setCiudadDestino(e.target.value)}>
+              <option value="">Selecciona una ciudad</option>
+              {ciudadesNicaragua.map((ciudad) => (
+                <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
+              ))}
+            </select>
+
+            <div className="button-group">
+              <button onClick={iniciarViaje}>Buscar ruta</button>
+              <button onClick={() => setShowRutaModal(false)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de registro de incidente */}
       {selectedLocation && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -292,19 +318,11 @@ const EstadoTrafico = () => {
             />
 
             <label>Subir foto</label>
-            <label className="file-upload">
-              📎 Subir foto
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImagen(e.target.files[0])}
-                style={{ display: 'none' }}
-              />
-            </label>
+            <input type="file" accept="image/*" onChange={(e) => setImagen(e.target.files[0])} />
 
             <div className="button-group">
-              <button onClick={handleGuardarReporte} className="button-guardar">Guardar reporte</button>
-              <button onClick={() => setSelectedLocation(null)} className="button-cancelar">Cancelar</button>
+              <button onClick={handleGuardarReporte}>Guardar reporte</button>
+              <button onClick={() => setSelectedLocation(null)}>Cancelar</button>
             </div>
           </div>
         </div>

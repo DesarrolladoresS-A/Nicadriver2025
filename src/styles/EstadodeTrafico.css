@@ -35,6 +35,8 @@ body {
     margin-bottom: 1.5rem;
     box-shadow: 0 8px 25px var(--shadow-color);
 }
+
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -214,6 +216,10 @@ body {
 .button-cancelar:hover {
   background-color: #c82333;
 }
+
+.ruta-form { display:flex; gap:8px; margin-bottom:8px; justify-content:center; }
+.ruta-form input { width:200px; padding:6px; }
+.ruta-info { text-align:center; margin-bottom:8px; font-weight:bold; }
 
 
 /* Sección de filtros */
