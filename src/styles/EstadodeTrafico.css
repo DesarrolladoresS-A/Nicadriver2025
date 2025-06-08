@@ -35,6 +35,186 @@ body {
     margin-bottom: 1.5rem;
     box-shadow: 0 8px 25px var(--shadow-color);
 }
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 30px 25px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+  font-family: 'Segoe UI', sans-serif;
+  position: relative;
+}
+
+.modal-content h3 {
+  text-align: center;
+  font-size: 18px;
+  color: #003366;
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.modal-content label {
+  font-weight: 500;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="datetime-local"],
+.modal-content textarea,
+.modal-content select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content textarea:focus,
+.modal-content input[type="datetime-local"]:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.modal-content textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modal-content .file-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.modal-content .modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-content .btn-cancelar,
+.modal-content .btn-guardar {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.modal-content .btn-cancelar {
+  background-color: #adb5bd;
+  color: white;
+}
+
+.modal-content .btn-guardar {
+  background-color: #0056d2;
+  color: white;
+}
+
+.ruta-info {
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #333;
+}
+
+.ruta-sidebar {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: 300px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+}
+
+.ruta-sidebar h3 {
+  margin-bottom: 15px;
+  font-size: 20px;
+  color: #333;
+}
+
+.ruta-info {
+  background-color: #f1f1f1;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  color: #444;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.button-guardar {
+  padding: 10px;
+  flex: 1;
+  background-color: #28a745;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.button-guardar:hover {
+  background-color: #218838;
+}
+
+.button-cancelar {
+  padding: 10px;
+  flex: 1;
+  background-color: #dc3545;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.button-cancelar:hover {
+  background-color: #c82333;
+}
+
 
 /* Sección de filtros */
 .filtros-container {

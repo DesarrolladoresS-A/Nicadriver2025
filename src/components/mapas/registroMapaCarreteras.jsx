@@ -4,11 +4,13 @@ import {
   useJsApiLoader,
   TrafficLayer,
   Marker,
-  InfoWindow,
   DirectionsRenderer,
 } from '@react-google-maps/api';
-import { v4 as uuidv4 } from 'uuid';
-import { uploadImageToStorage, saveReportToDatabase } from '../utils/firebase'; // adapta esto a tu lógica
+import Modal from 'react-modal';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../database/firebaseconfig'; // tu configuración de Firebase
+
+Modal.setAppElement('#root');
 
 const containerStyle = {
   width: '100%',
@@ -24,35 +26,31 @@ const defaultCenter = {
 const incidentTypes = ['Accidente', 'Tráfico', 'Emergencia', 'Policía'];
 
 const RegistroMapaCarreteras = () => {
-
-  const saveReportToDatabase = async (incidentes) => {
-  await addDoc(collection(db, 'incidentes'), incidentes);
-};
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: ['places'],
   });
 
   const mapRef = useRef(null);
-  const [selectedLocation, setSelectedLocation] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [reportForm, setReportForm] = useState({ tipo: '', descripcion: '', imagen: null });
+  const [reportes, setReportes] = useState([]);
   const [directions, setDirections] = useState(null);
   const [showTraffic, setShowTraffic] = useState(true);
-  const [reportForm, setReportForm] = useState({
-    tipo: '',
-    descripcion: '',
-    imagen: null,
-  });
-  const [reportes, setReportes] = useState([]);
+
+  const [modalReporteOpen, setModalReporteOpen] = useState(false);
+  const [modalRutaOpen, setModalRutaOpen] = useState(false);
+  const [destinoRuta, setDestinoRuta] = useState('');
 
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const current = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const coords = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
         };
-        setUserLocation(current);
+        setUserLocation(coords);
       });
     }
   }, []);
@@ -62,10 +60,12 @@ const RegistroMapaCarreteras = () => {
   };
 
   const handleMapClick = (event) => {
-    setSelectedLocation({
+    const location = {
       lat: event.latLng.lat(),
       lng: event.latLng.lng(),
-    });
+    };
+    setSelectedLocation(location);
+    setModalReporteOpen(true);
   };
 
   const handleCenterUser = () => {
@@ -76,148 +76,185 @@ const RegistroMapaCarreteras = () => {
   };
 
   const handleGetRoute = () => {
-    if (userLocation && selectedLocation) {
-      const directionsService = new window.google.maps.DirectionsService();
-      directionsService.route(
-        {
-          origin: userLocation,
-          destination: selectedLocation,
-          travelMode: window.google.maps.TravelMode.DRIVING,
-        },
-        (result, status) => {
-          if (status === 'OK') {
-            setDirections(result);
-          } else {
-            console.error('Error obteniendo la ruta:', status);
+    if (!userLocation || !destinoRuta) return;
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ address: destinoRuta }, (results, status) => {
+      if (status === 'OK') {
+        const destination = results[0].geometry.location;
+        const directionsService = new window.google.maps.DirectionsService();
+        directionsService.route(
+          {
+            origin: userLocation,
+            destination,
+            travelMode: window.google.maps.TravelMode.DRIVING,
+          },
+          (result, status) => {
+            if (status === 'OK') {
+              setDirections(result);
+              setModalRutaOpen(false);
+            } else {
+              alert('No se pudo calcular la ruta');
+            }
           }
-        }
-      );
-    }
+        );
+      } else {
+        alert('Dirección inválida');
+      }
+    });
   };
 
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === 'imagen') {
-      setReportForm((prev) => ({ ...prev, imagen: files[0] }));
-    } else {
-      setReportForm((prev) => ({ ...prev, [name]: value }));
-    }
+    setReportForm((prev) => ({
+      ...prev,
+      [name]: name === 'imagen' ? files[0] : value,
+    }));
   };
 
-const handleSubmitReporte = async (e) => {
-  e.preventDefault();
-  if (!reportForm.tipo || !reportForm.descripcion || !selectedLocation || !reportForm.imagen) {
-    alert('Por favor completa todos los campos y selecciona una ubicación.');
-    return;
-  }
+  const handleSubmitReporte = async (e) => {
+    e.preventDefault();
+    if (!selectedLocation || !reportForm.tipo || !reportForm.descripcion || !reportForm.imagen) {
+      alert('Todos los campos son obligatorios');
+      return;
+    }
 
-  try {
-    const reporteIncidente = {
-      tipo: reportForm.tipo,
-      descripcion: reportForm.descripcion,
-      imagenBase64: reportForm.imagen, // guardamos la imagen como base64
-      lat: selectedLocation.lat,
-      lng: selectedLocation.lng,
-      timestamp: new Date().toISOString(),
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const imagenBase64 = reader.result;
+
+      const nuevoReporte = {
+        ...reportForm,
+        imagenBase64,
+        lat: selectedLocation.lat,
+        lng: selectedLocation.lng,
+        fecha: new Date(),
+      };
+
+      await addDoc(collection(db, 'incidentes'), nuevoReporte);
+      setReportes((prev) => [...prev, nuevoReporte]);
+      setModalReporteOpen(false);
+      setReportForm({ tipo: '', descripcion: '', imagen: null });
+      setSelectedLocation(null);
     };
-
-    await saveReportToDatabase(incidentes);
-
-    setReportes((prev) => [...prev, incidentes]);
-    setReportForm({ tipo: '', descripcion: '', imagen: null });
-    setSelectedLocation(null);
-    alert('¡Reporte guardado correctamente!');
-  } catch (error) {
-    console.error('Error al guardar el reporte:', error);
-    alert('Error al guardar el reporte.');
-  }
-};
-
+    reader.readAsDataURL(reportForm.imagen);
+  };
 
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2 style={{ textAlign: 'center' }}>Registro de Incidentes en Carreteras</h2>
+      <h2 style={{ textAlign: 'center' }}>Mapa de Incidentes en Carreteras</h2>
 
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', justifyContent: 'center' }}>
-        <button onClick={handleGetRoute} style={styles.boton}>Obtener Ruta</button>
-        <button onClick={() => setShowTraffic(!showTraffic)} style={styles.boton}>
+      <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '15px' }}>
+        <button onClick={() => setModalRutaOpen(true)} style={styles.boton}>
+          Iniciar Viaje
+        </button>
+        <button onClick={handleCenterUser} style={styles.boton}>
+          Ir a Mi Ubicación
+        </button>
+        <button onClick={() => setShowTraffic((v) => !v)} style={styles.boton}>
           {showTraffic ? 'Ocultar Tráfico' : 'Mostrar Tráfico'}
         </button>
-        <button onClick={handleCenterUser} style={styles.boton}>Ir a Mi Ubicación</button>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={userLocation || defaultCenter}
-          zoom={13}
-          onLoad={handleMapLoad}
-          onClick={handleMapClick}
-          mapTypeId="roadmap"
-        >
-          {showTraffic && <TrafficLayer />}
-          {userLocation && <Marker position={userLocation} label="Yo" />}
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={userLocation || defaultCenter}
+        zoom={13}
+        onLoad={handleMapLoad}
+        onClick={handleMapClick}
+        mapTypeId="roadmap"
+      >
+        {showTraffic && <TrafficLayer />}
+        {userLocation && <Marker position={userLocation} label="Tú" />}
+        {reportes.map((rep, idx) => (
+          <Marker
+            key={idx}
+            position={{ lat: rep.lat, lng: rep.lng }}
+            icon={{
+              url: '/marker_' + rep.tipo.toLowerCase() + '.png',
+              scaledSize: new window.google.maps.Size(35, 35),
+            }}
+          />
+        ))}
+        {directions && <DirectionsRenderer directions={directions} />}
+      </GoogleMap>
 
-          {reportes.map((rep, idx) => (
-            <Marker
-              key={idx}
-              position={{ lat: rep.lat, lng: rep.lng }}
-              icon={{
-                url: '/marker_' + rep.tipo.toLowerCase() + '.png',
-                scaledSize: new window.google.maps.Size(35, 35),
-              }}
-            />
-          ))}
+      {/* Modal Registro de Incidente */}
+      <Modal
+        isOpen={modalReporteOpen}
+        onRequestClose={() => setModalReporteOpen(false)}
+        style={customStyles}
+      >
+        <h3>Registrar Incidente</h3>
+        <form onSubmit={handleSubmitReporte}>
+          <label>Tipo:</label>
+          <select name="tipo" value={reportForm.tipo} onChange={handleInputChange}>
+            <option value="">Seleccionar</option>
+            {incidentTypes.map((tipo) => (
+              <option key={tipo} value={tipo}>{tipo}</option>
+            ))}
+          </select>
 
-          {directions && <DirectionsRenderer directions={directions} />}
+          <label>Descripción:</label>
+          <textarea
+            name="descripcion"
+            value={reportForm.descripcion}
+            onChange={handleInputChange}
+            style={{ width: '100%' }}
+          />
 
-          {selectedLocation && (
-            <InfoWindow
-              position={selectedLocation}
-              onCloseClick={() => setSelectedLocation(null)}
-            >
-              <form onSubmit={handleSubmitReporte} style={{ width: '250px' }}>
-                <h4>Nuevo Reporte</h4>
-                <label>Tipo:</label>
-                <select name="tipo" value={reportForm.tipo} onChange={handleInputChange} required>
-                  <option value="">Seleccionar</option>
-                  {incidentTypes.map((tipo) => (
-                    <option key={tipo} value={tipo}>{tipo}</option>
-                  ))}
-                </select>
-                <label>Descripción:</label>
-                <textarea
-                  name="descripcion"
-                  value={reportForm.descripcion}
-                  onChange={handleInputChange}
-                  required
-                  style={{ width: '100%' }}
-                />
-                <label>Imagen:</label>
-                <input type="file" name="imagen" onChange={handleInputChange} accept="image/*" />
-                <button type="submit" style={{ marginTop: '10px', ...styles.boton }}>
-                  Guardar Reporte
-                </button>
-              </form>
-            </InfoWindow>
-          )}
-        </GoogleMap>
-      </div>
+          <label>Imagen:</label>
+          <input type="file" name="imagen" accept="image/*" onChange={handleInputChange} />
+
+          <button type="submit" style={styles.boton}>Guardar Reporte</button>
+        </form>
+      </Modal>
+
+      {/* Modal Ruta */}
+      <Modal
+        isOpen={modalRutaOpen}
+        onRequestClose={() => setModalRutaOpen(false)}
+        style={customStyles}
+      >
+        <h3>Seleccionar Destino</h3>
+        <input
+          type="text"
+          placeholder="Escribe tu destino"
+          value={destinoRuta}
+          onChange={(e) => setDestinoRuta(e.target.value)}
+          style={styles.input}
+        />
+        <button onClick={handleGetRoute} style={styles.boton}>
+          Calcular Ruta
+        </button>
+      </Modal>
     </div>
   );
 };
 
+const customStyles = {
+  content: {
+    width: '400px',
+    margin: 'auto',
+    borderRadius: '8px',
+    padding: '20px',
+  },
+};
+
 const styles = {
   boton: {
-    padding: '10px 15px',
-    backgroundColor: '#4285F4',
+    padding: '10px',
+    backgroundColor: '#007bff',
     color: 'white',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
-    fontSize: '15px',
+  },
+  input: {
+    padding: '10px',
+    width: '100%',
+    marginBottom: '10px',
   },
 };
 
