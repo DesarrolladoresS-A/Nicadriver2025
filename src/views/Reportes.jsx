@@ -16,6 +16,7 @@ const Reportes = () => {
   const [modalEditar, setModalEditar] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
   const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
+  const [reporteSeleccionadoEliminar, setReporteSeleccionadoEliminar] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
   const [errorEliminacion, setErrorEliminacion] = useState(null);
@@ -64,6 +65,10 @@ const Reportes = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = reportesFiltrados.slice(indexOfFirstItem, indexOfLastItem);
+
+  const actualizarReportes = () => {
+    obtenerReportes();
+  };
 
   return (
     <div className="reportes-container">
@@ -137,6 +142,7 @@ const Reportes = () => {
           setModalEditar={setModalEditar}
           setModalEliminar={setModalEliminar}
           setReporteSeleccionado={setReporteSeleccionado}
+          setReporteSeleccionadoEliminar={setReporteSeleccionadoEliminar}
         />
         
         {reportesFiltrados.length > 0 ? (
@@ -170,11 +176,11 @@ const Reportes = () => {
         />
       )}
 
-      {modalEliminar && reporteSeleccionado && (
+      {modalEliminar && reporteSeleccionadoEliminar && (
         <ModalEliminarReportes
           setModalEliminar={setModalEliminar}
-          reporte={reporteSeleccionado}
-          actualizar={obtenerReportes}
+          reporte={reporteSeleccionadoEliminar}
+          actualizar={actualizarReportes}
           setError={setErrorEliminacion}
         />
       )}
