@@ -3,10 +3,19 @@
 
 /* Variables CSS */
 :root {
-    --primary-color: #1e3d87;
-    --primary-gradient: linear-gradient(135deg, #FF7E00, #FFC100);
+    --primary-color: #FF7E00;
+    --secondary-color: #FFC100;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
     --background-color: #f8f9fa;
-    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-color: rgba(0, 0, 0, 0.15);
+    --gradient-primary: linear-gradient(135deg, #FF7E00, #FFC100);
+    --gradient-success: linear-gradient(135deg, #28a745, #34d058);
+    --gradient-danger: linear-gradient(135deg, #dc3545, #e03b4a);
+    --gradient-warning: linear-gradient(135deg, #ffc107, #ffd700);
+    --gradient-info: linear-gradient(135deg, #17a2b8, #1da1f2);
 }
 
 /* Estilos generales */
@@ -36,46 +45,83 @@ body {
     box-shadow: 0 8px 25px var(--shadow-color);
 }
 
-
+/* Ventana de reporte */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(5px);
+  overflow-y: auto;
+  padding: 20px 20px 80px 20px;
 }
 
 .modal-content {
-  background-color: #fff;
-  padding: 30px 25px;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  padding: 30px;
+  border-radius: 18px;
   width: 90%;
   max-width: 450px;
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
-  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
+  font-family: 'Poppins', sans-serif;
   position: relative;
+  border: 1px solid rgba(255, 126, 0, 0.1);
+  backdrop-filter: blur(5px);
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 126, 0, 0.05), rgba(255, 193, 0, 0.05));
+  z-index: -1;
 }
 
 .modal-content h3 {
   text-align: center;
-  font-size: 18px;
-  color: #003366;
-  margin-bottom: 20px;
-  font-weight: 600;
+  font-size: 19px;
+  color: var(--primary-color);
+  margin-bottom: 25px;
+  font-weight: 700;
   text-transform: uppercase;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  letter-spacing: 1px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.modal-content h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 2.5px;
+  background: var(--gradient-primary);
+  border-radius: 1.5px;
 }
 
 .modal-content label {
   font-weight: 500;
-  margin-bottom: 5px;
+  margin-bottom: 12px;
   display: block;
+  color: #333;
+  font-size: 14px;
 }
 
 .modal-content input[type="text"],
@@ -83,67 +129,400 @@ body {
 .modal-content textarea,
 .modal-content select {
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 14px;
-  transition: 0.2s;
+  padding: 14px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  margin-bottom: 22px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  background: #ffffff;
 }
 
 .modal-content input[type="text"]:focus,
 .modal-content textarea:focus,
 .modal-content input[type="datetime-local"]:focus {
-  border-color: #007bff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 126, 0, 0.1);
   outline: none;
 }
 
 .modal-content textarea {
+  min-height: 120px;
   resize: vertical;
-  min-height: 80px;
 }
 
-.modal-content .file-upload {
+.modal-content .btn-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid rgba(255, 126, 0, 0.1);
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.modal-content button {
+  padding: 14px 30px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.modal-content button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+  z-index: -1;
+}
+
+.modal-content button:hover::before {
+  width: 200%;
+  height: 200%;
+}
+
+/* Botón Guardar Reporte */
+.modal-content button.save {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 126, 0, 0.2);
+  animation: float 3s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-content button.save::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.modal-content button.save:hover::after {
+  transform: translateX(100%);
+  animation: none;
+}
+
+.modal-content button.save:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 126, 0, 0.3);
+  animation: none;
+}
+
+.modal-content button.save:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(255, 126, 0, 0.2);
+}
+
+.modal-content button.save:active::after {
+  transform: translateX(0);
+}
+
+/* Botón Cancelar Reporte */
+.modal-content button.cancel {
+  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+  color: #666;
+  border: 1px solid rgba(255, 126, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-content button.cancel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 126, 0, 0.1),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.modal-content button.cancel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  animation: pulse 1.5s infinite;
+}
+
+.modal-content button.cancel:hover::after {
+  transform: translateX(100%);
+}
+
+.modal-content button.cancel:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Botón de Ubicación */
+.modal-content button.ubicacion {
+  background: linear-gradient(135deg, #4CAF50, #388E3C);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-content button.ubicacion::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.modal-content button.ubicacion:hover::before {
+  width: 200%;
+  height: 200%;
+}
+
+.modal-content button.ubicacion:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
+}
+
+.modal-content button.ubicacion:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(76, 175, 80, 0.1);
+}
+
+/* Botón de Reportar */
+.modal-content button.reportar {
+  background: linear-gradient(135deg, #FF7E00, #FFC100);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-content button.reportar::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.modal-content button.reportar:hover::before {
+  width: 200%;
+  height: 200%;
+}
+
+.modal-content button.reportar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 126, 0, 0.2);
+}
+
+.modal-content button.reportar:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(255, 126, 0, 0.1);
+}
+
+/* Botón de subir imagen */
+.image-upload-container label {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px dashed #ccc;
-  border-radius: 8px;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  color: #333;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-.modal-content .modal-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.modal-content .btn-cancelar,
-.modal-content .btn-guardar {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 14px 20px;
+  border: 2px dashed rgba(255, 126, 0, 0.3);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  color: var(--primary-color);
   font-weight: 500;
+  font-size: 14px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.image-upload-container label::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, transparent, rgba(255, 126, 0, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-upload-container label:hover::before {
+  opacity: 1;
+}
+
+.image-upload-container label:hover {
+  border-color: var(--primary-color);
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(255, 126, 0, 0.1);
+}
+
+/* Botones de tipos de incidente */
+.tipo-incidente {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 22px;
+  margin: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
   font-size: 14px;
 }
 
-.modal-content .btn-cancelar {
-  background-color: #adb5bd;
-  color: white;
+.tipo-incidente:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
-.modal-content .btn-guardar {
-  background-color: #0056d2;
-  color: white;
+.tipo-incidente::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: all 0.5s ease;
 }
 
+.tipo-incidente:hover::before {
+  left: 100%;
+}
+
+.tipo-incidente-accidente {
+  background: var(--gradient-danger);
+  color: white;
+  border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.tipo-incidente-trafico {
+  background: var(--gradient-warning);
+  color: #333;
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.tipo-incidente-emergencia {
+  background: var(--gradient-info);
+  color: white;
+  border: 1px solid rgba(23, 162, 184, 0.2);
+}
+
+.tipo-incidente-policia {
+  background: var(--gradient-success);
+  color: white;
+  border: 1px solid rgba(40, 167, 69, 0.2);
+}
+
+/* Ventana de visualización de tráfico */
+.traffic-info-window {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  width: 320px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 25px;
+}
+
+.traffic-info-window h4 {
+  color: var(--primary-color);
+  margin-bottom: 15px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.traffic-info-window .type-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: var(--gradient-primary);
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.traffic-info-window .time-stamp {
+  color: #888;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.traffic-info-window .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.traffic-info-window .close-btn:hover {
+  color: #333;
+}
+
+/* Ruta info */
 .ruta-info {
   background-color: #f8f9fa;
   padding: 12px;
@@ -221,7 +600,6 @@ body {
 .ruta-form input { width:200px; padding:6px; }
 .ruta-info { text-align:center; margin-bottom:8px; font-weight:bold; }
 
-
 /* Sección de filtros */
 .filtros-container {
     display: flex;
@@ -286,7 +664,7 @@ body {
 }
 
 .form-button {
-    background: var(--primary-gradient);
+    background: var(--gradient-primary);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -352,6 +730,185 @@ body {
     color: #999;
     font-size: 0.8rem;
     margin-top: 0.5rem;
+}
+
+/* Estilos para el botón de imagen y visualización previa */
+.image-upload-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.image-upload-container label {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #666;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.image-upload-container label:hover {
+  border-color: var(--primary-color);
+  background: rgba(30, 61, 135, 0.05);
+  color: var(--primary-color);
+}
+
+.image-upload-container input[type="file"] {
+  display: none;
+}
+
+.image-preview {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 10px;
+  margin: 10px 0;
+  object-fit: cover;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.image-preview-container {
+  position: relative;
+  margin: 10px 0;
+}
+
+.image-preview-container .remove-image {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  padding: 5px 8px;
+  cursor: pointer;
+  color: #dc3545;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.image-preview-container .remove-image:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transform: scale(1.1);
+}
+
+/* Icono para el botón de imagen */
+.image-upload-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+/* Estilos para los botones de la ventana de información del marcador */
+.info-window-button {
+  display: inline-block;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 5px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+}
+
+/* Botón Sigue ocurriendo */
+.info-window-button.sigue {
+  background: linear-gradient(135deg, #4CAF50, #388E3C);
+  color: white;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.info-window-button.sigue:hover {
+  background: linear-gradient(135deg, #388E3C, #2E7D32);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.info-window-button.sigue:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+}
+
+/* Botón Eliminar */
+.info-window-button.eliminar {
+  background: linear-gradient(135deg, #FF5252, #D32F2F);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
+}
+
+.info-window-button.eliminar:hover {
+  background: linear-gradient(135deg, #D32F2F, #C62828);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 82, 82, 0.4);
+}
+
+.info-window-button.eliminar:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(255, 82, 82, 0.3);
+}
+
+/* Iconos para los botones */
+.info-window-button.sigue::before {
+  content: '✅';
+  margin-right: 8px;
+}
+
+.info-window-button.eliminar::before {
+  content: '❌';
+  margin-right: 8px;
+}
+
+/* Ajustes para la ventana de información */
+.info-window-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
+  width: 220px;
+}
+
+.info-window-content h4 {
+  color: var(--primary-color);
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.info-window-content p {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.info-window-content img {
+  width: 100%;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajustes para el contenedor de botones */
+.info-window-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Responsive */

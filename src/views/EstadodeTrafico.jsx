@@ -58,6 +58,7 @@ const EstadoTrafico = () => {
   const [tipo, setTipo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [imagen, setImagen] = useState(null);
+  const [imagenPreview, setImagenPreview] = useState(null);
   const [reportes, setReportes] = useState([]);
   const [selectedReporte, setSelectedReporte] = useState(null);
   const [showRutaModal, setShowRutaModal] = useState(false);
@@ -120,6 +121,7 @@ const EstadoTrafico = () => {
         setTipo('');
         setDescripcion('');
         setImagen(null);
+        setImagenPreview(null);
         setSelectedLocation(null);
       };
       reader.readAsDataURL(imagen);
@@ -127,6 +129,24 @@ const EstadoTrafico = () => {
       console.error('Error guardando el reporte:', error);
       alert('Hubo un error al guardar el reporte.');
     }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagen(file);
+      // Crear una vista previa de la imagen
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagenPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImagen(null);
+    setImagenPreview(null);
   };
 
   const iniciarViaje = () => {
@@ -192,35 +212,45 @@ const EstadoTrafico = () => {
               position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
               onCloseClick={() => setSelectedReporte(null)}
             >
-              <div style={{ maxWidth: '220px' }}>
-                <h4>{selectedReporte.tipo}</h4>
-                <p>{selectedReporte.descripcion}</p>
+              <div style={{ maxWidth: '280px' }}>
+                <h4 style={{ color: '#FF5722', marginBottom: '12px', fontSize: '18px', fontWeight: '600' }}>{selectedReporte.tipo}</h4>
+                <p style={{ margin: '0 0 18px 0', color: '#333', fontSize: '14px', lineHeight: '1.4' }}>{selectedReporte.descripcion}</p>
                 {selectedReporte.imagenBase64 && (
                   <img
                     src={selectedReporte.imagenBase64}
                     alt="Incidente"
-                    style={{ width: '100%', borderRadius: '5px', marginBottom: '10px' }}
+                    style={{ width: '100%', borderRadius: '5px', marginBottom: '18px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)' }}
                   />
                 )}
-                <button onClick={async () => {
-                  await addDoc(collection(db, 'confirmaciones'), {
-                    incidenteId: selectedReporte.id,
-                    confirmadoEn: serverTimestamp(),
-                  });
-                  alert('Se ha confirmado que el incidente sigue ocurriendo.');
-                  setSelectedReporte(null);
-                }}>
-                  Sigue ocurriendo
-                </button>
-                <button onClick={async () => {
-                  if (confirm('¿Deseas eliminar este reporte?')) {
-                    await deleteDoc(doc(db, 'incidentes', selectedReporte.id));
-                    alert('Reporte eliminado');
-                    setSelectedReporte(null);
-                  }
-                }}>
-                  Eliminar
-                </button>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '18px', paddingTop: '12px', borderTop: '2px solid rgba(0, 0, 0, 0.1)' }}>
+                  <button 
+                    className="info-window-button sigue"
+                    style={{ padding: '8px 18px', fontSize: '13px' }}
+                    onClick={async () => {
+                      await addDoc(collection(db, 'confirmaciones'), {
+                        incidenteId: selectedReporte.id,
+                        confirmadoEn: serverTimestamp(),
+                      });
+                      alert('Se ha confirmado que el incidente sigue ocurriendo.');
+                      setSelectedReporte(null);
+                    }}
+                  >
+                    Sigue ocurriendo
+                  </button>
+                  <button 
+                    className="info-window-button eliminar"
+                    style={{ padding: '8px 18px', fontSize: '13px' }}
+                    onClick={async () => {
+                      if (confirm('¿Deseas eliminar este reporte?')) {
+                        await deleteDoc(doc(db, 'incidentes', selectedReporte.id));
+                        alert('Reporte eliminado');
+                        setSelectedReporte(null);
+                      }
+                    }}
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </div>
             </InfoWindow>
           )}
@@ -317,8 +347,36 @@ const EstadoTrafico = () => {
               rows={3}
             />
 
-            <label>Subir foto</label>
-            <input type="file" accept="image/*" onChange={(e) => setImagen(e.target.files[0])} />
+            <div className="image-upload-container">
+              {imagenPreview ? (
+                <div className="image-preview-container">
+                  <img 
+                    src={imagenPreview} 
+                    alt="Vista previa" 
+                    className="image-preview"
+                  />
+                  <button 
+                    className="remove-image" 
+                    onClick={removeImage}
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : (
+                <label htmlFor="image-upload" className="image-upload-label">
+                  <svg className="image-upload-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-5 13h2v5h2v-5h2l-3-3l-3 3z" />
+                  </svg>
+                  Subir imagen
+                </label>
+              )}
+              <input
+                type="file"
+                id="image-upload"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+            </div>
 
             <div className="button-group">
               <button onClick={handleGuardarReporte}>Guardar reporte</button>
