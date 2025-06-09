@@ -1,19 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from "../database/authcontext";
 import { useNavigate } from "react-router-dom";
-import { Card, Container, Row, Col, Image } from 'react-bootstrap';
+import { Card, Container, Row, Col, Image, Button } from 'react-bootstrap';
 import { FaUser, FaIdCard, FaPhone, FaEnvelope } from 'react-icons/fa';
 
 const Perfil = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUserProfile } = useAuth(); // Asumiendo que tienes un método updateUserProfile para actualizar el perfil
   const navigate = useNavigate();
 
+  // Estado para la imagen
+  const [image, setImage] = useState(user?.photoURL || '/default-avatar.png');
+  
   // Datos del usuario (simulados - deberían venir de Firebase)
   const usuario = {
     nombre: user?.displayName || 'Usuario',
     cedula: '123-123456-1234X',
     celular: '1234-5678',
     email: user?.email || 'usuario@ejemplo.com'
+  };
+
+  // Función para convertir la imagen a base64 y actualizar el perfil
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setImage(reader.result); // Guardamos la imagen en base64
+        // Aquí podrías hacer una llamada a Firebase o tu base de datos para guardar la URL base64
+        updateUserProfile({ photoURL: reader.result }); // Esto asume que tienes una función para actualizar el perfil
+      };
+    }
   };
 
   return (
@@ -25,9 +42,15 @@ const Perfil = () => {
               <Row className="align-items-center mb-4">
                 <Col md={4} className="text-center">
                   <Image 
-                    src={user?.photoURL || '/default-avatar.png'} 
+                    src={image} 
                     roundedCircle 
                     style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                  />
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageChange} 
+                    className="mt-3" 
                   />
                   <h5 className="mt-3 text-center text-primary">{user?.email}</h5>
                   <p className="text-center text-muted">Usuario</p>
