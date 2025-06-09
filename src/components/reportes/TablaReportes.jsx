@@ -9,7 +9,8 @@ const TablaReportes = ({
   setModalEliminar,
   setReporteSeleccionadoEliminar,
 }) => {
-  const [imagenModal, setImagenModal] = useState(null);
+  const [modalVer, setModalVer] = useState(false);
+  const [reporteAVisualizar, setReporteAVisualizar] = useState(null);
 
   const formatearFechaHora = (fechaHora) => {
     try {
@@ -60,8 +61,81 @@ const TablaReportes = ({
     }
   };
 
+  const abrirModalVisualizacion = (reporte) => {
+    setReporteAVisualizar(reporte);
+    setModalVer(true);
+  };
+
   return (
     <div className="tabla-reportes-container">
+      {/* Modal de Visualización */}
+      {modalVer && reporteAVisualizar && (
+        <div className="modal-overlay">
+          <div className="modal-ver-reporte">
+            <div className="modal-header">
+              <h2>Detalles del Reporte</h2>
+              <button 
+                className="close-modal-btn" 
+                onClick={() => setModalVer(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="reporte-detalles">
+              <div className="detalle-item">
+                <strong>Título:</strong>
+                <p>{reporteAVisualizar.titulo}</p>
+              </div>
+
+              <div className="detalle-item">
+                <strong>Ubicación:</strong>
+                <p>{reporteAVisualizar.ubicacion}</p>
+              </div>
+
+              <div className="detalle-item">
+                <strong>Descripción:</strong>
+                <p>{reporteAVisualizar.descripcion}</p>
+              </div>
+
+              <div className="detalle-item">
+                <strong>Fecha y Hora:</strong>
+                <p>{formatearFechaHora(reporteAVisualizar.fechaHora)}</p>
+              </div>
+
+              {reporteAVisualizar.foto && (
+                <div className="detalle-item">
+                  <strong>Imagen:</strong>
+                  <div className="imagen-container">
+                    <img 
+                      src={reporteAVisualizar.foto} 
+                      alt="Imagen del reporte" 
+                      className="imagen-reporte"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="modal-footer">
+                <button 
+                  className="btn-generar-pdf"
+                  onClick={() => generarPDF(reporteAVisualizar)}
+                >
+                  <i className="bi bi-file-earmark-pdf"></i> Generar PDF
+                </button>
+                <button 
+                  className="btn-cerrar"
+                  onClick={() => setModalVer(false)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tabla de Reportes */}
       <div className="tabla-reportes-header">
         <h2>Lista de Reportes</h2>
         <p>Administra los reportes de incidentes</p>
@@ -82,7 +156,7 @@ const TablaReportes = ({
             <tr key={reporte.id}>
               <td>{reporte.titulo}</td>
               <td>{reporte.ubicacion}</td>
-              <td>{reporte.descripcion}</td>
+              <td>{reporte.descripcion.substring(0, 50)}{reporte.descripcion.length > 50 ? "..." : ""}</td>
               <td>{formatearFechaHora(reporte.fechaHora)}</td>
               <td className="acciones">
                 <button
@@ -98,8 +172,7 @@ const TablaReportes = ({
                 <button
                   className="btn-accion btn-eliminar"
                   onClick={() => {
-                    console.log("Preparando para eliminar reporte:", reporte.id);
-                    setReporteSeleccionado(reporte);
+                    setReporteSeleccionadoEliminar(reporte);
                     setModalEliminar(true);
                   }}
                   title="Eliminar"
@@ -108,10 +181,8 @@ const TablaReportes = ({
                 </button>
                 <button
                   className="btn-accion btn-ver"
-                  onClick={() => {
-                    // Implementar vista detallada
-                  }}
-                  title="Ver"
+                  onClick={() => abrirModalVisualizacion(reporte)}
+                  title="Ver detalles"
                 >
                   <i className="bi bi-eye-fill"></i>
                 </button>

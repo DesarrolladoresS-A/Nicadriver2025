@@ -8,6 +8,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [ubicacion, setUbicacion] = useState("");
   const [fechaHora, setFechaHora] = useState("");
   const [foto, setFoto] = useState(null);
+  const [cargando, setCargando] = useState(false);
   
   // Estados para manejar errores
   const [errores, setErrores] = useState({
@@ -39,29 +40,49 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
     return !Object.values(nuevosErrores).some(error => error);
   };
 
+  const convertirImagenABase64 = (archivo) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(archivo);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   const guardarReporte = async () => {
     // Validar antes de guardar
     if (!validarCampos()) return;
 
-    const nuevoReporte = {
-      titulo: titulo.trim(),
-      descripcion: descripcion.trim(),
-      ubicacion: ubicacion.trim(),
-      fechaHora,
-      // foto: aquí deberías subir a Firebase Storage y guardar la URL
-    };
+    setCargando(true);
 
     try {
+      let fotoBase64 = null;
+      
+      // Si hay una foto seleccionada, convertirla a base64
+      if (foto) {
+        fotoBase64 = await convertirImagenABase64(foto);
+      }
+
+      const nuevoReporte = {
+        titulo: titulo.trim(),
+        descripcion: descripcion.trim(),
+        ubicacion: ubicacion.trim(),
+        fechaHora,
+        foto: fotoBase64, // Guardamos la imagen como base64
+        fechaRegistro: new Date().toISOString() // Añadimos fecha de registro
+      };
+
       await addDoc(collection(db, "reportes"), nuevoReporte);
       actualizar();
       setModalRegistro(false);
     } catch (error) {
       console.error("Error al guardar el reporte:", error);
+    } finally {
+      setCargando(false);
     }
   };
 
-  // Estilo para campos con error
-    return (
+  return (
     <div className="modal-overlay">
       <div className="registro-reporte-formulario">
         <div className="modal-title">
@@ -136,7 +157,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         <div className="file-input-container">
           <label htmlFor="foto">
             <i className="bi bi-camera-fill"></i>
-            Subir foto
+            {foto ? "Imagen seleccionada" : "Subir foto"}
           </label>
           <input
             id="foto"
@@ -144,11 +165,26 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             accept="image/*"
             onChange={(e) => setFoto(e.target.files[0])}
           />
+          {foto && (
+            <div className="imagen-previa">
+              <img 
+                src={URL.createObjectURL(foto)} 
+                alt="Vista previa" 
+                style={{maxWidth: '100px', maxHeight: '100px'}}
+              />
+            </div>
+          )}
         </div>
 
         <div className="action-buttons">
           <button className="btn-cancelar" onClick={() => setModalRegistro(false)}>Cancelar</button>
-          <button className="btn-guardar" onClick={guardarReporte}>Guardar reporte</button>
+          <button 
+            className="btn-guardar" 
+            onClick={guardarReporte}
+            disabled={cargando}
+          >
+            {cargando ? "Guardando..." : "Guardar reporte"}
+          </button>
         </div>
       </div>
     </div>
