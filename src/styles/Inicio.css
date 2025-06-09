@@ -280,7 +280,7 @@ body {
 
 .cuadro-reporte:hover {
     transform: translateY(-5px);
-    border-color: #FF7E00;
+    border-color: #afd8fa;
     box-shadow: 0 10px 30px rgba(255, 126, 0, 0.1);
 }
 
@@ -504,7 +504,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #FF7E00;
+    background: #ffffff;
     border-radius: 50%;
     color: white;
     font-size: 1rem;

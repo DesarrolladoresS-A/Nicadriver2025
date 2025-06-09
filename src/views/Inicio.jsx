@@ -6,7 +6,7 @@ import { db } from '../database/firebaseconfig';
 import { collection, getDocs } from 'firebase/firestore';
 import jsPDF from 'jspdf';
 import Paginacion from '../components/ordenamiento/Paginacion';
-import GraficosClima from '../components/GraficoClima';
+// import GraficosClima from '../components/GraficoClima';
 import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -152,7 +152,7 @@ const Inicio = () => {
               </Marker>
             </LayersControl>
           </MapContainer>
-          <GraficosClima />
+          {/* <GraficosClima /> */}
         </div>
       </div>
 

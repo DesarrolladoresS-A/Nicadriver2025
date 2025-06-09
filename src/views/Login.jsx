@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Alert } from "react-bootstrap";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { useAuth } from "../database/authcontext";
 import { appfirebase } from "../database/firebaseconfig";
 import "../styles/Login.css";
@@ -20,49 +21,103 @@ const Login = () => {
     cedula: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    profileImage: null
   });
+
+  const [previewImage, setPreviewImage] = useState(null);
 
   const { user } = useAuth();
   const navigate = useNavigate();
   const auth = getAuth(appfirebase);
 
-  // Función mejorada para el formato exacto de cédula (123-123456-1234X)
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 300;
+          const MAX_HEIGHT = 300;
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+      };
+    });
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.match('image.*')) {
+      setError("Por favor, selecciona un archivo de imagen válido (JPEG, PNG)");
+      return;
+    }
+    
+    if (file.size > 1 * 1024 * 1024) {
+      setError("La imagen es demasiado grande. Máximo 1MB permitido.");
+      return;
+    }
+
+    try {
+      const compressedImage = await compressImage(file);
+      const base64String = compressedImage.split(',')[1];
+      setRegisterData({ ...registerData, profileImage: base64String });
+      setPreviewImage(compressedImage);
+      setError(null);
+    } catch (error) {
+      setError("Error al procesar la imagen");
+    }
+  };
+
   const handleCedulaChange = (e) => {
     let value = e.target.value.toUpperCase();
-    
-    // 1. Limpiar caracteres no permitidos (solo números, guiones y una letra mayúscula al final)
     value = value.replace(/[^0-9A-Z-]/g, '');
     
-    // 2. Extraer componentes
     const numeros = value.replace(/[^0-9]/g, '');
     const letras = value.replace(/[^A-Z]/g, '');
     const tieneLetra = letras.length > 0;
     const letra = tieneLetra ? letras[letras.length - 1] : '';
     
-    // 3. Construir el formato base con guiones
     let formato = '';
     let digitosIngresados = 0;
     
-    // Primer segmento: 3 dígitos
     if (numeros.length > 0) {
       formato = numeros.slice(0, 3);
       digitosIngresados = Math.min(numeros.length, 3);
       
-      // Agregar primer guión después de 3 dígitos
       if (numeros.length > 3 || formato.length === 3) {
         formato += '-';
         
-        // Segundo segmento: 6 dígitos
         const segmento2 = numeros.slice(3, 9);
         formato += segmento2;
         digitosIngresados += segmento2.length;
         
-        // Agregar segundo guión después de 9 dígitos
         if (numeros.length > 9 || digitosIngresados >= 9) {
           formato += '-';
           
-          // Tercer segmento: 4 dígitos exactos
           const segmento3 = numeros.slice(9, 13);
           formato += segmento3;
           digitosIngresados += segmento3.length;
@@ -70,15 +125,12 @@ const Login = () => {
       }
     }
     
-    // 4. Manejar la letra final (solo si hay 13 dígitos completos)
     if (tieneLetra) {
-      // Completar con ceros si faltan dígitos
       if (digitosIngresados < 13) {
         const cerosFaltantes = '0'.repeat(13 - digitosIngresados);
         formato = formato.slice(0, -1 * (4 - (13 - digitosIngresados))) + cerosFaltantes;
       }
       
-      // Agregar letra al final (solo si el formato tiene 13 dígitos + 2 guiones)
       if (formato.replace(/-/g, '').length === 13) {
         formato = formato.slice(0, 15) + letra;
       }
@@ -87,7 +139,6 @@ const Login = () => {
     setRegisterData({ ...registerData, cedula: formato });
   };
 
-  // Validación de celular (xxxx-xxxx)
   const handleCelularChange = (e) => {
     let value = e.target.value.replace(/[^0-9-]/g, '');
     
@@ -109,7 +160,6 @@ const Login = () => {
       await signInWithEmailAndPassword(auth, email, password);
       localStorage.setItem("adminEmail", email);
       
-      // Verificar si es administrador y redirigir a la vista correspondiente
       if (email === "desarrolladoressa2000@gmail.com") {
         navigate("/administrador");
       } else {
@@ -127,14 +177,12 @@ const Login = () => {
     setLoading(true);
     setError(null);
 
-    // Validación EXACTA de cédula (123-123456-1234X)
     if (!/^\d{3}-\d{6}-\d{4}[A-Z]$/.test(registerData.cedula)) {
       setError("Formato de cédula inválido. Debe ser exactamente: 123-123456-1234X");
       setLoading(false);
       return;
     }
 
-    // Validación de celular
     if (!/^\d{4}-\d{4}$/.test(registerData.celular)) {
       setError("Formato de celular inválido. Use: xxxx-xxxx");
       setLoading(false);
@@ -148,11 +196,22 @@ const Login = () => {
     }
 
     try {
-      await createUserWithEmailAndPassword(
+      const userCredential = await createUserWithEmailAndPassword(
         auth,
         registerData.email,
         registerData.password
       );
+
+      const db = getFirestore(appfirebase);
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        nombre: registerData.nombre,
+        apellido: registerData.apellido,
+        celular: registerData.celular,
+        cedula: registerData.cedula,
+        email: registerData.email,
+        profileImage: registerData.profileImage,
+        createdAt: new Date()
+      });
 
       setShowRegister(false);
       setRegisterData({
@@ -162,8 +221,10 @@ const Login = () => {
         cedula: "",
         email: "",
         password: "",
-        confirmPassword: ""
+        confirmPassword: "",
+        profileImage: null
       });
+      setPreviewImage(null);
 
       alert("¡Registro exitoso! Ahora puedes iniciar sesión");
     } catch (error) {
@@ -267,6 +328,32 @@ const Login = () => {
                 onChange={handleRegisterChange}
                 required
               />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Imagen de perfil</label>
+              <input
+                type="file"
+                className="form-control"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+              {previewImage && (
+                <div className="mt-2 text-center">
+                  <img 
+                    src={previewImage} 
+                    alt="Vista previa" 
+                    style={{ 
+                      width: '100px', 
+                      height: '100px', 
+                      objectFit: 'cover', 
+                      borderRadius: '50%',
+                      border: '2px solid #ddd'
+                    }}
+                  />
+                  <p className="text-muted small mt-1">Vista previa (imagen comprimida)</p>
+                </div>
+              )}
             </div>
             
             <div className="row">

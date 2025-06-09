@@ -77,14 +77,14 @@ const Encabezado = () => {
                       <i className="bi-house-door me-2"></i>
                       <strong>Inicio</strong>
                     </Nav.Link>
-                    <Nav.Link onClick={() => handleNavigate("/estadodetrafico")} className="nav-link">
-                      <i className="bi-car-front me-2"></i>
-                      <strong>Estado de Tráfico</strong>
-                    </Nav.Link>
                     <Nav.Link onClick={() => handleNavigate("/nosotros")} className="nav-link">
                       <i className="bi-info-circle me-2"></i>
                       <strong>Nosotros</strong>
                     </Nav.Link>
+                    {/* <Nav.Link onClick={() => handleNavigate("/estadodetrafico")} className="nav-link">
+                      <i className="bi-car-front me-2"></i>
+                      <strong>Estado de Tráfico</strong>
+                    </Nav.Link> */}
                     <Nav.Link onClick={() => handleNavigate("/login")} className="nav-link">
                       <i className="bi-box-arrow-in-right me-2"></i>
                       <strong>Iniciar Sesión</strong>
@@ -158,6 +158,13 @@ const Encabezado = () => {
                           <strong>Inicio</strong>
                         </Nav.Link>
                         <Nav.Link
+                          onClick={() => handleNavigate("/nosotros")}
+                          className={`nav-link ${location.pathname === "/nosotros" ? "active" : ""}`}
+                        >
+                          <i className="bi-person-fill me-2"></i>
+                          <strong>Nosotros</strong>
+                        </Nav.Link>
+                        <Nav.Link
                           onClick={() => handleNavigate("/estadodetrafico")}
                           className={`nav-link ${location.pathname === "/estadodetrafico" ? "active" : ""}`}
                         >
@@ -170,13 +177,6 @@ const Encabezado = () => {
                         >
                           <i className="bi-file-earmark-text-fill me-2"></i>
                           <strong>Reportes</strong>
-                        </Nav.Link>
-                        <Nav.Link
-                          onClick={() => handleNavigate("/nosotros")}
-                          className={`nav-link ${location.pathname === "/nosotros" ? "active" : ""}`}
-                        >
-                          <i className="bi-person-fill me-2"></i>
-                          <strong>Nosotros</strong>
                         </Nav.Link>
                         <Nav.Link
                           onClick={() => setShowPerfilModal(true)}
