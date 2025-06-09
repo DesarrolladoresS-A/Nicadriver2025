@@ -6,7 +6,7 @@ import ModalEdicionReportes from "../components/reportes/ModalEdicionReportes";
 import ModalEliminarReportes from "../components/reportes/ModalEliminacionReportes";
 import TablaReportes from "../components/reportes/TablaReportes";
 import Paginacion from "../components/ordenamiento/Paginacion";
-import { FaSearch, FaPlus, FaFilter } from "react-icons/fa";
+import { FaSearch, FaPlus, FaExclamationTriangle } from "react-icons/fa";
 import "../styles/Reporte.css";
 
 const Reportes = () => {
@@ -22,16 +22,25 @@ const Reportes = () => {
   const [errorEliminacion, setErrorEliminacion] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [filtroActivo, setFiltroActivo] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const obtenerReportes = async () => {
+    setLoading(true);
+    setErrorEliminacion(null);
     try {
       const data = await getDocs(collection(db, "reportes"));
       const reportesData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
       setReportes(reportesData);
       setReportesFiltrados(reportesData);
-      setErrorEliminacion(null);
     } catch (error) {
       console.error("Error al obtener los reportes:", error);
+      setErrorEliminacion(
+        error.code === "permission-denied"
+          ? "No tienes permisos para ver los reportes. Contacta al administrador."
+          : "Hubo un error al cargar los reportes. Por favor, inténtalo de nuevo."
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,6 +81,29 @@ const Reportes = () => {
 
   return (
     <div className="reportes-container">
+      {/* Loading state */}
+      {loading && (
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p>Cargando reportes...</p>
+        </div>
+      )}
+
+      {/* Error message */}
+      {errorEliminacion && (
+        <div className="error-message" style={{
+          backgroundColor: '#ffebee',
+          color: '#f44336',
+          padding: '15px',
+          borderRadius: '6px',
+          marginBottom: '20px',
+          textAlign: 'center'
+        }}>
+          <FaExclamationTriangle style={{ marginRight: '10px' }} />
+          {errorEliminacion}
+        </div>
+      )}
+
       {/* Header con título y controles */}
       <div className="reportes-header">
         <div className="header-title">
@@ -91,11 +123,13 @@ const Reportes = () => {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               className="search-input"
+              disabled={loading}
             />
             {filtroActivo && (
               <button 
                 onClick={limpiarFiltros}
                 className="clear-filter-btn"
+                disabled={loading}
               >
                 Limpiar
               </button>
@@ -106,6 +140,7 @@ const Reportes = () => {
           <button 
             className="btn-registro"
             onClick={() => setModalRegistro(true)}
+            disabled={loading}
           >
             <FaPlus /> Nuevo Reporte
           </button>
@@ -128,10 +163,18 @@ const Reportes = () => {
         </div>
       </div>
 
-      {/* Mensaje de error */}
-      {errorEliminacion && (
-        <div className="error-message">
-          {errorEliminacion}
+      {/* Mensaje cuando no hay reportes */}
+      {(!loading && reportes.length === 0) && (
+        <div className="no-reports-message" style={{
+          textAlign: 'center',
+          padding: '40px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px',
+          margin: '20px 0'
+        }}>
+          <FaPlus style={{ fontSize: '48px', color: '#1e3d87' }} />
+          <h3>No hay reportes disponibles</h3>
+          <p>¡Crea tu primer reporte haciendo clic en el botón "Nuevo Reporte"!</p>
         </div>
       )}
 
@@ -143,6 +186,7 @@ const Reportes = () => {
           setModalEliminar={setModalEliminar}
           setReporteSeleccionado={setReporteSeleccionado}
           setReporteSeleccionadoEliminar={setReporteSeleccionadoEliminar}
+          reporteSeleccionadoEliminar={reporteSeleccionadoEliminar}
         />
         
         {reportesFiltrados.length > 0 ? (
@@ -155,7 +199,9 @@ const Reportes = () => {
         ) : (
           <div className="no-results">
             <p>No se encontraron reportes con los criterios de búsqueda</p>
-            <button onClick={limpiarFiltros}>Limpiar filtros</button>
+            <button onClick={limpiarFiltros} disabled={loading}>
+              Limpiar filtros
+            </button>
           </div>
         )}
       </div>
@@ -164,7 +210,7 @@ const Reportes = () => {
       {modalRegistro && (
         <ModalRegistroReportes
           setModalRegistro={setModalRegistro}
-          actualizar={obtenerReportes}
+          actualizar={actualizarReportes}
         />
       )}
 
@@ -172,7 +218,7 @@ const Reportes = () => {
         <ModalEdicionReportes
           setModalEditar={setModalEditar}
           reporte={reporteSeleccionado}
-          actualizar={obtenerReportes}
+          actualizar={actualizarReportes}
         />
       )}
 
@@ -182,6 +228,11 @@ const Reportes = () => {
           reporte={reporteSeleccionadoEliminar}
           actualizar={actualizarReportes}
           setError={setErrorEliminacion}
+          onClose={() => {
+            setModalEliminar(false);
+            setReporteSeleccionadoEliminar(null);
+            setErrorEliminacion(null);
+          }}
         />
       )}
     </div>

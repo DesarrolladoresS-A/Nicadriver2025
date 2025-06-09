@@ -4,52 +4,61 @@ import { doc, deleteDoc } from "firebase/firestore";
 import { getStorage, ref, deleteObject } from "firebase/storage";
 import { FaTrash, FaTimes, FaExclamationTriangle } from "react-icons/fa";
 
-const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError }) => {
+const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setLocalError] = useState(null);
 
   const eliminarReporte = async () => {
     setLoading(true);
     setLocalError(null);
-    setError(null); // Limpiar errores anteriores
+    setError(null);
 
     try {
       console.log("Iniciando eliminación del reporte:", reporte.id);
-      
+
       // 1. Eliminar imagen de Storage si existe
       if (reporte.foto) {
         try {
-          console.log("Intentando eliminar imagen:", reporte.foto);
           const storage = getStorage();
-          const fotoRef = ref(storage, reporte.foto);
-          await deleteObject(fotoRef);
-          console.log("Imagen eliminada con éxito");
-        } catch (error) {
-          console.warn("⚠️ La imagen no se pudo eliminar:", error.message);
-          // No es crítico si falla la eliminación de la imagen
+          const url = new URL(reporte.foto);
+          const path = decodeURIComponent(url.pathname.split("/o/")[1]?.split("?")[0]);
+
+          if (path) {
+            const fotoRef = ref(storage, path);
+            await deleteObject(fotoRef);
+            console.log("✅ Imagen eliminada con éxito");
+          } else {
+            console.warn("⚠️ Ruta de la imagen no válida.");
+          }
+        } catch (imgError) {
+          console.warn("⚠️ No se pudo eliminar la imagen. Continuando con el reporte:", imgError.message);
         }
       }
 
       // 2. Eliminar el documento de Firestore
-      console.log("Intentando eliminar documento de Firestore");
-      const reporteRef = doc(db, "reportes", reporte.id);
-      await deleteDoc(reporteRef);
-      console.log("Documento eliminado con éxito");
+      try {
+        const reporteRef = doc(db, "reportes", reporte.id);
+        await deleteDoc(reporteRef);
+        console.log("✅ Documento eliminado con éxito");
+      } catch (firestoreError) {
+        console.error("❌ Error al eliminar el documento:", firestoreError);
+        throw new Error("No se pudo eliminar el reporte");
+      }
 
       // Actualizar lista y cerrar modal
       actualizar();
-      setModalEliminar(false);
+      onClose();
     } catch (error) {
       console.error("❌ Error completo al eliminar el reporte:", error);
-      
-      let errorMessage = "Hubo un error al eliminar el reporte. Por favor, inténtalo de nuevo.";
-      
+
+      let errorMessage = error.message || "Hubo un error al eliminar el reporte. Por favor, inténtalo de nuevo.";
+
       if (error.code === "permission-denied") {
         errorMessage = "No tienes permisos para eliminar reportes. Contacta al administrador.";
       } else if (error.code === "not-found") {
         errorMessage = "El reporte no fue encontrado. Puede que ya haya sido eliminado.";
       }
-      
+
       setLocalError(errorMessage);
       setError(errorMessage);
     } finally {
@@ -87,8 +96,7 @@ const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError
         }}>
           <FaTrash /> Eliminar Reporte
         </h2>
-        
-        {/* Mostrar error local si existe */}
+
         {error && (
           <div style={{
             backgroundColor: '#ffebee',
@@ -100,55 +108,67 @@ const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError
             alignItems: 'center',
             gap: '10px'
           }}>
-            <FaExclamationTriangle /> {error}
+            <FaExclamationTriangle />
+            {error}
           </div>
         )}
-        
-        <p style={{ marginBottom: '25px', fontSize: '1.1rem' }}>
-          ¿Estás seguro de que quieres eliminar el reporte: <strong>"{reporte.titulo}"</strong>?
-        </p>
+
+        <p>¿Estás seguro que deseas eliminar el reporte "{reporte.titulo}"?</p>
+        <p>Esta acción no se puede deshacer.</p>
 
         <div style={{
           display: 'flex',
-          justifyContent: 'flex-end',
-          gap: '15px',
-          marginTop: '30px'
+          gap: '10px',
+          marginTop: '20px',
+          justifyContent: 'flex-end'
         }}>
           <button
-            onClick={() => setModalEliminar(false)}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#f0f0f0',
-              color: '#333',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.3s'
-            }}
+            onClick={() => onClose()}
             disabled={loading}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#ccc',
+              color: '#000',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
           >
-            <FaTimes /> Cancelar
+            Cancelar
           </button>
           <button
             onClick={eliminarReporte}
+            disabled={loading}
             style={{
-              padding: '10px 20px',
+              padding: '8px 16px',
               backgroundColor: '#f44336',
               color: 'white',
               border: 'none',
-              borderRadius: '6px',
+              borderRadius: '4px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.3s'
+              gap: '8px'
             }}
-            disabled={loading}
           >
-            <FaTrash /> {loading ? "Eliminando..." : "Eliminar"}
+            {loading ? (
+              <>
+                <div style={{
+                  width: '14px',
+                  height: '14px',
+                  border: '2px solid white',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'spinner 1s linear infinite'
+                }}></div>
+                Eliminando...
+              </>
+            ) : (
+              <>
+                <FaTrash />
+                Eliminar
+              </>
+            )}
           </button>
         </div>
       </div>

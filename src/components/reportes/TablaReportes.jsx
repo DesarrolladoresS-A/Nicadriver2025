@@ -8,6 +8,7 @@ const TablaReportes = ({
   setReporteSeleccionado,
   setModalEliminar,
   setReporteSeleccionadoEliminar,
+  reporteSeleccionadoEliminar,
 }) => {
   const [modalVer, setModalVer] = useState(false);
   const [reporteAVisualizar, setReporteAVisualizar] = useState(null);
@@ -172,6 +173,9 @@ const TablaReportes = ({
                 <button
                   className="btn-accion btn-eliminar"
                   onClick={() => {
+                    // Resetear el reporte seleccionado para eliminar
+                    setReporteSeleccionadoEliminar(null);
+                    // Seleccionar el nuevo reporte
                     setReporteSeleccionadoEliminar(reporte);
                     setModalEliminar(true);
                   }}
