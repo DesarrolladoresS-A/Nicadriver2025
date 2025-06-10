@@ -15,3 +15,5 @@ const GraficoTipoReporte = ({ data }) => (
 );
 
 export default GraficoTipoReporte;
+
+//ayudaaa//
