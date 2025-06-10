@@ -2,6 +2,7 @@ import React from 'react';
 import { Table } from 'react-bootstrap';
 import '../../styles/TablaReporteAdmin.css';
 import { FaFilePdf, FaFileExcel, FaEye } from 'react-icons/fa';
+import DetalleReporte from './DetalleReporte';
 
 const TablaReporteAdmin = ({ 
     reportes = [], 
@@ -12,6 +13,8 @@ const TablaReporteAdmin = ({
 }) => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 10; // Número de reportes por página
+  const [showModal, setShowModal] = React.useState(false);
+  const [selectedReporte, setSelectedReporte] = React.useState(null);
 
   const getEstadoColor = (estado) => {
     const estadoLower = estado.toLowerCase();
@@ -19,6 +22,16 @@ const TablaReporteAdmin = ({
     if (estadoLower === 'en proceso') return 'info';
     if (estadoLower === 'completado') return 'success';
     return 'secondary';
+  };
+
+  const handleVisualizar = (reporte) => {
+    setSelectedReporte(reporte);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedReporte(null);
   };
 
   // Función para obtener la página actual
@@ -87,26 +100,10 @@ const TablaReporteAdmin = ({
                 <td className="text-center">
                   <div className="acciones-container">
                     <button 
-                      className="btn btn-sm me-2" 
-                      style={{ backgroundColor: '#dc3545', color: '#fff' }}
-                      title="PDF"
-                      onClick={() => onPDF(reporte)}
-                    >
-                      <FaFilePdf />
-                    </button>
-                    <button 
-                      className="btn btn-sm me-2" 
-                      style={{ backgroundColor: '#28a745', color: '#fff' }}
-                      title="Excel"
-                      onClick={() => onExcel(reporte)}
-                    >
-                      <FaFileExcel />
-                    </button>
-                    <button 
                       className="btn btn-sm" 
                       style={{ backgroundColor: '#007bff', color: '#fff' }}
                       title="Visualizar"
-                      onClick={() => onVisualizar(reporte)}
+                      onClick={() => handleVisualizar(reporte)}
                     >
                       <FaEye />
                     </button>
@@ -148,6 +145,14 @@ const TablaReporteAdmin = ({
           </div>
         </div>
       </div>
+
+      <DetalleReporte
+        show={showModal}
+        handleClose={handleCloseModal}
+        reporte={selectedReporte}
+        onPDF={onPDF}
+        onExcel={onExcel}
+      />
     </div>
   );
 };
