@@ -41,6 +41,7 @@ const TablaReportes = ({
     doc.text(`Ubicación: ${reporte.ubicacion}`, 20, 40);
     doc.text(`Descripción: ${reporte.descripcion}`, 20, 50);
     doc.text(`Fecha y Hora: ${formatearFechaHora(reporte.fechaHora)}`, 20, 60);
+    doc.text(`Estado: ${reporte.estado || "Sin estado"}`, 20, 70);
 
     if (reporte.foto) {
       const img = new Image();
@@ -53,11 +54,11 @@ const TablaReportes = ({
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
         const imgData = canvas.toDataURL("image/png");
-        doc.addImage(imgData, "PNG", 20, 70, 160, 100);
+        doc.addImage(imgData, "PNG", 20, 80, 160, 100);
         doc.save(`${reporte.titulo}.pdf`);
       };
     } else {
-      doc.text("Sin imagen", 20, 75);
+      doc.text("Sin imagen", 20, 85);
       doc.save(`${reporte.titulo}.pdf`);
     }
   };
@@ -102,6 +103,12 @@ const TablaReportes = ({
               <div className="detalle-item">
                 <strong>Fecha y Hora:</strong>
                 <p>{formatearFechaHora(reporteAVisualizar.fechaHora)}</p>
+              </div>
+
+              {/* NUEVO CAMPO AGREGADO */}
+              <div className="detalle-item">
+                <strong>Estado:</strong>
+                <p>{reporteAVisualizar.estado || "Sin estado"}</p>
               </div>
 
               {reporteAVisualizar.foto && (
@@ -149,6 +156,7 @@ const TablaReportes = ({
             <th>Ubicación</th>
             <th>Descripción</th>
             <th>Fecha y Hora</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -162,6 +170,7 @@ const TablaReportes = ({
                 {reporte.descripcion.length > 50 ? "..." : ""}
               </td>
               <td>{formatearFechaHora(reporte.fechaHora)}</td>
+              <td>{reporte.estado || "Sin estado"}</td>
               <td className="acciones">
                 <button
                   className="btn-accion btn-editar"
