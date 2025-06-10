@@ -114,11 +114,11 @@ const Encabezado = () => {
                           <strong>Estado del Trafico</strong>
                         </Nav.Link>
                         <Nav.Link
-                          onClick={() => handleNavigate("/reportes")}
-                          className={`nav-link ${location.pathname === "/reportes" ? "active" : ""}`}
+                          onClick={() => handleNavigate("/reporteAdmin")}
+                          className={`nav-link ${location.pathname === "/reporteAdmin" ? "active" : ""}`}
                         >
                           <i className="bi-file-earmark-text-fill me-2"></i>
-                          <strong>Reportes</strong>
+                          <strong>Reporte Admin</strong>
                         </Nav.Link>
                         <Nav.Link
   onClick={() => handleNavigate("/graficos")}
