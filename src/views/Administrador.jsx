@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, CardGroup } from 'react-bootstrap';
 import { FaUsers, FaChartLine, FaFileAlt, FaDatabase } from 'react-icons/fa';
 import { db } from '../database/firebaseconfig';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+
 import '../styles/Administrador.css';
 
 const Administrador = () => {
