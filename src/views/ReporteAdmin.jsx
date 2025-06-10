@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import { autoTable } from 'jspdf-autotable';
 import './ReporteAdmin.css';
 
 const reporteAdmin = () => {
@@ -72,74 +73,83 @@ const reporteAdmin = () => {
     // Función para generar PDF de todos los reportes
     const handleExportAllPDF = () => {
         try {
-            const doc = new jsPDF({ orientation: 'landscape' });
+            // Crear documento
+            const doc = new jsPDF();
             
-            // Título
-            doc.setFontSize(16);
-            doc.text("Reportes de Incidentes", 20, 15);
-            doc.setFontSize(12);
+            // Configurar encabezado con rectángulo y título
+            doc.setFillColor(28, 41, 51);
+            doc.rect(0, 0, doc.internal.pageSize.getWidth(), 30, 'F');
             
-            // Encabezados
-            const headers = [
-                { label: 'ID', dataKey: 'id' },
-                { label: 'Fecha', dataKey: 'fecha' },
-                { label: 'Tipo', dataKey: 'tipo' },
-                { label: 'Ubicación', dataKey: 'ubicacion' },
-                { label: 'Estado', dataKey: 'estado' },
-                { label: 'Detalles', dataKey: 'detalles' }
-            ];
+            // Título centrado con texto blanco
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(28);
+            doc.text(
+                "Reportes de Incidentes", 
+                doc.internal.pageSize.getWidth() / 2, 
+                18, 
+                { align: "center" }
+            );
 
-            // Generar encabezados
-            let y = 30;
-            headers.forEach((header, index) => {
-                doc.text(header.label, 20 + (index * 50), y);
-            });
-            y += 15;
+            // Definir columnas y filas
+            const columns = ["ID", "Fecha", "Tipo", "Ubicación", "Estado", "Detalles"];
+            const rows = reportes.map((reporte, index) => [
+                reporte.id,
+                reporte.fecha,
+                reporte.tipo,
+                reporte.ubicacion,
+                reporte.estado,
+                reporte.detalles
+            ]);
 
-            // Generar datos
-            reportes.forEach((reporte, rowIndex) => {
-                doc.setFontSize(10);
-                headers.forEach((header, colIndex) => {
-                    const value = reporte[header.dataKey];
-                    doc.text(value || '-', 20 + (colIndex * 50), y + (rowIndex * 10));
-                });
-            });
-            y += (reportes.length + 1) * 10;
-
-            // Agregar imágenes
-            let imageCount = 0;
-            reportes.forEach((reporte, index) => {
-                if (reporte.foto) {
-                    const img = new Image();
-                    img.crossOrigin = "anonymous";
-                    img.src = reporte.foto;
-                    
-                    img.onload = () => {
-                        const canvas = document.createElement("canvas");
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext("2d");
-                        ctx.drawImage(img, 0, 0);
-                        const imgData = canvas.toDataURL("image/png");
-                        
-                        // Agregar nueva página para cada imagen
-                        if (imageCount > 0 && imageCount % 3 === 0) {
-                            doc.addPage();
-                            y = 30;
-                        }
-                        
-                        doc.addImage(imgData, "PNG", 10, y, 100, 50);
-                        y += 60;
-                        
-                        // Guardar PDF cuando todas las imágenes estén procesadas
-                        if (index === reportes.length - 1) {
-                            const pdfBlob = new Blob([doc.output()], { type: 'application/pdf' });
-                            saveAs(pdfBlob, `reportes_todos.pdf`);
-                        }
-                    };
-                    imageCount++;
+            // Configuración de la tabla
+            autoTable(doc, {
+                head: [columns],
+                body: rows,
+                startY: 48,
+                theme: 'grid',
+                styles: { 
+                    fontSize: 10, 
+                    cellPadding: 2,
+                    textColor: [0, 0, 0]
+                },
+                headStyles: {
+                    fillColor: [28, 41, 51],
+                    textColor: [255, 255, 255]
+                },
+                margin: { top: 20, left: 14, right: 16 },
+                tableWidth: 'auto',
+                columnStyles: {
+                    0: { cellWidth: 'auto' },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 'auto' },
+                    3: { cellWidth: 'auto' },
+                    4: { cellWidth: 'auto' },
+                    5: { cellWidth: 'auto' }
+                },
+                didDrawPage: function (data) {
+                    // Pie de página con número de página
+                    const pageCount = doc.internal.getNumberOfPages();
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.text(
+                        `Página ${data.pageNumber} de ${pageCount}`,
+                        doc.internal.pageSize.getWidth() / 2,
+                        doc.internal.pageSize.getHeight() - 10,
+                        { align: "center" }
+                    );
                 }
             });
+
+            // Generar archivo con nombre basado en fecha
+            const fecha = new Date();
+            const dia = String(fecha.getDate()).padStart(2, '0');
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            const anio = fecha.getFullYear();
+            const nombreArchivo = `reportes_${dia}${mes}${anio}.pdf`;
+
+            // Guardar PDF
+            const pdfBlob = new Blob([doc.output()], { type: 'application/pdf' });
+            saveAs(pdfBlob, nombreArchivo);
         } catch (error) {
             console.error("Error al generar PDF:", error);
             alert("Error al generar el PDF. Por favor, intenta nuevamente.");
