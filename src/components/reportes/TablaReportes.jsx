@@ -37,7 +37,7 @@ const TablaReportes = ({
     const doc = new jsPDF();
     doc.setFontSize(14);
     doc.text("Reporte de Incidente", 20, 20);
-    doc.text(`Título: ${reporte.titulo}`, 20, 30);
+    doc.text(`Tipo de incidente: ${reporte.titulo}`, 20, 30);
     doc.text(`Ubicación: ${reporte.ubicacion}`, 20, 40);
     doc.text(`Descripción: ${reporte.descripcion}`, 20, 50);
     doc.text(`Fecha y Hora: ${formatearFechaHora(reporte.fechaHora)}`, 20, 60);
@@ -75,8 +75,8 @@ const TablaReportes = ({
           <div className="modal-ver-reporte">
             <div className="modal-header">
               <h2>Detalles del Reporte</h2>
-              <button 
-                className="close-modal-btn" 
+              <button
+                className="close-modal-btn"
                 onClick={() => setModalVer(false)}
               >
                 ×
@@ -85,7 +85,7 @@ const TablaReportes = ({
 
             <div className="reporte-detalles">
               <div className="detalle-item">
-                <strong>Título:</strong>
+                <strong>Tipo de incidente:</strong>
                 <p>{reporteAVisualizar.titulo}</p>
               </div>
 
@@ -108,9 +108,9 @@ const TablaReportes = ({
                 <div className="detalle-item">
                   <strong>Imagen:</strong>
                   <div className="imagen-container">
-                    <img 
-                      src={reporteAVisualizar.foto} 
-                      alt="Imagen del reporte" 
+                    <img
+                      src={reporteAVisualizar.foto}
+                      alt="Imagen del reporte"
                       className="imagen-reporte"
                     />
                   </div>
@@ -118,13 +118,13 @@ const TablaReportes = ({
               )}
 
               <div className="modal-footer">
-                <button 
+                <button
                   className="btn-generar-pdf"
                   onClick={() => generarPDF(reporteAVisualizar)}
                 >
                   <i className="bi bi-file-earmark-pdf"></i> Generar PDF
                 </button>
-                <button 
+                <button
                   className="btn-cerrar"
                   onClick={() => setModalVer(false)}
                 >
@@ -145,7 +145,7 @@ const TablaReportes = ({
       <table className="tabla-reportes">
         <thead>
           <tr>
-            <th>Título</th>
+            <th>Tipo de incidente</th>
             <th>Ubicación</th>
             <th>Descripción</th>
             <th>Fecha y Hora</th>
@@ -157,7 +157,10 @@ const TablaReportes = ({
             <tr key={reporte.id}>
               <td>{reporte.titulo}</td>
               <td>{reporte.ubicacion}</td>
-              <td>{reporte.descripcion.substring(0, 50)}{reporte.descripcion.length > 50 ? "..." : ""}</td>
+              <td>
+                {reporte.descripcion.substring(0, 50)}
+                {reporte.descripcion.length > 50 ? "..." : ""}
+              </td>
               <td>{formatearFechaHora(reporte.fechaHora)}</td>
               <td className="acciones">
                 <button
@@ -173,9 +176,7 @@ const TablaReportes = ({
                 <button
                   className="btn-accion btn-eliminar"
                   onClick={() => {
-                    // Resetear el reporte seleccionado para eliminar
                     setReporteSeleccionadoEliminar(null);
-                    // Seleccionar el nuevo reporte
                     setReporteSeleccionadoEliminar(reporte);
                     setModalEliminar(true);
                   }}

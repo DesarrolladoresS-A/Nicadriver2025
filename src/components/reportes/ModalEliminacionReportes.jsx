@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { db } from "../../database/firebaseconfig";
 import { doc, deleteDoc } from "firebase/firestore";
-import { getStorage, ref, deleteObject } from "firebase/storage";
 import { FaTrash, FaTimes, FaExclamationTriangle } from "react-icons/fa";
 
 const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError, onClose }) => {
@@ -16,36 +15,11 @@ const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError
     try {
       console.log("Iniciando eliminación del reporte:", reporte.id);
 
-      // 1. Eliminar imagen de Storage si existe
-      if (reporte.foto) {
-        try {
-          const storage = getStorage();
-          const url = new URL(reporte.foto);
-          const path = decodeURIComponent(url.pathname.split("/o/")[1]?.split("?")[0]);
+      // Eliminar el documento de Firestore
+      const reporteRef = doc(db, "reportes", reporte.id);
+      await deleteDoc(reporteRef);
+      console.log("✅ Documento eliminado con éxito");
 
-          if (path) {
-            const fotoRef = ref(storage, path);
-            await deleteObject(fotoRef);
-            console.log("✅ Imagen eliminada con éxito");
-          } else {
-            console.warn("⚠️ Ruta de la imagen no válida.");
-          }
-        } catch (imgError) {
-          console.warn("⚠️ No se pudo eliminar la imagen. Continuando con el reporte:", imgError.message);
-        }
-      }
-
-      // 2. Eliminar el documento de Firestore
-      try {
-        const reporteRef = doc(db, "reportes", reporte.id);
-        await deleteDoc(reporteRef);
-        console.log("✅ Documento eliminado con éxito");
-      } catch (firestoreError) {
-        console.error("❌ Error al eliminar el documento:", firestoreError);
-        throw new Error("No se pudo eliminar el reporte");
-      }
-
-      // Actualizar lista y cerrar modal
       actualizar();
       onClose();
     } catch (error) {
