@@ -121,12 +121,12 @@ const Encabezado = () => {
                           <strong>Reportes</strong>
                         </Nav.Link>
                         <Nav.Link
-                          onClick={() => handleNavigate("/graficos")}
-                          className={`nav-link ${location.pathname === "/graficos" ? "active" : ""}`}
-                        >
-                          <i className="bi-graph-up me-2"></i>
-                          <strong>Gráficos</strong>
-                        </Nav.Link>
+  onClick={() => handleNavigate("/graficos")}
+  className={`nav-link ${location.pathname === "/graficos" ? "active" : ""}`}
+>
+  <i className="bi-graph-up me-2"></i>
+  <strong>Gráficos</strong>
+</Nav.Link>
                         <Nav.Link
                           onClick={() => handleNavigate("/catalogo")}
                           className={`nav-link ${location.pathname === "/catalogo" ? "active" : ""}`}
