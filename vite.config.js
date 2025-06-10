@@ -13,6 +13,23 @@ export default defineConfig({
         'logo_nica_driver.png',
         'logo_nica_driver.png'
       ],
+      manifest: {
+        name: 'NicaDriver',
+        short_name: 'NicaDriver',
+        description: 'Movilidad inteligente, una Nicaragua en movimiento.',
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#ffffff',
+        theme_color: '#FF6F00',
+        icons: [
+          {
+            src: 'logo_nica_driver.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico,webmanifest}'],
         runtimeCaching: [

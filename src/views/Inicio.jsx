@@ -9,7 +9,7 @@ import Paginacion from '../components/ordenamiento/Paginacion';
 // import GraficosClima from '../components/GraficoClima';
 import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import logo_nica_driver from "../assets/logo_nica_driver.png";
+import logo_nicadriver from "../assets/logonicadriver.png";
 import { Container, Button } from "react-bootstrap";
 import ModalInstalacionIOS from '../components/inicio/ModalInstalacionIOS';
 
@@ -57,7 +57,7 @@ const Inicio = () => {
     }, 4000); // Cambiar cada 4 segundos
 
     return () => clearInterval(timer);
-  }, []);
+  }, [images.length]);
 
   const handleIndicatorClick = (index) => {
     setCurrentImageIndex(index);

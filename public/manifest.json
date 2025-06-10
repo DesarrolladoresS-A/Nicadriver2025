@@ -9,8 +9,8 @@
     "scope": "/",
     "icons": [
       {
-        "src": "/src/assets/Logo_NicaDriver.png",
-        "sizes": "500x500",
+        "src": "/src/assets/logonicadriver.png",
+        "sizes": "512x512",
         "type": "image/png",
         "purpose": "maskable"
       },
