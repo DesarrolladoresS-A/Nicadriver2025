@@ -189,7 +189,7 @@
 
 .tabla-reportes thead {
   background-color: #f28c28; /* Color anaranjado similar */
-  color: white;
+  color: rgb(0, 0, 0);
   font-weight: bold;
   text-align: center;
 }
