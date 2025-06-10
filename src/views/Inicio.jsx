@@ -9,6 +9,10 @@ import Paginacion from '../components/ordenamiento/Paginacion';
 // import GraficosClima from '../components/GraficoClima';
 import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import logo_nica_driver from "../assets/logo_nica_driver.png";
+import { Container, Button } from "react-bootstrap";
+import ModalInstalacionIOS from '../components/inicio/ModalInstalacionIOS';
+
 
 const { BaseLayer, Overlay } = LayersControl;
 
@@ -82,6 +86,50 @@ const Inicio = () => {
     doc.save(`${reporte.titulo}.pdf`);
   };
 
+  // 📌 Estados PWA con nombres solicitados
+  const [solicitudInstalacion, setSolicitudInstalacion] = useState(null);
+  const [mostrarBotonInstalacion, setMostrarBotonInstalacion] = useState(false);
+  const [esDispositivoIOS, setEsDispositivoIOS] = useState(false);
+  const [mostrarModalInstrucciones, setMostrarModalInstrucciones] = useState(false);
+
+    // 🎯 useEffect para detectar dispositivo iOS
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const esIOS = /iphone|ipad|ipod/.test(userAgent);
+    setEsDispositivoIOS(esIOS);
+  }, []);
+
+  // 🎯 useEffect para capturar el evento beforeinstallprompt
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setSolicitudInstalacion(e);
+      setMostrarBotonInstalacion(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+// 🚀 Función para instalar la PWA
+  const instalarPWA = async () => {
+    if (!solicitudInstalacion) return;
+
+    try {
+      solicitudInstalacion.prompt();
+      const { outcome } = await solicitudInstalacion.userChoice;
+      console.log(outcome === "accepted" ? "✅ Instalación aceptada" : "❌ Instalación rechazada");
+    } catch (error) {
+      console.error("Error al intentar instalar la PWA:", error);
+    } finally {
+      setSolicitudInstalacion(null);
+      setMostrarBotonInstalacion(false);
+    }
+  };
+
+  // 📄 Funciones para abrir/cerrar el modal
+  const abrirModalInstrucciones = () => setMostrarModalInstrucciones(true);
+  const cerrarModalInstrucciones = () => setMostrarModalInstrucciones(false);
+
   return (
     <div className="inicio-container">
       <div className="inicio-header">
@@ -123,6 +171,31 @@ const Inicio = () => {
           <p className="text-center">Contribuir a una infraestructura vial más eficiente y sostenible, promoviendo un transporte más seguro y accesible para ciudadanos, transportistas y autoridades gubernamentales.</p>
         </div>
       </div>
+      {/* Botón de instalación para Android/otros */}
+          {mostrarBotonInstalacion && !esDispositivoIOS && (
+            <div className="my-4">
+              <button className="btn btn-success btn-lg rounded-pill" onClick={instalarPWA}>
+                📲 Instalar App
+              </button>
+            </div>
+          )}
+
+          {/* Botón para instrucciones en iOS */}
+          {esDispositivoIOS && (
+            <div className="text-center my-4">
+              <button className="btn btn-info btn-lg rounded-pill" onClick={abrirModalInstrucciones}>
+                Cómo instalar NicaDriver en iPhone <i className="bi-phone"></i>
+              </button>
+            </div>
+          )}
+
+          {/* Modal de instrucciones para iOS */}
+      {esDispositivoIOS && mostrarModalInstrucciones && (
+        <ModalInstalacionIOS
+          mostrar={mostrarModalInstrucciones}
+          cerrar={cerrarModalInstrucciones}
+        />
+      )}
 
       <div className="mapa-reporte-container">
         <div className="mapa-interactivo">
