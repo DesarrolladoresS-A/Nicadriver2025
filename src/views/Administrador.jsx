@@ -16,7 +16,6 @@ const Administrador = () => {
   const [reportes, setReportes] = useState([]);
 
   useEffect(() => {
-    // Obtener estadísticas
     const fetchStats = async () => {
       try {
         const usersSnapshot = await getDocs(collection(db, 'users'));
@@ -25,7 +24,7 @@ const Administrador = () => {
         const reportesSnapshot = await getDocs(collection(db, 'reportes'));
         const reportesCount = reportesSnapshot.size;
 
-        const traficoCount = 150; // Simulado
+        const traficoCount = 150;
 
         const catalogosSnapshot = await getDocs(collection(db, 'catalogos'));
         const catalogosCount = catalogosSnapshot.size;
@@ -71,6 +70,23 @@ const Administrador = () => {
     } catch (error) {
       console.error('Error al actualizar estado:', error);
     }
+  };
+
+  const calcularTiempoTranscurrido = (fecha) => {
+    if (!fecha) return "Sin fecha";
+
+    const ahora = new Date();
+    const fechaReporte = new Date(fecha);
+    const diferencia = ahora - fechaReporte;
+
+    const minutos = Math.floor(diferencia / 60000);
+    const horas = Math.floor(minutos / 60);
+    const dias = Math.floor(horas / 24);
+
+    if (dias > 0) return `Hace ${dias} día${dias > 1 ? 's' : ''}`;
+    if (horas > 0) return `Hace ${horas} hora${horas > 1 ? 's' : ''}`;
+    if (minutos > 0) return `Hace ${minutos} minuto${minutos > 1 ? 's' : ''}`;
+    return "Hace unos segundos";
   };
 
   return (
@@ -161,29 +177,23 @@ const Administrador = () => {
           </tbody>
         </table>
 
+        {/* Actividades recientes */}
         <Row className="mt-4">
-          <Col md={8}>
-            <Card className="mb-4">
-              <Card.Body>
-                <h3 className="card-title mb-4">Reportes por Categoría</h3>
-                <div className="chart-placeholder">
-                  Gráfico de reportes por categoría (pendiente)
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          <Col md={4}>
+          <Col md={{ span: 4, offset: 8 }}>
             <Card>
               <Card.Body>
                 <h3 className="card-title mb-4">Últimas Actividades</h3>
                 <div className="activities-list">
-                  <div className="activity-item">
-                    <span className="activity-icon">📝</span>
-                    <span>Nuevo reporte recibido</span>
-                    <span className="activity-time">Hace 5 minutos</span>
-                  </div>
-                  {/* Aquí puedes agregar más actividades si gustas */}
+                  {reportes
+                    .sort((a, b) => new Date(b.fechaHora) - new Date(a.fechaHora))
+                    .slice(0, 5)
+                    .map((reporte) => (
+                      <div className="activity-item" key={reporte.id}>
+                        <span className="activity-icon">📝</span>
+                        <span>{reporte.titulo}</span>
+                        <span className="activity-time">{calcularTiempoTranscurrido(reporte.fechaHora)}</span>
+                      </div>
+                    ))}
                 </div>
               </Card.Body>
             </Card>
