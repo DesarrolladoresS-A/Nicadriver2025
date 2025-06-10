@@ -7,7 +7,7 @@ import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { autoTable } from 'jspdf-autotable';
-import './ReporteAdmin.css';
+import '../styles/ReporteAdmin.css';
 
 const reporteAdmin = () => {
     const navigate = useNavigate();
