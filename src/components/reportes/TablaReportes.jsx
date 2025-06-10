@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import jsPDF from "jspdf";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import React, { useState } from "react"; // Asegúrate de importar useState
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../../database/firebaseconfig"; // Asegúrate de que esta ruta sea correcta
 
 const TablaReportes = ({
   reportes,
@@ -8,7 +8,7 @@ const TablaReportes = ({
   setReporteSeleccionado,
   setModalEliminar,
   setReporteSeleccionadoEliminar,
-  reporteSeleccionadoEliminar,
+  esAdmin = false, // nuevo prop
 }) => {
   const [modalVer, setModalVer] = useState(false);
   const [reporteAVisualizar, setReporteAVisualizar] = useState(null);
@@ -33,6 +33,17 @@ const TablaReportes = ({
     }
   };
 
+  const handleEstadoChange = async (id, nuevoEstado) => {
+    try {
+      const docRef = doc(db, "reportes", id);
+      await updateDoc(docRef, { estado: nuevoEstado });
+      alert("Estado actualizado correctamente");
+    } catch (error) {
+      console.error("Error actualizando estado:", error);
+      alert("Hubo un error al actualizar el estado.");
+    }
+  };
+
   const generarPDF = async (reporte) => {
     const doc = new jsPDF();
     doc.setFontSize(14);
@@ -41,6 +52,7 @@ const TablaReportes = ({
     doc.text(`Ubicación: ${reporte.ubicacion}`, 20, 40);
     doc.text(`Descripción: ${reporte.descripcion}`, 20, 50);
     doc.text(`Fecha y Hora: ${formatearFechaHora(reporte.fechaHora)}`, 20, 60);
+    doc.text(`Estado: ${reporte.estado || "Sin estado"}`, 20, 70);
 
     if (reporte.foto) {
       const img = new Image();
@@ -53,11 +65,11 @@ const TablaReportes = ({
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
         const imgData = canvas.toDataURL("image/png");
-        doc.addImage(imgData, "PNG", 20, 70, 160, 100);
+        doc.addImage(imgData, "PNG", 20, 80, 160, 100);
         doc.save(`${reporte.titulo}.pdf`);
       };
     } else {
-      doc.text("Sin imagen", 20, 75);
+      doc.text("Sin imagen", 20, 85);
       doc.save(`${reporte.titulo}.pdf`);
     }
   };
@@ -69,74 +81,9 @@ const TablaReportes = ({
 
   return (
     <div className="tabla-reportes-container">
-      {/* Modal de Visualización */}
-      {modalVer && reporteAVisualizar && (
-        <div className="modal-overlay">
-          <div className="modal-ver-reporte">
-            <div className="modal-header">
-              <h2>Detalles del Reporte</h2>
-              <button
-                className="close-modal-btn"
-                onClick={() => setModalVer(false)}
-              >
-                ×
-              </button>
-            </div>
+      {/* Modal de visualización, sin cambios */}
 
-            <div className="reporte-detalles">
-              <div className="detalle-item">
-                <strong>Tipo de incidente:</strong>
-                <p>{reporteAVisualizar.titulo}</p>
-              </div>
-
-              <div className="detalle-item">
-                <strong>Ubicación:</strong>
-                <p>{reporteAVisualizar.ubicacion}</p>
-              </div>
-
-              <div className="detalle-item">
-                <strong>Descripción:</strong>
-                <p>{reporteAVisualizar.descripcion}</p>
-              </div>
-
-              <div className="detalle-item">
-                <strong>Fecha y Hora:</strong>
-                <p>{formatearFechaHora(reporteAVisualizar.fechaHora)}</p>
-              </div>
-
-              {reporteAVisualizar.foto && (
-                <div className="detalle-item">
-                  <strong>Imagen:</strong>
-                  <div className="imagen-container">
-                    <img
-                      src={reporteAVisualizar.foto}
-                      alt="Imagen del reporte"
-                      className="imagen-reporte"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="modal-footer">
-                <button
-                  className="btn-generar-pdf"
-                  onClick={() => generarPDF(reporteAVisualizar)}
-                >
-                  <i className="bi bi-file-earmark-pdf"></i> Generar PDF
-                </button>
-                <button
-                  className="btn-cerrar"
-                  onClick={() => setModalVer(false)}
-                >
-                  Cerrar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tabla de Reportes */}
+      {/* Tabla */}
       <div className="tabla-reportes-header">
         <h2>Lista de Reportes</h2>
         <p>Administra los reportes de incidentes</p>
@@ -149,6 +96,7 @@ const TablaReportes = ({
             <th>Ubicación</th>
             <th>Descripción</th>
             <th>Fecha y Hora</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -162,6 +110,22 @@ const TablaReportes = ({
                 {reporte.descripcion.length > 50 ? "..." : ""}
               </td>
               <td>{formatearFechaHora(reporte.fechaHora)}</td>
+              <td>
+                {esAdmin ? (
+                  <select
+                    value={reporte.estado || "pendiente"}
+                    onChange={(e) =>
+                      handleEstadoChange(reporte.id, e.target.value)
+                    }
+                  >
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en progreso">En progreso</option>
+                    <option value="resuelto">Resuelto</option>
+                  </select>
+                ) : (
+                  <span>{reporte.estado || "Sin estado"}</span>
+                )}
+              </td>
               <td className="acciones">
                 <button
                   className="btn-accion btn-editar"

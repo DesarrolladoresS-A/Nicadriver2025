@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, CardGroup } from 'react-bootstrap';
 import { FaUsers, FaChartLine, FaFileAlt, FaDatabase } from 'react-icons/fa';
 import { db } from '../database/firebaseconfig';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import '../styles/Administrador.css';
 
 const Administrador = () => {
@@ -13,22 +13,20 @@ const Administrador = () => {
     catalogos: 0
   });
 
+  const [reportes, setReportes] = useState([]);
+
   useEffect(() => {
     // Obtener estadísticas
     const fetchStats = async () => {
       try {
-        // Contar usuarios
         const usersSnapshot = await getDocs(collection(db, 'users'));
         const usuariosCount = usersSnapshot.size;
 
-        // Contar reportes
         const reportesSnapshot = await getDocs(collection(db, 'reportes'));
         const reportesCount = reportesSnapshot.size;
 
-        // Contar datos de tráfico (simulado)
         const traficoCount = 150; // Simulado
 
-        // Contar catalogos
         const catalogosSnapshot = await getDocs(collection(db, 'catalogos'));
         const catalogosCount = catalogosSnapshot.size;
 
@@ -43,15 +41,43 @@ const Administrador = () => {
       }
     };
 
+    const fetchReportes = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, 'reportes'));
+        const lista = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setReportes(lista);
+      } catch (error) {
+        console.error('Error al obtener reportes:', error);
+      }
+    };
+
     fetchStats();
+    fetchReportes();
   }, []);
+
+  const handleEstadoChange = async (id, nuevoEstado) => {
+    try {
+      const reporteRef = doc(db, 'reportes', id);
+      await updateDoc(reporteRef, { estado: nuevoEstado });
+
+      setReportes((prevReportes) =>
+        prevReportes.map((reporte) =>
+          reporte.id === id ? { ...reporte, estado: nuevoEstado } : reporte
+        )
+      );
+    } catch (error) {
+      console.error('Error al actualizar estado:', error);
+    }
+  };
 
   return (
     <div className="administrador-container">
       <Container fluid className="p-4">
         <h2 className="text-center mb-4">Dashboard de Administrador</h2>
-        
-        {/* Tarjetas de estadísticas */}
+
         <CardGroup className="mb-4">
           <Card className="stats-card">
             <Card.Body>
@@ -94,7 +120,7 @@ const Administrador = () => {
               <Card.Title className="d-flex justify-content-between align-items-center mb-3">
                 <div>
                   <FaDatabase className="stat-icon" />
-                  <span>Catalogos</span>
+                  <span>Catálogos</span>
                 </div>
                 <h3 className="stat-number">{stats.catalogos}</h3>
               </Card.Title>
@@ -102,34 +128,62 @@ const Administrador = () => {
           </Card>
         </CardGroup>
 
-        {/* Sección de gráficos y estadísticas */}
-        <Row>
+        {/* Tabla de gestión de reportes */}
+        <h3 className="mt-5 mb-3">Gestión de Reportes</h3>
+        <table className="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Descripción</th>
+              <th>Estado</th>
+              <th>Cambiar Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {reportes.map((reporte) => (
+              <tr key={reporte.id}>
+                <td>{reporte.titulo}</td>
+                <td>{reporte.descripcion}</td>
+                <td>{reporte.estado}</td>
+                <td>
+                  <select
+                    value={reporte.estado || 'pendiente'}
+                    onChange={(e) => handleEstadoChange(reporte.id, e.target.value)}
+                    className="form-select"
+                  >
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en progreso">En progreso</option>
+                    <option value="resuelto">Resuelto</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <Row className="mt-4">
           <Col md={8}>
-            {/* Gráfico de reportes */}
             <Card className="mb-4">
               <Card.Body>
                 <h3 className="card-title mb-4">Reportes por Categoría</h3>
-                {/* Aquí iría el gráfico */}
                 <div className="chart-placeholder">
-                  Gráfico de reportes por categoría
+                  Gráfico de reportes por categoría (pendiente)
                 </div>
               </Card.Body>
             </Card>
           </Col>
 
           <Col md={4}>
-            {/* Últimas actividades */}
             <Card>
               <Card.Body>
                 <h3 className="card-title mb-4">Últimas Actividades</h3>
-                {/* Aquí iría la lista de actividades */}
                 <div className="activities-list">
                   <div className="activity-item">
                     <span className="activity-icon">📝</span>
                     <span>Nuevo reporte recibido</span>
                     <span className="activity-time">Hace 5 minutos</span>
                   </div>
-                  {/* Más actividades... */}
+                  {/* Aquí puedes agregar más actividades si gustas */}
                 </div>
               </Card.Body>
             </Card>

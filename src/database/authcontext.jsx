@@ -9,45 +9,44 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [rol, setRol] = useState(null); // Estado para el rol
 
   useEffect(() => {
     const auth = getAuth(appfirebase);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setIsLoggedIn(!!user);
+      
+      // Comprobar el rol basado en el correo del usuario
+      if (user) {
+        asignarRol(user.email);
+      } else {
+        setRol(null); // Si el usuario se desloguea, restablecer el rol
+      }
     });
+
     return () => unsubscribe();
   }, []);
+
+  // Asignar rol basado en el correo
+  const asignarRol = (email) => {
+    // Aquí asignamos el rol según el correo. Por ejemplo, si el correo es del administrador.
+    if (email === "desarrolladoressa2000@gmail.com") {  // Cambia esto con el correo del admin
+      setRol("admin");
+    } else {
+      setRol("usuario");
+    }
+  };
 
   const logout = async () => {
     const auth = getAuth(appfirebase);
     await signOut(auth);
     setIsLoggedIn(false);
+    setRol(null);
   };
 
-  // Detectar estado de conexión
-  useEffect(() => {
-    const handleOnline = () => {
-      console.log("¡Conexión restablecida!");
-      // Opcional: Mostrar una notificación más amigable (puedes usar un componente de notificación en lugar de alert)
-      alert("¡Conexión restablecida!");
-    };
-    const handleOffline = () => {
-      console.log("Estás offline. Los cambios se sincronizarán cuando vuelvas a conectarte.");
-      alert("Estás offline. Los cambios se sincronizarán cuando vuelvas a conectarte.");
-    };
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
-
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn, logout }}>
+    <AuthContext.Provider value={{ user, isLoggedIn, rol, logout }}>
       {children}
     </AuthContext.Provider>
   );
