@@ -40,7 +40,7 @@ const iconMap = {
   Policía: 'https://img.icons8.com/color/48/policeman-male.png',
   Peligro: 'https://img.icons8.com/color/48/high-priority.png',
   Cierre: 'https://img.icons8.com/color/48/road-closure.png',
-  'Carril bloqueado': 'https://img.icons8.com/color/48/road-closed.png',
+  'Carril bloqueado': 'https://img.icons8.com/fluency/48/barrier.png',
 };
 
 const ciudadesNicaragua = [

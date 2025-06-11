@@ -3,6 +3,8 @@ import { Container, Row, Col, Card, CardGroup, Pagination } from 'react-bootstra
 import { FaUsers, FaChartLine, FaFileAlt } from 'react-icons/fa';
 import { db } from '../database/firebaseconfig';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 import '../styles/Administrador.css';
 
@@ -73,7 +75,26 @@ const Administrador = () => {
     return "Hace unos segundos";
   };
 
-  // Cálculo de la paginación
+  const exportarExcel = () => {
+    if (reportes.length === 0) return;
+
+    const datos = reportes.map((reporte) => ({
+      Título: reporte.titulo,
+      Descripción: reporte.descripcion,
+      Estado: reporte.estado,
+      Fecha: reporte.fechaHora ? new Date(reporte.fechaHora).toLocaleString() : "Sin fecha",
+    }));
+
+    const hoja = XLSX.utils.json_to_sheet(datos);
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, hoja, 'Reportes');
+
+    const excelBuffer = XLSX.write(libro, { bookType: 'xlsx', type: 'array' });
+    const archivo = new Blob([excelBuffer], { type: 'application/octet-stream' });
+
+    saveAs(archivo, 'reportes.xlsx');
+  };
+
   const indiceUltimoReporte = paginaActual * reportesPorPagina;
   const indicePrimerReporte = indiceUltimoReporte - reportesPorPagina;
   const reportesActuales = reportes.slice(indicePrimerReporte, indiceUltimoReporte);
@@ -139,8 +160,12 @@ const Administrador = () => {
           </Card>
         </CardGroup>
 
-        {/* Tabla de gestión de reportes con paginación */}
         <h3 className="mt-5 mb-3">Gestión de Reportes</h3>
+        
+        <button className="btn btn-success mb-3" onClick={exportarExcel}>
+          Exportar a Excel
+        </button>
+
         <table className="table table-bordered table-striped">
           <thead>
             <tr>

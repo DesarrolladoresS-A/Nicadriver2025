@@ -2,10 +2,10 @@ import React from 'react';
 import { Table, Modal } from 'react-bootstrap';
 import '../../styles/ReporteAdmin.css';
 import { FaFilePdf, FaEye } from 'react-icons/fa';
+import jsPDF from 'jspdf';
 
 const TablaReporteAdmin = ({
   reportes = [],
-  onPDF = () => {},
   onExcel = () => {},
   onVisualizar = () => {},
   loading = false,
@@ -44,6 +44,30 @@ const TablaReporteAdmin = ({
 
   const totalPages = Math.ceil(reportes.length / itemsPerPage);
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Función para generar el PDF
+  const onPDF = (reporteId) => {
+    const reporte = reportes.find((r) => r.id === reporteId);
+
+    if (reporte) {
+      const doc = new jsPDF();
+
+      // Título
+      doc.setFontSize(18);
+      doc.text(`Reporte: ${reporte.tipo}`, 10, 10);
+
+      // Contenido del reporte
+      doc.setFontSize(12);
+      doc.text(`ID: ${reporte.id}`, 10, 20);
+      doc.text(`Fecha: ${reporte.fecha}`, 10, 30);
+      doc.text(`Estado: ${reporte.estado}`, 10, 40);
+      doc.text(`Ubicación: ${reporte.ubicacion}`, 10, 50);
+      doc.text(`Detalles: ${reporte.detalles}`, 10, 60);
+
+      // Guardar PDF
+      doc.save(`reporte_${reporte.id}.pdf`);
+    }
+  };
 
   if (loading) {
     return (
@@ -231,39 +255,6 @@ const TablaReporteAdmin = ({
                     <span className="detalle-value">{selectedReporte.detalles || 'Sin detalles'}</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Imágenes */}
-              {selectedReporte.imagenes?.length > 0 && (
-                <div className="detalle-card">
-                  <h3 className="detalle-title">Imágenes</h3>
-                  <div className="imagenes-container">
-                    {selectedReporte.imagenes.map((imagen, index) => (
-                      <div key={index} className="imagen-item">
-                        <img src={imagen.url} alt={`Imagen ${index + 1}`} className="img-fluid" />
-                        <div className="imagen-caption">
-                          {imagen.titulo || `Imagen ${index + 1}`}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Acciones */}
-              <div className="botones-acciones">
-                <button
-                  className="btn-accion btn-aceptar"
-                  onClick={() => handleEstadoChange(selectedReporte.id, 'aceptado')}
-                >
-                  Aceptar
-                </button>
-                <button
-                  className="btn-accion btn-rechazar"
-                  onClick={() => handleEstadoChange(selectedReporte.id, 'rechazado')}
-                >
-                  Rechazar
-                </button>
               </div>
             </div>
           )}
