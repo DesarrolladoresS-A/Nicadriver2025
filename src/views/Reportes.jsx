@@ -80,31 +80,7 @@ const Reportes = () => {
   };
 
   // Función para cambiar el estado de un reporte
-  const handleEstadoChange = async (id, nuevoEstado) => {
-    try {
-      const reporteRef = doc(db, 'reportes', id);
-      await updateDoc(reporteRef, { estado: nuevoEstado });
-      
-      // Actualizar el estado local
-      setReportes(prevReportes =>
-        prevReportes.map(reporte =>
-          reporte.id === id ? { ...reporte, estado: nuevoEstado } : reporte
-        )
-      );
-      setReportesFiltrados(prevReportes =>
-        prevReportes.map(reporte =>
-          reporte.id === id ? { ...reporte, estado: nuevoEstado } : reporte
-        )
-      );
-    } catch (error) {
-      console.error('Error al actualizar estado:', error);
-      setErrorEliminacion(
-        error.code === "permission-denied"
-          ? "No tienes permisos para cambiar el estado. Contacta al administrador."
-          : "Hubo un error al cambiar el estado. Por favor, inténtalo de nuevo."
-      );
-    }
-  };
+  
 
   return (
     <div className="reportes-container">
@@ -214,7 +190,6 @@ const Reportes = () => {
           setReporteSeleccionado={setReporteSeleccionado}
           setReporteSeleccionadoEliminar={setReporteSeleccionadoEliminar}
           reporteSeleccionadoEliminar={reporteSeleccionadoEliminar}
-          handleEstadoChange={handleEstadoChange}
         />
         
         {reportesFiltrados.length > 0 ? (

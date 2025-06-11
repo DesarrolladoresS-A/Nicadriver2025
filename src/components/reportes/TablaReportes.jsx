@@ -156,7 +156,6 @@ const TablaReportes = ({
             <th>Descripción</th>
             <th>Fecha y Hora</th>
             <th>Estado</th>
-            <th>Cambiar Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -171,24 +170,6 @@ const TablaReportes = ({
               </td>
               <td>{formatearFechaHora(reporte.fechaHora)}</td>
               <td>{reporte.estado || "Pendiente"}</td>
-              <td>
-                <select
-                  value={reporte.estado || "pendiente"}
-                  onChange={(e) => handleEstadoChange(reporte.id, e.target.value)}
-                  className="form-select"
-                  style={{
-                    padding: "0.5rem",
-                    borderRadius: "6px",
-                    border: "1px solid #e0e0e0",
-                    fontSize: "0.9rem",
-                    width: "150px"
-                  }}
-                >
-                  <option value="pendiente">Pendiente</option>
-                  <option value="en progreso">En progreso</option>
-                  <option value="resuelto">Resuelto</option>
-                </select>
-              </td>
               <td className="acciones">
                 <button
                   className="btn-accion btn-ver"

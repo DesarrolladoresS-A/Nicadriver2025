@@ -201,6 +201,7 @@
 .tabla-reportes tr {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     background: none;
+    padding: 1rem;
 }
 
 .tabla-reportes tr:hover {
