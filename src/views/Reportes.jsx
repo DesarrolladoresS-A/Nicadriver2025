@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../database/firebaseconfig";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import ModalRegistroReportes from "../components/reportes/ModalRegistroReportes";
 import ModalEdicionReportes from "../components/reportes/ModalEdicionReportes";
 import ModalEliminarReportes from "../components/reportes/ModalEliminacionReportes";
@@ -78,9 +78,6 @@ const Reportes = () => {
   const actualizarReportes = () => {
     obtenerReportes();
   };
-
-  // Función para cambiar el estado de un reporte
-  
 
   return (
     <div className="reportes-container">

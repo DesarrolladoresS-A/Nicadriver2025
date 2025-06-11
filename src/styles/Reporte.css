@@ -168,96 +168,6 @@
   margin: 0;
 }
 
-/* Tabla de reportes */
-.tabla-reportes-container {
-    background: #fff;
-    border-radius: 1rem;
-    box-shadow: 0 4px 6px rgb(255, 255, 255);
-    overflow: hidden;
-    margin-top: 2rem;
-}
-
-.tabla-reportes {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-.tabla-reportes th {
-    background: linear-gradient(135deg, #304be2, #3d1feb);
-    color: white;
-    font-weight: 600;
-    padding: 1rem;
-    text-align: left;
-    box-shadow: none;
-}
-
-.tabla-reportes td {
-    padding: 1rem;
-    transition: background-color 0.3s ease;
-    border: none;
-}
-
-.tabla-reportes tr {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    background: none;
-    padding: 1rem;
-}
-
-.tabla-reportes tr:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgb(255, 255, 255);
-}
-
-/* Estilos para los botones de acciones en la tabla */
-.btn-accion {
-    background: none;
-    border: none;
-    padding: 0.5rem;
-    cursor: pointer;
-    border-radius: 0.5rem;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 32px;
-    min-height: 32px;
-}
-
-.btn-accion:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 5px rgba(255, 255, 255, 0.966);
-}
-
-.btn-accion i {
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
-}
-
-.btn-accion:hover i {
-    transform: scale(1.1);
-}
-
-/* Colores específicos para los botones de acciones */
-.btn-ver i {
-    color: #4CAF50;
-}
-
-.btn-editar i {
-    color: #2196F3;
-}
-
-.btn-eliminar i {
-    color: #f44336;
-}
-
-/* Estilos para el contenedor de acciones */
-.acciones {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-}
-
 /* Paginación */
 .paginacion-container {
   display: flex;
@@ -1161,5 +1071,162 @@
 
   .informacion-item {
     padding: 1rem 0.5rem;
+  }
+}
+
+/* Contenedor general */
+.tabla-reportes-container {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-top: 2rem;
+    padding: 1rem;
+}
+
+/* Tabla */
+.tabla-reportes {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Encabezados */
+.tabla-reportes th {
+    background: linear-gradient(135deg, #304be2, #3d1feb);
+    color: #fff;
+    font-weight: 600;
+    padding: 1rem;
+    text-align: center;
+    font-size: 1rem;
+}
+
+/* Celdas */
+.tabla-reportes td {
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #333;
+    border-bottom: 1px solid #eee;
+}
+
+/* Filas alternas */
+.tabla-reportes tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Hover en fila */
+.tabla-reportes tr:hover {
+    background-color: #f0f4ff;
+    transform: none;
+    box-shadow: inset 0 0 0 9999px rgba(48, 75, 226, 0.05);
+}
+
+/* Botones */
+.btn-accion {
+    background: #f1f1f1;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+}
+
+.btn-accion:hover {
+    background-color: #e6e6e6;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Iconos */
+.btn-accion i {
+    font-size: 1.2rem;
+    transition: transform 0.2s ease;
+}
+
+.btn-accion:hover i {
+    transform: scale(1.15);
+}
+
+/* Colores de acción */
+.btn-ver i {
+    color: #4CAF50;
+}
+
+.btn-editar i {
+    color: #2196F3;
+}
+
+.btn-eliminar i {
+    color: #f44336;
+}
+
+/* Contenedor de botones */
+.acciones {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+/* Ajuste específico para la columna de acciones */
+.tabla-reportes td:nth-child(6) .acciones {
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0;
+}
+
+.tabla-reportes td:nth-child(6) .btn-accion {
+    padding: 0.4rem;
+    min-width: 28px;
+    min-height: 28px;
+}
+@media (max-width: 768px) {
+  .tabla-reportes {
+    display: block;
+    width: 100%;
+  }
+
+  .tabla-reportes thead {
+    display: none; /* Oculta encabezado original */
+  }
+
+  .tabla-reportes tbody,
+  .tabla-reportes tr,
+  .tabla-reportes td {
+    display: block;
+    width: 100%;
+  }
+
+  .tabla-reportes tr {
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    background: #fff;
+  }
+
+  .tabla-reportes td {
+    text-align: left;
+    padding: 0.5rem;
+    position: relative;
+  }
+
+  .tabla-reportes td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #444;
+  }
+
+  .acciones {
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }
