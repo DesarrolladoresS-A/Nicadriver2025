@@ -43,10 +43,9 @@ function App() {
               <Route path="/catalogo" element={<Catalogo />} />
               <Route path="/login" element={<Login />} />
               <Route path="/graficos" element={<Graficos />} />
-<<<<<<< HEAD
-=======
+
               <Route path="/reporteAdmin" element={<ReporteAdmin />} />
->>>>>>> dd57fba454c3b74664c4f799f95e27114dd6ee35
+
               <Route path="/administrador" element={
                 <div className="inicio-container">
                   <Administrador />
