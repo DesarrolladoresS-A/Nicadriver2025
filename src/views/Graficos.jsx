@@ -25,7 +25,7 @@ const Graficos = () => {
   }, []);
 
   useEffect(() => {
-    const estados = ['pendiente', 'en progreso', 'resuelto'];
+    const estados = ['pendiente', 'proceso', 'aceptado', 'rechazado'];
     const reportesEstado = estados.map((estado) => ({
       nombre: estado,
       cantidad: reportes.filter((reporte) =>

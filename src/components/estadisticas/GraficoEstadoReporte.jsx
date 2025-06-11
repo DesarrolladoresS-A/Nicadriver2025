@@ -4,15 +4,15 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 // Puedes definir colores personalizados para cada estado
 const coloresEstado = {
   pendiente: "#FF8042",
-  en_proceso: "#0088FE",
-  resuelto: "#00C49F",
+  proceso: "#0088FE",
+  aceptado: "#00C49F",
   rechazado: "#FFBB28"
 };
 
 const GraficoEstadoReporte = ({ data }) => {
   return (
     <div style={{ width: "100%", height: 300, padding: 20, boxSizing: 'border-box' }}>
-      <h3 style={{ textAlign: 'center' }}></h3>
+      <h3 style={{ textAlign: 'center' }}>Estado de los reportes</h3>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
