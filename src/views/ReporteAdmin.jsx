@@ -18,15 +18,24 @@ const reporteAdmin = () => {
     useEffect(() => {
         const cargarReportes = async () => {
             try {
-                const q = query(
+                // Get data from reportes collection
+                const qReportes = query(
                     collection(db, "reportes"),
                     orderBy("fechaHora", "desc")
                 );
+                const reportesSnapshot = await getDocs(qReportes);
                 
-                const querySnapshot = await getDocs(q);
+                // Get data from TablaReportesdamin collection
+                const qReportesAdmin = query(
+                    collection(db, "TablaReportesdamin"),
+                    orderBy("fechaHora", "desc")
+                );
+                const reportesAdminSnapshot = await getDocs(qReportesAdmin);
+                
                 const reportesData = [];
                 
-                querySnapshot.forEach((doc) => {
+                // Process reportes collection
+                reportesSnapshot.forEach((doc) => {
                     const reporte = {
                         id: doc.id,
                         fecha: formatearFechaHora(doc.data().fechaHora),
@@ -34,10 +43,29 @@ const reporteAdmin = () => {
                         ubicacion: doc.data().ubicacion,
                         estado: doc.data().estado || "Pendiente",
                         detalles: doc.data().descripcion,
-                        foto: doc.data().foto
+                        foto: doc.data().foto,
+                        origen: 'reportes'
                     };
                     reportesData.push(reporte);
                 });
+                
+                // Process TablaReportesdamin collection
+                reportesAdminSnapshot.forEach((doc) => {
+                    const reporte = {
+                        id: doc.id,
+                        fecha: formatearFechaHora(doc.data().fechaHora),
+                        tipo: doc.data().titulo,
+                        ubicacion: doc.data().ubicacion,
+                        estado: doc.data().estado || "Pendiente",
+                        detalles: doc.data().descripcion,
+                        foto: doc.data().foto,
+                        origen: 'TablaReportesdamin'
+                    };
+                    reportesData.push(reporte);
+                });
+                
+                // Sort all reports by date
+                reportesData.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
                 
                 setReportes(reportesData);
             } catch (error) {

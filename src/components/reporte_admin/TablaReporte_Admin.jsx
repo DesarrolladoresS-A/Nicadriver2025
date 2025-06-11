@@ -1,8 +1,8 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 import '../../styles/TablaReporteAdmin.css';
 import { FaFilePdf, FaFileExcel, FaEye } from 'react-icons/fa';
-import DetalleReporte from './DetalleReporte';
 
 const TablaReporteAdmin = ({ 
     reportes = [], 
@@ -78,6 +78,7 @@ const TablaReporteAdmin = ({
               <th>Ubicación</th>
               <th>Estado</th>
               <th>Detalles</th>
+              <th>Imagen</th>
               <th className="text-center">Acciones</th>
             </tr>
           </thead>
@@ -97,15 +98,33 @@ const TablaReporteAdmin = ({
                   </span>
                 </td>
                 <td>{reporte.detalles}</td>
+                <td>
+                  {reporte.foto && (
+                    <img 
+                      src={reporte.foto} 
+                      alt="Reporte" 
+                      className="reporte-image"
+                      onClick={() => handleVisualizar(reporte)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  )}
+                </td>
                 <td className="text-center">
                   <div className="acciones-container">
                     <button 
                       className="btn btn-sm" 
                       style={{ backgroundColor: '#007bff', color: '#fff' }}
-                      title="Visualizar"
                       onClick={() => handleVisualizar(reporte)}
                     >
                       <FaEye />
+                    </button>
+                    <button 
+                      className="btn btn-sm" 
+                      style={{ backgroundColor: '#dc3545', color: '#fff' }}
+                      title="PDF"
+                      onClick={() => onPDF(reporte)}
+                    >
+                      <FaFilePdf />
                     </button>
                   </div>
                 </td>
@@ -146,13 +165,55 @@ const TablaReporteAdmin = ({
         </div>
       </div>
 
-      <DetalleReporte
-        show={showModal}
-        handleClose={handleCloseModal}
-        reporte={selectedReporte}
-        onPDF={onPDF}
-        onExcel={onExcel}
-      />
+      {/* Modal para detalles del reporte */}
+      <Modal 
+        show={showModal} 
+        onHide={handleCloseModal} 
+        size="lg"
+        centered
+        dialogClassName="modal-centered"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Detalles del Reporte</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedReporte && (
+            <div className="reporte-detalle">
+              <div className="reporte-info">
+                <div className="info-item">
+                  <strong>Fecha:</strong> {selectedReporte.fecha}
+                </div>
+                <div className="info-item">
+                  <strong>Tipo:</strong> {selectedReporte.tipo}
+                </div>
+                <div className="info-item">
+                  <strong>Ubicación:</strong> {selectedReporte.ubicacion}
+                </div>
+                <div className="info-item">
+                  <strong>Estado:</strong> 
+                  <span className={`badge bg-${getEstadoColor(selectedReporte.estado)}`}>
+                    {selectedReporte.estado}
+                  </span>
+                </div>
+                <div className="info-item">
+                  <strong>Detalles:</strong> {selectedReporte.detalles}
+                </div>
+              </div>
+              
+              {selectedReporte.foto && (
+                <div className="reporte-imagen">
+                  <img 
+                    src={selectedReporte.foto} 
+                    alt="Reporte" 
+                    className="detalle-imagen"
+                  />
+                  <p className="imagen-caption">Evidencia del reporte</p>
+                </div>
+              )}
+            </div>
+          )}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

@@ -8,7 +8,6 @@ const TablaReportes = ({
   setReporteSeleccionado,
   setModalEliminar,
   setReporteSeleccionadoEliminar,
-  reporteSeleccionadoEliminar,
 }) => {
   const [modalVer, setModalVer] = useState(false);
   const [reporteAVisualizar, setReporteAVisualizar] = useState(null);
