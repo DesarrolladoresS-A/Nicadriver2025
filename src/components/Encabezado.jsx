@@ -85,21 +85,21 @@ const Encabezado = () => {
                           className={`nav-link ${location.pathname === "/administrador" ? "active" : ""}`}
                         >
                           <i className="bi-speedometer2 me-2"></i>
-                          <strong>Inicio Admin</strong>
+                          <strong>Inicio Administrador</strong>
                         </Nav.Link>
                         <Nav.Link
                           onClick={() => handleNavigate("/estadodetrafico")}
                           className={`nav-link ${location.pathname === "/estadodetrafico" ? "active" : ""}`}
                         >
                           <i className="bi-cone-striped me-2"></i>
-                          <strong>Estado del Trafico</strong>
+                          <strong>Estado del Tráfico</strong>
                         </Nav.Link>
                         <Nav.Link
                           onClick={() => handleNavigate("/reporteAdmin")}
                           className={`nav-link ${location.pathname === "/reporteAdmin" ? "active" : ""}`}
                         >
                           <i className="bi-file-earmark-text-fill me-2"></i>
-                          <strong>Reporte Admin</strong>
+                          <strong>Reporte Administrador</strong>
                         </Nav.Link>
                         <Nav.Link
                           onClick={() => handleNavigate("/graficos")}

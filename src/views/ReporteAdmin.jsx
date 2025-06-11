@@ -186,74 +186,35 @@ const reporteAdmin = () => {
 
     // Función para generar Excel de todos los reportes
     const handleExportAllExcel = () => {
-        try {
-            // Crear datos para Excel
-            const headers = ["ID", "Fecha", "Tipo", "Ubicación", "Estado", "Detalles"];
-            const data = [headers, ...reportes.map(reporte => [
-                reporte.id,
-                reporte.fecha,
-                reporte.tipo,
-                reporte.ubicacion,
-                reporte.estado,
-                reporte.detalles
-            ])];
+    try {
+        // Crear datos para Excel
+        const headers = ["ID", "Fecha", "Tipo", "Ubicación", "Estado", "Detalles"];
+        const data = reportes.map(reporte => ({
+            ID: reporte.id,
+            Fecha: reporte.fecha,
+            Tipo: reporte.tipo,
+            Ubicación: reporte.ubicacion,
+            Estado: reporte.estado,
+            Detalles: reporte.detalles
+        }));
 
-            // Crear worksheet principal
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Reportes");
+        // Crear worksheet y workbook
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Reportes");
 
-            // Agregar imágenes
-            let imageCount = 0;
-            reportes.forEach((reporte, index) => {
-                if (reporte.foto) {
-                    const img = new Image();
-                    img.crossOrigin = "anonymous";
-                    img.src = reporte.foto;
-                    
-                    img.onload = () => {
-                        const canvas = document.createElement("canvas");
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext("2d");
-                        ctx.drawImage(img, 0, 0);
-                        const imgData = canvas.toDataURL("image/png");
-                        
-                        // Crear worksheet para la imagen
-                        const imgWs = XLSX.utils.json_to_sheet([]);
-                        
-                        // Agregar la imagen
-                        XLSX.utils.sheet_add_aoa(imgWs, [["Imagen"]], { origin: 'A1' });
-                        
-                        // Agregar la imagen usando XLSX
-                        XLSX.utils.add_image(imgWs, {
-                            image: imgData,
-                            type: "base64",
-                            position: { col: 1, row: 1 },
-                            size: { width: 100, height: 50 }
-                        });
-                        
-                        // Agregar worksheet con la imagen
-                        XLSX.utils.book_append_sheet(wb, imgWs, `Imagen_${imageCount + 1}`);
-                        
-                        // Guardar Excel cuando todas las imágenes estén procesadas
-                        if (index === reportes.length - 1) {
-                            const wbout = XLSX.write(wb, { 
-                                bookType: 'xlsx', 
-                                type: 'array' 
-                            });
-                            const excelBlob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                            saveAs(excelBlob, `reportes_todos.xlsx`);
-                        }
-                    };
-                    imageCount++;
-                }
-            });
-        } catch (error) {
-            console.error("Error al generar Excel:", error);
-            alert("Error al generar el Excel. Por favor, intenta nuevamente.");
-        }
-    };
+        // Escribir y descargar
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const excelBlob = new Blob([wbout], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        saveAs(excelBlob, `reportes_todos.xlsx`);
+    } catch (error) {
+        console.error("Error al generar Excel:", error);
+        alert("Error al generar el Excel. Por favor, intenta nuevamente.");
+    }
+};
+
 
     // Función para cambiar el estado de un reporte
     const handleEstadoChange = async (id, nuevoEstado) => {
