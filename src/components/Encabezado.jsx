@@ -139,6 +139,13 @@ const Encabezado = () => {
                           />
                           <strong>Mi Perfil Admin</strong>
                         </Nav.Link>
+                        <Nav.Link
+                          onClick={handleLogout}
+                          className="nav-link"
+                        >
+                          <i className="bi-box-arrow-right me-2"></i>
+                          <strong>Cerrar Sesión</strong>
+                        </Nav.Link>
                       </>
                     ) : (
                       // Menú de Usuario Normal
@@ -182,6 +189,13 @@ const Encabezado = () => {
                             style={{ width: '30px', height: '30px', objectFit: 'cover' }}
                           />
                           <strong>Mi Perfil</strong>
+                        </Nav.Link>
+                        <Nav.Link
+                          onClick={handleLogout}
+                          className="nav-link"
+                        >
+                          <i className="bi-box-arrow-right me-2"></i>
+                          <strong>Cerrar Sesión</strong>
                         </Nav.Link>
                       </>
                     )}

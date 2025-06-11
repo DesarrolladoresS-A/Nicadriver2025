@@ -415,28 +415,61 @@
 
 /* Estilos para la tabla de reportes */
 .tabla-reportes-container {
-  margin-top: 2rem;
-}
-
-.reporte-table {
-  background-color: white;
+  color: #333 !important; /* Forzar color de texto oscuro */
+  background-color: #fff;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.reporte-table th {
-  background-color: #f8f9fa;
-  color: #333;
-  font-weight: 600;
   padding: 1rem;
-  border: none;
 }
 
+.reporte-table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #333 !important; /* Forzar color de texto */
+  background-color: #fff;
+  border-collapse: collapse;
+}
+
+.reporte-table th,
 .reporte-table td {
-  padding: 1rem;
+  padding: 0.75rem;
   vertical-align: middle;
-  border: none;
+  border-top: 1px solid #dee2e6;
+  color: #333 !important; /* Forzar color de texto */
+  background-color: #fff !important; /* Forzar fondo blanco */
+}
+
+.reporte-table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+  background-color: #f8f9fa !important;
+  color: #2c3e50 !important;
+  font-weight: 600;
+}
+
+/* Asegurar que el texto en las celdas sea visible */
+.reporte-table tbody tr {
+  color: #333 !important;
+}
+
+.reporte-table tbody td {
+  color: #333 !important;
+}
+
+/* Asegurar que los enlaces y botones sean visibles */
+.reporte-table a,
+.reporte-table .btn {
+  color: #333 !important;
+}
+
+/* Estilos para el contenedor de la tabla */
+.table-responsive {
+  color: #333 !important;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
 /* Estilos para los botones de acciones */
@@ -514,4 +547,64 @@
 
 .evidencia-thumbnail:hover {
   transform: scale(1.05);
+}
+
+/* Estilos para la columna de acciones */
+.reporte-table th:last-child,
+.reporte-table td:last-child {
+  width: 1%;  /* Hace que la columna ocupe solo el espacio necesario */
+  white-space: nowrap; /* Evita que el contenido se divida en varias líneas */
+  text-align: center; /* Centra el contenido de la columna */
+  padding: 0.5rem; /* Reduce el padding para hacerla más compacta */
+}
+
+/* Estilos para el contenedor de botones de acción */
+.acciones-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 100px; /* Ancho mínimo para el contenedor de acciones */
+}
+
+/* Ajustes para los botones de acción */
+.acciones-container .btn {
+  width: 32px; /* Ancho fijo para hacerlo cuadrado */
+  height: 32px; /* Altura fija igual al ancho */
+  padding: 0; /* Eliminar padding interno */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px; /* Bordes ligeramente redondeados */
+  font-size: 0.9rem; /* Tamaño de fuente más pequeño */
+}
+
+/* Ajustar el tamaño de los íconos dentro de los botones */
+.acciones-container .btn i,
+.acciones-container .btn svg {
+  font-size: 1rem; /* Tamaño del ícono */
+  margin: 0; /* Eliminar márgenes */
+}
+
+/* Estilo para el botón de PDF */
+.btn-pdf {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+}
+
+.btn-pdf:hover {
+  background-color: #bb2d3b;
+  color: white;
+}
+
+/* Estilo para el botón de visualizar */
+.btn-visualizar {
+  background-color: #198754;
+  color: white;
+  border: none;
+}
+
+.btn-visualizar:hover {
+  background-color: #157347;
+  color: white;
 }

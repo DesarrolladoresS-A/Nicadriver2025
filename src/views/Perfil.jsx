@@ -3,6 +3,7 @@ import { useAuth } from "../database/authcontext";
 import { useNavigate } from "react-router-dom";
 import { Card, Container, Row, Col, Image, Button } from 'react-bootstrap';
 import { FaUser, FaIdCard, FaPhone, FaEnvelope } from 'react-icons/fa';
+import "../styles/Perfil.css";
 
 const Perfil = () => {
   const { user, logout, updateUserProfile } = useAuth(); // Asumiendo que tienes un método updateUserProfile para actualizar el perfil

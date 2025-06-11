@@ -40,9 +40,7 @@ function App() {
               <Route path="/contacto" element={<Contacto />} />
               <Route path="/login" element={<Login />} />
               <Route path="/graficos" element={<Graficos />} />
-
               <Route path="/reporteAdmin" element={<ReporteAdmin />} />
-
               <Route path="/administrador" element={
                 <div className="inicio-container">
                   <Administrador />

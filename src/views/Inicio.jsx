@@ -6,7 +6,6 @@ import { db } from '../database/firebaseconfig';
 import { collection, getDocs } from 'firebase/firestore';
 import jsPDF from 'jspdf';
 import Paginacion from '../components/ordenamiento/Paginacion';
-// import GraficosClima from '../components/GraficoClima';
 import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { Container, Button } from "react-bootstrap";

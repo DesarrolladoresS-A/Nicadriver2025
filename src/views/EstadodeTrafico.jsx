@@ -51,6 +51,7 @@ const ciudadesNicaragua = [
   { nombre: 'Estelí', lat: 13.091, lng: -86.3538 },
 ];
 
+// Moved outside the component to prevent recreation on each render
 const libraries = ['places', 'geometry'];
 
 const EstadoTrafico = () => {
@@ -79,6 +80,7 @@ const EstadoTrafico = () => {
   const [rutaPath, setRutaPath] = useState([]);
   const [clickEnRuta, setClickEnRuta] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -90,20 +92,23 @@ const EstadoTrafico = () => {
           };
           setUserLocation(current);
           setCurrentLocation(current);
+          setLocationError(null);
         },
         (error) => {
           console.error('Error getting location:', error);
+          setLocationError('No se pudo obtener la ubicación. Usando ubicación predeterminada.');
           setUserLocation(defaultCenter);
           setCurrentLocation(defaultCenter);
         },
         {
           enableHighAccuracy: true,
-          timeout: 5000,
+          timeout: 10000, // Increased timeout to 10 seconds
           maximumAge: 0
         }
       );
     } else {
       console.log('Geolocation is not supported by this browser');
+      setLocationError('La geolocalización no es compatible con este navegador');
       setUserLocation(defaultCenter);
       setCurrentLocation(defaultCenter);
     }
@@ -216,37 +221,55 @@ const EstadoTrafico = () => {
       return;
     }
 
-    if (!userLocation) {
-      alert('No se pudo obtener su ubicación actual');
+    if (!userLocation || !userLocation.lat || !userLocation.lng) {
+      alert('No se pudo obtener su ubicación actual. Usando ubicación predeterminada.');
+      setUserLocation(defaultCenter);
       return;
     }
 
     try {
       const directionsService = new window.google.maps.DirectionsService();
       
+      // Ensure origin is a valid LatLngLiteral
       const origin = {
-        lat: userLocation.lat,
-        lng: userLocation.lng
+        lat: parseFloat(userLocation.lat),
+        lng: parseFloat(userLocation.lng)
       };
+
+      // Ensure destination is a string (address) or a valid LatLngLiteral
+      let destination = destino;
+      // If it's a string with coordinates, convert to LatLngLiteral
+      if (typeof destino === 'string' && destino.includes(',')) {
+        const [lat, lng] = destino.split(',').map(coord => parseFloat(coord.trim()));
+        if (!isNaN(lat) && !isNaN(lng)) {
+          destination = { lat, lng };
+        }
+      }
+
+      // Show loading state
+      setRutaCalculada(false);
+      setDirections(null);
+      setRutaPath([]);
 
       const response = await directionsService.route({
         origin: origin,
-        destination: destino,
+        destination: destination,
         travelMode: window.google.maps.TravelMode.DRIVING,
       });
 
-      if (response && response.routes && response.routes.length > 0) {
+      if (response?.routes?.[0]?.overview_path) {
         setDirections(response);
         setRutaCalculada(true);
-        
-        const path = response.routes[0].overview_path;
-        setRutaPath(path);
+        setRutaPath(response.routes[0].overview_path);
       } else {
         throw new Error('No se encontraron rutas');
       }
     } catch (error) {
       console.error('Error calculando ruta:', error);
-      alert('No se pudo calcular la ruta. Por favor, verifique el destino.');
+      alert('No se pudo calcular la ruta. Por favor, verifique el destino e intente nuevamente.');
+      setRutaCalculada(false);
+      setDirections(null);
+      setRutaPath([]);
     }
   };
 
@@ -281,7 +304,20 @@ const EstadoTrafico = () => {
   return (
     <div style={{ padding: '20px' }}>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Estado del Tráfico</h2>
-
+      
+      {locationError && (
+        <div style={{ 
+          backgroundColor: '#ffebee', 
+          color: '#c62828', 
+          padding: '10px', 
+          borderRadius: '4px',
+          marginBottom: '15px',
+          textAlign: 'center'
+        }}>
+          {locationError}
+        </div>
+      )}
+      
       <div className="search-container">
         <div className="search-bar">
           <input
