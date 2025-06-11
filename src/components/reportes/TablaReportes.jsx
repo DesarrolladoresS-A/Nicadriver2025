@@ -8,6 +8,7 @@ const TablaReportes = ({
   setReporteSeleccionado,
   setModalEliminar,
   setReporteSeleccionadoEliminar,
+  handleEstadoChange
 }) => {
   const [modalVer, setModalVer] = useState(false);
   const [reporteAVisualizar, setReporteAVisualizar] = useState(null);
@@ -40,7 +41,7 @@ const TablaReportes = ({
     doc.text(`Ubicación: ${reporte.ubicacion}`, 20, 40);
     doc.text(`Descripción: ${reporte.descripcion}`, 20, 50);
     doc.text(`Fecha y Hora: ${formatearFechaHora(reporte.fechaHora)}`, 20, 60);
-    doc.text(`Estado: ${reporte.estado || "Sin estado"}`, 20, 70);
+    doc.text(`Estado: ${reporte.estado || "Pendiente"}`, 20, 70);
 
     if (reporte.foto) {
       const img = new Image();
@@ -104,10 +105,9 @@ const TablaReportes = ({
                 <p>{formatearFechaHora(reporteAVisualizar.fechaHora)}</p>
               </div>
 
-              {/* NUEVO CAMPO AGREGADO */}
               <div className="detalle-item">
                 <strong>Estado:</strong>
-                <p>{reporteAVisualizar.estado || "Sin estado"}</p>
+                <p>{reporteAVisualizar.estado || "Pendiente"}</p>
               </div>
 
               {reporteAVisualizar.foto && (
@@ -156,6 +156,7 @@ const TablaReportes = ({
             <th>Descripción</th>
             <th>Fecha y Hora</th>
             <th>Estado</th>
+            <th>Cambiar Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -169,8 +170,33 @@ const TablaReportes = ({
                 {reporte.descripcion.length > 50 ? "..." : ""}
               </td>
               <td>{formatearFechaHora(reporte.fechaHora)}</td>
-              <td>{reporte.estado || "Sin estado"}</td>
+              <td>{reporte.estado || "Pendiente"}</td>
+              <td>
+                <select
+                  value={reporte.estado || "pendiente"}
+                  onChange={(e) => handleEstadoChange(reporte.id, e.target.value)}
+                  className="form-select"
+                  style={{
+                    padding: "0.5rem",
+                    borderRadius: "6px",
+                    border: "1px solid #e0e0e0",
+                    fontSize: "0.9rem",
+                    width: "150px"
+                  }}
+                >
+                  <option value="pendiente">Pendiente</option>
+                  <option value="en progreso">En progreso</option>
+                  <option value="resuelto">Resuelto</option>
+                </select>
+              </td>
               <td className="acciones">
+                <button
+                  className="btn-accion btn-ver"
+                  onClick={() => abrirModalVisualizacion(reporte)}
+                  title="Ver detalles"
+                >
+                  <i className="bi bi-eye-fill"></i>
+                </button>
                 <button
                   className="btn-accion btn-editar"
                   onClick={() => {
@@ -191,13 +217,6 @@ const TablaReportes = ({
                   title="Eliminar"
                 >
                   <i className="bi bi-trash-fill"></i>
-                </button>
-                <button
-                  className="btn-accion btn-ver"
-                  onClick={() => abrirModalVisualizacion(reporte)}
-                  title="Ver detalles"
-                >
-                  <i className="bi bi-eye-fill"></i>
                 </button>
               </td>
             </tr>

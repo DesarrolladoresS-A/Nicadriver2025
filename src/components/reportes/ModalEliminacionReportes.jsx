@@ -47,48 +47,55 @@ const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgb(255, 255, 255)',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 1000
     }}>
       <div className="modal-content" style={{
-        backgroundColor: 'white',
-        padding: '30px',
-        borderRadius: '12px',
+        backgroundColor: '#fff',
+        padding: '25px',
+        borderRadius: '8px',
         width: '90%',
         maxWidth: '500px',
-        boxShadow: '0 5px 20px rgba(0,0,0,0.2)'
+        boxShadow: '0 4px 6px rgb(255, 255, 255)',
+        border: '1px solid #e0e0e0'
       }}>
         <h2 style={{
-          color: '#1e3d87',
+          color: '#000',
           marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px'
+          gap: '10px',
+          fontSize: '1.5rem'
         }}>
-          <FaTrash /> Eliminar Reporte
+          <FaTrash style={{ color: '#dc3545' }} /> Eliminar Reporte
         </h2>
 
         {error && (
           <div style={{
-            backgroundColor: '#ffebee',
-            color: '#f44336',
-            padding: '10px',
-            borderRadius: '6px',
+            backgroundColor: '#fff',
+            color: '#dc3545',
+            padding: '15px',
+            borderRadius: '4px',
             marginBottom: '20px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '10px',
+            border: '1px solid #dc3545'
           }}>
-            <FaExclamationTriangle />
+            <FaExclamationTriangle style={{ color: '#dc3545' }} />
             {error}
           </div>
         )}
 
-        <p>¿Estás seguro que deseas eliminar el reporte "{reporte.titulo}"?</p>
-        <p>Esta acción no se puede deshacer.</p>
+        <p style={{ color: '#000', marginBottom: '10px', fontSize: '1rem' }}>
+          ¿Estás seguro que deseas eliminar el reporte "{reporte.titulo}"?
+        </p>
+        <p style={{ color: '#000', marginBottom: '20px', fontSize: '1rem' }}>
+          Esta acción no se puede deshacer.
+        </p>
 
         <div style={{
           display: 'flex',
@@ -100,12 +107,14 @@ const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError
             onClick={() => onClose()}
             disabled={loading}
             style={{
-              padding: '8px 16px',
-              backgroundColor: '#ccc',
+              padding: '10px 20px',
+              backgroundColor: '#fff',
               color: '#000',
-              border: 'none',
+              border: '1px solid #e0e0e0',
               borderRadius: '4px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              fontSize: '1rem',
+              transition: 'all 0.3s ease'
             }}
           >
             Cancelar
@@ -114,15 +123,17 @@ const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError
             onClick={eliminarReporte}
             disabled={loading}
             style={{
-              padding: '8px 16px',
-              backgroundColor: '#f44336',
-              color: 'white',
+              padding: '10px 20px',
+              backgroundColor: '#dc3545',
+              color: '#fff',
               border: 'none',
               borderRadius: '4px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px'
+              gap: '8px',
+              fontSize: '1rem',
+              transition: 'all 0.3s ease'
             }}
           >
             {loading ? (
@@ -130,7 +141,7 @@ const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError
                 <div style={{
                   width: '14px',
                   height: '14px',
-                  border: '2px solid white',
+                  border: '2px solid #fff',
                   borderTopColor: 'transparent',
                   borderRadius: '50%',
                   animation: 'spinner 1s linear infinite'
@@ -139,7 +150,7 @@ const ModalEliminarReportes = ({ setModalEliminar, reporte, actualizar, setError
               </>
             ) : (
               <>
-                <FaTrash />
+                <FaTrash style={{ color: '#fff' }} />
                 Eliminar
               </>
             )}

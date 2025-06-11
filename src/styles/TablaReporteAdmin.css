@@ -1,17 +1,20 @@
 .tabla-reportes-container {
-  padding: 20px;
+  padding: 25px;
   background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  margin: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+  margin: 25px;
+  transition: all 0.3s ease;
 }
 
 .tabla-container {
-  padding: 20px;
+  padding: 25px;
   background-color: #fff;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  border-radius: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .reporte-table {
@@ -20,41 +23,57 @@
 }
 
 .reporte-table th {
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   color: #212529;
   font-weight: 600;
   text-align: left;
-  padding: 12px;
+  padding: 15px;
   border-bottom: 2px solid #dee2e6;
+  border-radius: 8px 8px 0 0;
 }
 
 .reporte-table td {
-  padding: 12px;
+  padding: 15px;
   border-bottom: 1px solid #dee2e6;
+  transition: background-color 0.3s ease;
+}
+
+.reporte-table tr:hover td {
+  background-color: #f8f9fa;
 }
 
 .estado-badge {
-  padding: 5px 10px;
-  border-radius: 15px;
-  font-size: 0.875rem;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
   font-weight: 500;
   color: #fff;
+  min-width: 100px;
+  text-align: center;
+  display: inline-block;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.estado-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .estado-badge.warning {
-  background-color: #ffc107;
+  background: linear-gradient(135deg, #ffc107, #ffd700);
 }
 
 .estado-badge.info {
-  background-color: #17a2b8;
+  background: linear-gradient(135deg, #17a2b8, #138496);
 }
 
 .estado-badge.success {
-  background-color: #28a745;
+  background: linear-gradient(135deg, #28a745, #218838);
 }
 
 .estado-badge.secondary {
-  background-color: #6c757d;
+  background: linear-gradient(135deg, #6c757d, #5a6268);
 }
 
 .table-responsive {
@@ -120,23 +139,6 @@
 .btn-sm {
   padding: 5px 10px;
   font-size: 0.875rem;
-}
-
-/* Estilos para diferentes estados */
-.estado-badge.warning {
-  background-color: #ffc107;
-}
-
-.estado-badge.info {
-  background-color: #17a2b8;
-}
-
-.estado-badge.success {
-  background-color: #28a745;
-}
-
-.estado-badge.secondary {
-  background-color: #6c757d;
 }
 
 .pagination-container {

@@ -9,7 +9,8 @@ const TablaReporteAdmin = ({
     onPDF = () => {},
     onExcel = () => {},
     onVisualizar = () => {},
-    loading = false
+    loading = false,
+    handleEstadoChange = () => {}
 }) => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 10; // Número de reportes por página
@@ -18,9 +19,10 @@ const TablaReporteAdmin = ({
 
   const getEstadoColor = (estado) => {
     const estadoLower = estado.toLowerCase();
-    if (estadoLower === 'pendiente') return 'warning';
-    if (estadoLower === 'en proceso') return 'info';
-    if (estadoLower === 'completado') return 'success';
+    if (estadoLower === 'pendiente') return 'pendiente';
+    if (estadoLower === 'proceso') return 'proceso';
+    if (estadoLower === 'aceptado') return 'aceptado';
+    if (estadoLower === 'rechazado') return 'rechazado';
     return 'secondary';
   };
 
@@ -77,6 +79,7 @@ const TablaReporteAdmin = ({
               <th>Tipo</th>
               <th>Ubicación</th>
               <th>Estado</th>
+              <th>Cambiar Estado</th>
               <th>Detalles</th>
               <th>Imagen</th>
               <th className="text-center">Acciones</th>
@@ -96,6 +99,25 @@ const TablaReporteAdmin = ({
                   >
                     {reporte.estado}
                   </span>
+                </td>
+                <td>
+                  <select
+                    value={reporte.estado.toLowerCase()}
+                    onChange={(e) => handleEstadoChange(reporte.id, e.target.value.toLowerCase())}
+                    className="form-select"
+                    style={{
+                      padding: "0.5rem",
+                      borderRadius: "6px",
+                      border: "1px solid #e0e0e0",
+                      fontSize: "0.9rem",
+                      width: "150px"
+                    }}
+                  >
+                    <option value="pendiente">Pendiente</option>
+                    <option value="proceso">Proceso</option>
+                    <option value="aceptado">Aceptado</option>
+                    <option value="rechazado">Rechazado</option>
+                  </select>
                 </td>
                 <td>{reporte.detalles}</td>
                 <td>

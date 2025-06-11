@@ -129,7 +129,6 @@ const Administrador = () => {
               <th>Título</th>
               <th>Descripción</th>
               <th>Estado</th>
-              <th>Cambiar Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -138,18 +137,7 @@ const Administrador = () => {
                 <td>{reporte.titulo}</td>
                 <td>{reporte.descripcion}</td>
                 <td>{reporte.estado}</td>
-                <td>
-                  <select
-                    value={reporte.estado || 'pendiente'}
-                    onChange={(e) => handleEstadoChange(reporte.id, e.target.value)}
-                    className="form-select"
-                  >
-                    <option value="pendiente">Pendiente</option>
-                    <option value="en progreso">En progreso</option>
-                    <option value="aceptado">Aceptado</option>
-                    <option value="rechazado">Rechazado</option>
-                  </select>
-                </td>
+              
               </tr>
             ))}
           </tbody>

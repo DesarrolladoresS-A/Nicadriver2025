@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import TablaReporte_Admin from "../components/reporte_admin/TablaReporte_Admin";
 import { db } from "../database/firebaseconfig";
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, doc, updateDoc } from "firebase/firestore";
 import jsPDF from 'jspdf';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
@@ -255,6 +255,36 @@ const reporteAdmin = () => {
         }
     };
 
+    // Función para cambiar el estado de un reporte
+    const handleEstadoChange = async (id, nuevoEstado) => {
+        try {
+            // Aquí necesitamos saber si el reporte viene de la colección 'reportes' o 'TablaReportesdamin'
+            // Podemos obtener esto del objeto reporte, pero necesitamos encontrar el reporte en el estado
+            const reporte = reportes.find(r => r.id === id);
+            
+            if (!reporte) {
+                throw new Error('Reporte no encontrado');
+            }
+
+            const ref = doc(db, reporte.origen === 'reportes' ? 'reportes' : 'TablaReportesdamin', id);
+            await updateDoc(ref, { estado: nuevoEstado });
+            
+            // Actualizar el estado local
+            setReportes(prevReportes =>
+                prevReportes.map(reporte =>
+                    reporte.id === id ? { ...reporte, estado: nuevoEstado } : reporte
+                )
+            );
+        } catch (error) {
+            console.error('Error al actualizar estado:', error);
+            alert(
+                error.code === "permission-denied"
+                    ? "No tienes permisos para cambiar el estado. Contacta al administrador."
+                    : "Hubo un error al cambiar el estado. Por favor, inténtalo de nuevo."
+            );
+        }
+    };
+
     // Función para visualizar el reporte
     const handleVisualizar = (reporte) => {
         navigate(`/reporteAdmin/${reporte.id}/detalle`);
@@ -302,6 +332,7 @@ const reporteAdmin = () => {
                 reportes={reportes}
                 onVisualizar={handleVisualizar}
                 loading={loading}
+                handleEstadoChange={handleEstadoChange}
             />
         </div>
     );
