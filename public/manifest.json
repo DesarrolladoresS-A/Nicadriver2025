@@ -1,25 +1,21 @@
 {
-    "name": "NicaDriver",
-    "short_name": "NicaDriver",
-    "description": "Movilidad inteligente, una Nicaragua en movimiento.",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#FF6F00",
-    "scope": "/",
-    "icons": [
-      {
-        "src": "/src/assets/logonicadriver.png",
-        "sizes": "512x512",
-        "type": "image/png",
-        "purpose": "maskable"
-      },
-      {
-        "src": "/public/Logo.png",
-        "sizes": "512x512",
-        "type": "image/png",
-        "purpose": "maskable"
-      }
-    ]
-  }
-  
+  "name": "NicaDriver",
+  "short_name": "NicaDriver",
+  "description": "Movilidad inteligente, una Nicaragua en movimiento.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF6F00",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

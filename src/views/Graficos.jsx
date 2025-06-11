@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Card } from 'react-bootstrap';
 import GraficoEstadoReporte from '../components/estadisticas/GraficoEstadoReporte';
 import GraficoTipoReporte from '../components/estadisticas/GraficosTipoReporte';
 import { db } from '../database/firebaseconfig';
@@ -25,17 +25,17 @@ const Graficos = () => {
   }, []);
 
   useEffect(() => {
-    // Calcular los reportes por estado
     const estados = ['pendiente', 'en progreso', 'resuelto'];
     const reportesEstado = estados.map((estado) => ({
       nombre: estado,
-      cantidad: reportes.filter((reporte) => reporte.estado === estado).length
+      cantidad: reportes.filter((reporte) =>
+        (reporte.estado || '').toLowerCase().trim() === estado
+      ).length
     }));
 
     setReportesPorEstado(reportesEstado);
 
-    // Calcular los reportes por tipo
-    const tipos = ['Incidencia', 'Sugerencia', 'Consulta']; // Ajusta esto según tus tipos de reportes
+    const tipos = ['Incidencia', 'Sugerencia', 'Consulta'];
     const reportesTipo = tipos.map((tipo) => ({
       nombre: tipo,
       cantidad: reportes.filter((reporte) => reporte.tipo === tipo).length
@@ -48,25 +48,21 @@ const Graficos = () => {
     <Container fluid className="p-4">
       <h2 className="text-center mb-4">Gráficos de Reportes</h2>
 
-      <Row className="mt-4">
-        <Col md={6}>
-          <Card className="mb-4">
-            <Card.Body>
-              <h3 className="card-title mb-4">Reportes por Tipo</h3>
-              <GraficoTipoReporte data={reportesPorTipo} />
-            </Card.Body>
-          </Card>
-        </Col>
+      <div className="d-flex flex-wrap gap-4 justify-content-center">
+        <Card style={{ flex: '1 1 45%', minWidth: '300px' }}>
+          <Card.Body>
+            <h5 className="card-title text-center">Tipos de Reporte</h5>
+            <GraficoTipoReporte data={reportesPorTipo} />
+          </Card.Body>
+        </Card>
 
-        <Col md={6}>
-          <Card className="mb-4">
-            <Card.Body>
-              <h3 className="card-title mb-4">Reportes por Estado</h3>
-              <GraficoEstadoReporte data={reportesPorEstado} />
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+        <Card style={{ flex: '1 1 45%', minWidth: '300px' }}>
+          <Card.Body>
+            <h5 className="card-title text-center">Estado de Reportes</h5>
+            <GraficoEstadoReporte data={reportesPorEstado} />
+          </Card.Body>
+        </Card>
+      </div>
     </Container>
   );
 };

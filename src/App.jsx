@@ -12,6 +12,10 @@ import Catalogo from "./views/Catalogorepor";
 import Perfil from "./views/Perfil"; 
 import Administrador from "./views/Administrador";
 import Graficos from "./views/Graficos";
+<<<<<<< HEAD
+=======
+import ReporteAdmin from './views/ReporteAdmin';
+>>>>>>> dd57fba454c3b74664c4f799f95e27114dd6ee35
 
 function App() {
   return (
@@ -39,6 +43,10 @@ function App() {
               <Route path="/catalogo" element={<Catalogo />} />
               <Route path="/login" element={<Login />} />
               <Route path="/graficos" element={<Graficos />} />
+<<<<<<< HEAD
+=======
+              <Route path="/reporteAdmin" element={<ReporteAdmin />} />
+>>>>>>> dd57fba454c3b74664c4f799f95e27114dd6ee35
               <Route path="/administrador" element={
                 <div className="inicio-container">
                   <Administrador />

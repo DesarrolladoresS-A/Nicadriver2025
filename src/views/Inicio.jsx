@@ -9,7 +9,6 @@ import Paginacion from '../components/ordenamiento/Paginacion';
 // import GraficosClima from '../components/GraficoClima';
 import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import logo_nicadriver from "../assets/logonicadriver.png";
 import { Container, Button } from "react-bootstrap";
 import ModalInstalacionIOS from '../components/inicio/ModalInstalacionIOS';
 
