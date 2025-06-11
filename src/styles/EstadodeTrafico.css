@@ -73,6 +73,7 @@ body {
   box-shadow: 0 15px 40px rgb(255, 255, 255);
   font-family: 'Poppins', sans-serif;
   position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.993);
   border: 1px solid rgb(255, 255, 255);
   backdrop-filter: blur(5px);
   max-height: calc(100vh - 160px);
@@ -144,6 +145,8 @@ body {
 .modal-content textarea:focus,
 .modal-content input[type="datetime-local"]:focus {
   border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(245, 244, 242, 0.959);
+  box-shadow: 0 0 0 3px rgb(255, 255, 255);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
   outline: none;
 }
@@ -160,6 +163,7 @@ body {
   margin-top: 25px;
   padding-top: 20px;
   border-top: 2px solid rgba(0, 0, 0, 0.1);
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
   position: relative;
   margin-bottom: 30px;
 }
@@ -210,6 +214,8 @@ body {
 }
 
 .modal-content button.cancel:hover {
+  background: #333;
+  border-color: #1a1a1a;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   animation: pulse 1.5s infinite;
