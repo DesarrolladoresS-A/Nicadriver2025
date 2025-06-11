@@ -51,10 +51,12 @@ const ciudadesNicaragua = [
   { nombre: 'Estelí', lat: 13.091, lng: -86.3538 },
 ];
 
+const libraries = ['places', 'geometry'];
+
 const EstadoTrafico = () => {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ['places', 'geometry'],
+    libraries,
   });
 
   const mapRef = useRef(null);
@@ -80,13 +82,30 @@ const EstadoTrafico = () => {
 
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const current = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        setUserLocation(current);
-      });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const current = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setUserLocation(current);
+          setCurrentLocation(current);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          setUserLocation(defaultCenter);
+          setCurrentLocation(defaultCenter);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        }
+      );
+    } else {
+      console.log('Geolocation is not supported by this browser');
+      setUserLocation(defaultCenter);
+      setCurrentLocation(defaultCenter);
     }
   }, []);
 
@@ -108,7 +127,6 @@ const EstadoTrafico = () => {
       lng: event.latLng.lng(),
     };
 
-    // Verificar si el clic fue cerca de la ruta
     if (rutaPath.length > 0) {
       const estaEnRuta = isPointOnPath(
         clickedLocation,
@@ -124,7 +142,6 @@ const EstadoTrafico = () => {
     setSelectedLocation(clickedLocation);
   };
 
-  // Función para verificar si un punto está cerca de la ruta
   const isPointOnPath = (point, path, tolerance) => {
     const google = window.google;
     if (!google || !google.maps.geometry) return false;
@@ -199,16 +216,34 @@ const EstadoTrafico = () => {
       return;
     }
 
+    if (!userLocation) {
+      alert('No se pudo obtener su ubicación actual');
+      return;
+    }
+
     try {
       const directionsService = new window.google.maps.DirectionsService();
+      
+      const origin = {
+        lat: userLocation.lat,
+        lng: userLocation.lng
+      };
+
       const response = await directionsService.route({
-        origin: userLocation,
+        origin: origin,
         destination: destino,
         travelMode: window.google.maps.TravelMode.DRIVING,
       });
 
-      setDirections(response);
-      setRutaCalculada(true);
+      if (response && response.routes && response.routes.length > 0) {
+        setDirections(response);
+        setRutaCalculada(true);
+        
+        const path = response.routes[0].overview_path;
+        setRutaPath(path);
+      } else {
+        throw new Error('No se encontraron rutas');
+      }
     } catch (error) {
       console.error('Error calculando ruta:', error);
       alert('No se pudo calcular la ruta. Por favor, verifique el destino.');
@@ -238,23 +273,8 @@ const EstadoTrafico = () => {
       return;
     }
 
-    // Aquí iría la lógica para iniciar el viaje
     setShowRutaModal(false);
   };
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => console.error('Error getting location:', error)
-      );
-    }
-  }, []);
 
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
