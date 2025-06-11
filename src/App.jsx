@@ -8,12 +8,9 @@ import './App.css';
 import EstadodeTrafico from "./views/EstadodeTrafico";
 import Reportes from "./views/Reportes";
 import Contacto from "./views/Contacto";
-import Perfil from "./views/Perfil"; 
 import Administrador from "./views/Administrador";
 import Graficos from "./views/Graficos";
-
 import ReporteAdmin from './views/ReporteAdmin';
-
 
 function App() {
   return (
@@ -34,7 +31,6 @@ function App() {
                   <Nosotros />
                 </div>
               } />
-              <Route path="/perfil" element={<Perfil />} /> 
               <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
               <Route path="/reportes" element={<Reportes />} />
               <Route path="/contacto" element={<Contacto />} />
