@@ -70,6 +70,7 @@ const EstadoTrafico = () => {
   const [ciudadDestino, setCiudadDestino] = useState('');
   const [destino, setDestino] = useState('');
   const [rutaCalculada, setRutaCalculada] = useState(false);
+  const [rutaSeleccionada, setRutaSeleccionada] = useState(null);
   const [usarUbicacionActual, setUsarUbicacionActual] = useState(true);
   const [ciudadOrigenSeleccionada, setCiudadOrigenSeleccionada] = useState('');
   const [directions, setDirections] = useState(null);
@@ -219,6 +220,15 @@ const EstadoTrafico = () => {
       alert('Por favor, calcule la ruta primero');
       return;
     }
+    setRutaSeleccionada(directions);
+    setShowRutaModal(false);
+  };
+
+  const handleCancelarRuta = () => {
+    setDirections(null);
+    setRutaCalculada(false);
+    setRutaSeleccionada(null);
+    setDestino('');
     setShowRutaModal(false);
   };
 
@@ -267,6 +277,11 @@ const EstadoTrafico = () => {
           {rutaCalculada && (
             <button onClick={handleListo} className="listo-button">
               Listo
+            </button>
+          )}
+          {rutaSeleccionada && (
+            <button onClick={handleCancelarRuta} className="cancelar-ruta-button">
+              Cancelar Ruta
             </button>
           )}
         </div>

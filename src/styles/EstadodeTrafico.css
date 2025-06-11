@@ -73,11 +73,7 @@ body {
   box-shadow: 0 15px 40px rgb(255, 255, 255);
   font-family: 'Poppins', sans-serif;
   position: relative;
-<<<<<<< HEAD
-  border: 1px solid rgba(255, 255, 255, 0.993);
-=======
   border: 1px solid rgb(255, 255, 255);
->>>>>>> 3c597abe2d8b8d29356174fce58ba0e4f9a49dac
   backdrop-filter: blur(5px);
   max-height: calc(100vh - 160px);
   overflow-y: auto;
@@ -148,11 +144,7 @@ body {
 .modal-content textarea:focus,
 .modal-content input[type="datetime-local"]:focus {
   border-color: var(--primary-color);
-<<<<<<< HEAD
-  box-shadow: 0 0 0 3px rgba(245, 244, 242, 0.959);
-=======
-  box-shadow: 0 0 0 3px rgb(255, 255, 255);
->>>>>>> 3c597abe2d8b8d29356174fce58ba0e4f9a49dac
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
   outline: none;
 }
 
@@ -167,11 +159,7 @@ body {
   justify-content: center;
   margin-top: 25px;
   padding-top: 20px;
-<<<<<<< HEAD
   border-top: 2px solid rgba(0, 0, 0, 0.1);
-=======
-  border-top: 2px solid rgba(255, 255, 255, 0.1);
->>>>>>> 3c597abe2d8b8d29356174fce58ba0e4f9a49dac
   position: relative;
   margin-bottom: 30px;
 }
@@ -222,10 +210,6 @@ body {
 }
 
 .modal-content button.cancel:hover {
-<<<<<<< HEAD
-  background: #333;
-  border-color: #1a1a1a;
-=======
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   animation: pulse 1.5s infinite;
@@ -250,7 +234,6 @@ body {
   background: white; padding: 20px;
   border-radius: 8px; width: 90%;
   max-width: 400px;
->>>>>>> 3c597abe2d8b8d29356174fce58ba0e4f9a49dac
 }
 
 /* Estilos para los botones de tipo de incidente */
@@ -1665,4 +1648,23 @@ body {
 
 .listo-button:hover {
   background: #218838;
+}
+
+/* Estilos para el botón de cancelar ruta */
+.cancelar-ruta-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #dc3545;
+  color: white;
+  margin-left: 10px;
+}
+
+.cancelar-ruta-button:hover {
+  background: #c82333;
+  transform: translateY(-2px);
 }
