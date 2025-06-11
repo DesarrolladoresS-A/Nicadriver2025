@@ -2,7 +2,6 @@
   min-height: 100vh;
   background-color: #f8f9fa;
 }
-
 .text-center  {
  color:#1e3d87
 }
@@ -81,3 +80,105 @@
   background: #FFC100;
 }
 
+.stats-card {
+  background: #f8f9fa;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 0 0.5rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  margin-right: 10px;
+  color: #FFc100;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.activities-card {
+  min-width: 300px;
+  max-height: 270px;
+  overflow-y: auto;
+}
+
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.activity-icon {
+  font-size: 1.3rem;
+}
+
+.activity-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-title {
+  font-weight: 500;
+}
+
+.activity-time {
+  font-size: 0.85rem;
+  color: #888;
+}
+/* Estilo general de la tabla */
+.table {
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Encabezado */
+.table thead th {
+  background-color: #2c3e50; /* Azul oscuro grisáceo */
+  color: #ffffff;
+  text-align: center;
+  vertical-align: middle;
+  padding: 12px;
+  font-weight: 600;
+}
+
+/* Celdas */
+.table tbody td {
+  background-color: #f8f9fa; /* Gris claro */
+  color: #333;
+  padding: 10px;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* Filas alternas */
+.table tbody tr:nth-child(even) {
+  background-color: #eaf0f6; /* Azul claro muy sutil */
+}
+
+/* Hover sobre filas */
+.table tbody tr:hover {
+  background-color: #d0e6fa;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Estado con estilos opcionales si deseas destacarlo */
+.table td.estado {
+  font-weight: bold;
+  color: #2c3e50;
+}

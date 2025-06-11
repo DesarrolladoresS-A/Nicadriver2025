@@ -1,41 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, CardGroup } from 'react-bootstrap';
-import { FaUsers, FaChartLine, FaFileAlt, FaDatabase } from 'react-icons/fa';
+import { Container, Row, Col, Card, CardGroup, Pagination } from 'react-bootstrap';
+import { FaUsers, FaChartLine, FaFileAlt } from 'react-icons/fa';
 import { db } from '../database/firebaseconfig';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 
 import '../styles/Administrador.css';
 
 const Administrador = () => {
-  const [stats, setStats] = useState({
-    usuarios: 0,
-    reportes: 0,
-    trafico: 0,
-    catalogos: 0
-  });
-
+  const [stats, setStats] = useState({ reportes: 0 });
   const [reportes, setReportes] = useState([]);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const reportesPorPagina = 5;
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const usersSnapshot = await getDocs(collection(db, 'users'));
-        const usuariosCount = usersSnapshot.size;
-
         const reportesSnapshot = await getDocs(collection(db, 'reportes'));
         const reportesCount = reportesSnapshot.size;
 
-        const traficoCount = 150;
-
-        const catalogosSnapshot = await getDocs(collection(db, 'catalogos'));
-        const catalogosCount = catalogosSnapshot.size;
-
-        setStats({
-          usuarios: usuariosCount,
-          reportes: reportesCount,
-          trafico: traficoCount,
-          catalogos: catalogosCount
-        });
+        setStats({ reportes: reportesCount });
       } catch (error) {
         console.error('Error al obtener estadísticas:', error);
       }
@@ -46,7 +29,7 @@ const Administrador = () => {
         const snapshot = await getDocs(collection(db, 'reportes'));
         const lista = snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         }));
         setReportes(lista);
       } catch (error) {
@@ -90,24 +73,34 @@ const Administrador = () => {
     return "Hace unos segundos";
   };
 
+  // Cálculo de la paginación
+  const indiceUltimoReporte = paginaActual * reportesPorPagina;
+  const indicePrimerReporte = indiceUltimoReporte - reportesPorPagina;
+  const reportesActuales = reportes.slice(indicePrimerReporte, indiceUltimoReporte);
+  const totalPaginas = Math.ceil(reportes.length / reportesPorPagina);
+
+  const renderPaginacion = () => (
+    <Pagination className="justify-content-center mt-3">
+      <Pagination.Prev onClick={() => setPaginaActual(paginaActual - 1)} disabled={paginaActual === 1} />
+      {[...Array(totalPaginas).keys()].map((num) => (
+        <Pagination.Item
+          key={num + 1}
+          active={num + 1 === paginaActual}
+          onClick={() => setPaginaActual(num + 1)}
+        >
+          {num + 1}
+        </Pagination.Item>
+      ))}
+      <Pagination.Next onClick={() => setPaginaActual(paginaActual + 1)} disabled={paginaActual === totalPaginas} />
+    </Pagination>
+  );
+
   return (
     <div className="administrador-container">
       <Container fluid className="p-4">
         <h2 className="text-center mb-4">Dashboard de Administrador</h2>
 
         <CardGroup className="mb-4">
-          <Card className="stats-card">
-            <Card.Body>
-              <Card.Title className="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <FaUsers className="stat-icon" />
-                  <span>Usuarios</span>
-                </div>
-                <h3 className="stat-number">{stats.usuarios}</h3>
-              </Card.Title>
-            </Card.Body>
-          </Card>
-
           <Card className="stats-card">
             <Card.Body>
               <Card.Title className="d-flex justify-content-between align-items-center mb-3">
@@ -119,9 +112,34 @@ const Administrador = () => {
               </Card.Title>
             </Card.Body>
           </Card>
+
+          <Card className="stats-card activities-card">
+            <Card.Body>
+              <Card.Title className="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <FaChartLine className="stat-icon" />
+                  <span>Actividades</span>
+                </div>
+              </Card.Title>
+              <div className="activities-list">
+                {reportes
+                  .sort((a, b) => new Date(b.fechaHora) - new Date(a.fechaHora))
+                  .slice(0, 5)
+                  .map((reporte) => (
+                    <div className="activity-item" key={reporte.id}>
+                      <span className="activity-icon">📝</span>
+                      <div className="activity-details">
+                        <div className="activity-title">{reporte.titulo}</div>
+                        <div className="activity-time">{calcularTiempoTranscurrido(reporte.fechaHora)}</div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </Card.Body>
+          </Card>
         </CardGroup>
 
-        {/* Tabla de gestión de reportes */}
+        {/* Tabla de gestión de reportes con paginación */}
         <h3 className="mt-5 mb-3">Gestión de Reportes</h3>
         <table className="table table-bordered table-striped">
           <thead>
@@ -132,39 +150,17 @@ const Administrador = () => {
             </tr>
           </thead>
           <tbody>
-            {reportes.map((reporte) => (
+            {reportesActuales.map((reporte) => (
               <tr key={reporte.id}>
                 <td>{reporte.titulo}</td>
                 <td>{reporte.descripcion}</td>
                 <td>{reporte.estado}</td>
-              
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* Actividades recientes */}
-        <Row className="mt-4">
-          <Col md={{ span: 4, offset: 8 }}>
-            <Card>
-              <Card.Body>
-                <h3 className="card-title mb-4">Últimas Actividades</h3>
-                <div className="activities-list">
-                  {reportes
-                    .sort((a, b) => new Date(b.fechaHora) - new Date(a.fechaHora))
-                    .slice(0, 5)
-                    .map((reporte) => (
-                      <div className="activity-item" key={reporte.id}>
-                        <span className="activity-icon">📝</span>
-                        <span>{reporte.titulo}</span>
-                        <span className="activity-time">{calcularTiempoTranscurrido(reporte.fechaHora)}</span>
-                      </div>
-                    ))}
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        {renderPaginacion()}
       </Container>
     </div>
   );
