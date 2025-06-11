@@ -1,7 +1,7 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
 import { Modal } from 'react-bootstrap';
-import '../../styles/TablaReporteAdmin.css';
+import '../../styles/ReporteAdmin.css';
 import { FaFilePdf, FaFileExcel, FaEye } from 'react-icons/fa';
 
 const TablaReporteAdmin = ({ 
@@ -18,7 +18,8 @@ const TablaReporteAdmin = ({
   const [selectedReporte, setSelectedReporte] = React.useState(null);
 
   const getEstadoColor = (estado) => {
-    const estadoLower = estado.toLowerCase();
+    if (!estado) return 'secondary';
+    const estadoLower = estado.toString().toLowerCase();
     if (estadoLower === 'pendiente') return 'pendiente';
     if (estadoLower === 'proceso') return 'proceso';
     if (estadoLower === 'aceptado') return 'aceptado';
@@ -101,20 +102,13 @@ const TablaReporteAdmin = ({
                   </span>
                 </td>
                 <td>
-                  <select
-                    value={reporte.estado.toLowerCase()}
-                    onChange={(e) => handleEstadoChange(reporte.id, e.target.value.toLowerCase())}
-                    className="form-select"
-                    style={{
-                      padding: "0.5rem",
-                      borderRadius: "6px",
-                      border: "1px solid #e0e0e0",
-                      fontSize: "0.9rem",
-                      width: "150px"
-                    }}
+                  <select 
+                    className="form-select estado-select" 
+                    value={reporte.estado} 
+                    onChange={(e) => handleEstadoChange(reporte.id, e.target.value)}
                   >
                     <option value="pendiente">Pendiente</option>
-                    <option value="proceso">Proceso</option>
+                    <option value="proceso">En proceso</option>
                     <option value="aceptado">Aceptado</option>
                     <option value="rechazado">Rechazado</option>
                   </select>
@@ -124,27 +118,24 @@ const TablaReporteAdmin = ({
                   {reporte.foto && (
                     <img 
                       src={reporte.foto} 
-                      alt="Reporte" 
-                      className="reporte-image"
-                      onClick={() => handleVisualizar(reporte)}
-                      style={{ cursor: 'pointer' }}
+                      alt="Evidencia" 
+                      className="evidencia-thumbnail"
                     />
                   )}
                 </td>
                 <td className="text-center">
                   <div className="acciones-container">
                     <button 
-                      className="btn btn-sm" 
-                      style={{ backgroundColor: '#007bff', color: '#fff' }}
+                      className="btn btn-visualizar me-2"
                       onClick={() => handleVisualizar(reporte)}
+                      title="Visualizar detalles"
                     >
                       <FaEye />
                     </button>
                     <button 
-                      className="btn btn-sm" 
-                      style={{ backgroundColor: '#dc3545', color: '#fff' }}
-                      title="PDF"
-                      onClick={() => onPDF(reporte)}
+                      className="btn btn-pdf"
+                      onClick={() => onPDF(reporte.id)}
+                      title="Exportar a PDF"
                     >
                       <FaFilePdf />
                     </button>
@@ -188,50 +179,112 @@ const TablaReporteAdmin = ({
       </div>
 
       {/* Modal para detalles del reporte */}
-      <Modal 
-        show={showModal} 
-        onHide={handleCloseModal} 
+      <Modal
+        show={showModal}
+        onHide={handleCloseModal}
         size="lg"
+        className="modal-reporte"
         centered
-        dialogClassName="modal-centered"
       >
         <Modal.Header closeButton>
           <Modal.Title>Detalles del Reporte</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedReporte && (
-            <div className="reporte-detalle">
-              <div className="reporte-info">
-                <div className="info-item">
-                  <strong>Fecha:</strong> {selectedReporte.fecha}
-                </div>
-                <div className="info-item">
-                  <strong>Tipo:</strong> {selectedReporte.tipo}
-                </div>
-                <div className="info-item">
-                  <strong>Ubicación:</strong> {selectedReporte.ubicacion}
-                </div>
-                <div className="info-item">
-                  <strong>Estado:</strong> 
-                  <span className={`badge bg-${getEstadoColor(selectedReporte.estado)}`}>
-                    {selectedReporte.estado}
-                  </span>
-                </div>
-                <div className="info-item">
-                  <strong>Detalles:</strong> {selectedReporte.detalles}
+            <div className="detalles-reporte-container">
+              {/* Información básica */}
+              <div className="detalle-card">
+                <h3 className="detalle-title">Información Básica</h3>
+                <div className="detalle-list">
+                  <div className="detalle-item">
+                    <span className="detalle-label">ID:</span>
+                    <span className="detalle-value">{selectedReporte.id}</span>
+                  </div>
+                  <div className="detalle-item">
+                    <span className="detalle-label">Fecha:</span>
+                    <span className="detalle-value">{selectedReporte.fecha}</span>
+                  </div>
+                  <div className="detalle-item">
+                    <span className="detalle-label">Tipo:</span>
+                    <span className="detalle-value">{selectedReporte.tipo}</span>
+                  </div>
+                  <div className="detalle-item">
+                    <span className="detalle-label">Estado:</span>
+                    <span className="detalle-value">
+                      <span className={`estado-badge ${getEstadoColor(selectedReporte.estado)}`}>
+                        {selectedReporte.estado || 'Sin estado'}
+                      </span>
+                    </span>
+                  </div>
                 </div>
               </div>
-              
-              {selectedReporte.foto && (
-                <div className="reporte-imagen">
-                  <img 
-                    src={selectedReporte.foto} 
-                    alt="Reporte" 
-                    className="detalle-imagen"
-                  />
-                  <p className="imagen-caption">Evidencia del reporte</p>
+
+              {/* Ubicación */}
+              <div className="detalle-card">
+                <h3 className="detalle-title">Ubicación</h3>
+                <div className="detalle-list">
+                  <div className="detalle-item">
+                    <span className="detalle-label">Dirección:</span>
+                    <span className="detalle-value">{selectedReporte.ubicacion || 'Sin ubicación'}</span>
+                  </div>
+                  {selectedReporte.coordenadas && (
+                    <div className="detalle-item">
+                      <span className="detalle-label">Coordenadas:</span>
+                      <span className="detalle-value">
+                        {selectedReporte.coordenadas.lat}, {selectedReporte.coordenadas.lng}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Descripción */}
+              <div className="detalle-card">
+                <h3 className="detalle-title">Descripción</h3>
+                <div className="detalle-list">
+                  <div className="detalle-item">
+                    <span className="detalle-label">Detalles:</span>
+                    <span className="detalle-value">{selectedReporte.detalles || 'Sin detalles'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Imágenes */}
+              {selectedReporte.imagenes?.length > 0 && (
+                <div className="detalle-card">
+                  <h3 className="detalle-title">Imágenes</h3>
+                  <div className="imagenes-container">
+                    {selectedReporte.imagenes.map((imagen, index) => (
+                      <div key={index} className="imagen-item">
+                        <img 
+                          src={imagen.url} 
+                          alt={`Imagen ${index + 1}`}
+                          className="img-fluid"
+                        />
+                        <div className="imagen-caption">
+                          {imagen.titulo || `Imagen ${index + 1}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
+
+              {/* Botones de acción */}
+              <div className="botones-acciones">
+                <button 
+                  className="btn-accion btn-aceptar"
+                  onClick={() => handleEstadoChange(selectedReporte.id, 'aceptado')}
+                >
+                  Aceptar
+                </button>
+                <button 
+                  className="btn-accion btn-rechazar"
+                  onClick={() => handleEstadoChange(selectedReporte.id, 'rechazado')}
+                >
+                  Rechazar
+                </button>
+              </div>
             </div>
           )}
         </Modal.Body>
