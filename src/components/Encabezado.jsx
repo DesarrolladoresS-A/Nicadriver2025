@@ -109,18 +109,6 @@ const Encabezado = () => {
                           <strong>Gráficos</strong>
                         </Nav.Link>
                         <Nav.Link
-                          onClick={() => handleNavigate("/perfil")}
-                          className="nav-link d-flex align-items-center gap-2"
-                        >
-                          <img 
-                            src={user?.photoURL || '/default-avatar.png'} 
-                            alt="Perfil"
-                            className="rounded-circle"
-                            style={{ width: '30px', height: '30px', objectFit: 'cover' }}
-                          />
-                          <strong>Mi Perfil Admin</strong>
-                        </Nav.Link>
-                        <Nav.Link
                           onClick={handleLogout}
                           className="nav-link"
                         >
