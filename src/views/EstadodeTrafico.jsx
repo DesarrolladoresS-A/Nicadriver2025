@@ -6,7 +6,8 @@ import {
   Marker,
   InfoWindow,
   DirectionsService,
-  DirectionsRenderer
+  DirectionsRenderer,
+  Polyline
 } from '@react-google-maps/api';
 import {
   collection,
@@ -17,6 +18,8 @@ import {
   doc,
 } from 'firebase/firestore';
 import { db } from '../database/firebaseconfig';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 import '../styles/EstadodeTrafico.css';
 
 const containerStyle = {
@@ -34,8 +37,10 @@ const defaultCenter = {
 const iconMap = {
   Accidente: 'https://img.icons8.com/color/48/car-crash.png',
   Tráfico: 'https://img.icons8.com/color/48/traffic-jam.png',
-  Emergencia: 'https://img.icons8.com/color/48/ambulance.png',
   Policía: 'https://img.icons8.com/color/48/policeman-male.png',
+  Peligro: 'https://img.icons8.com/color/48/high-priority.png',
+  Cierre: 'https://img.icons8.com/color/48/road-closure.png',
+  'Carril bloqueado': 'https://img.icons8.com/color/48/road-closed.png',
 };
 
 const ciudadesNicaragua = [
@@ -49,7 +54,7 @@ const ciudadesNicaragua = [
 const EstadoTrafico = () => {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ['places'],
+    libraries: ['places', 'geometry'],
   });
 
   const mapRef = useRef(null);
@@ -66,6 +71,8 @@ const EstadoTrafico = () => {
   const [usarUbicacionActual, setUsarUbicacionActual] = useState(true);
   const [ciudadOrigenSeleccionada, setCiudadOrigenSeleccionada] = useState('');
   const [directions, setDirections] = useState(null);
+  const [rutaPath, setRutaPath] = useState([]);
+  const [clickEnRuta, setClickEnRuta] = useState(false);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -92,10 +99,48 @@ const EstadoTrafico = () => {
   };
 
   const handleMapClick = (event) => {
-    setSelectedLocation({
+    const clickedLocation = {
       lat: event.latLng.lat(),
       lng: event.latLng.lng(),
-    });
+    };
+
+    // Verificar si el clic fue cerca de la ruta
+    if (rutaPath.length > 0) {
+      const estaEnRuta = isPointOnPath(
+        clickedLocation,
+        rutaPath,
+        0.0002 // Radio de tolerancia en grados decimales (~20 metros)
+      );
+
+      setClickEnRuta(estaEnRuta);
+    } else {
+      setClickEnRuta(false);
+    }
+
+    setSelectedLocation(clickedLocation);
+  };
+
+  // Función para verificar si un punto está cerca de la ruta
+  const isPointOnPath = (point, path, tolerance) => {
+    const google = window.google;
+    if (!google || !google.maps.geometry) return false;
+
+    for (let i = 0; i < path.length - 1; i++) {
+      const segmentStart = path[i];
+      const segmentEnd = path[i + 1];
+      
+      if (google.maps.geometry.spherical.computeDistanceBetween(
+        new google.maps.LatLng(segmentStart),
+        new google.maps.LatLng(point)
+      ) <= tolerance ||
+      google.maps.geometry.spherical.computeDistanceBetween(
+        new google.maps.LatLng(segmentEnd),
+        new google.maps.LatLng(point)
+      ) <= tolerance) {
+        return true;
+      }
+    }
+    return false;
   };
 
   const handleGuardarReporte = async () => {
@@ -115,6 +160,7 @@ const EstadoTrafico = () => {
           lat: selectedLocation.lat,
           lng: selectedLocation.lng,
           fecha: serverTimestamp(),
+          enRuta: clickEnRuta, // Marcamos si el reporte está en la ruta
         });
 
         alert('Reporte guardado exitosamente');
@@ -123,6 +169,7 @@ const EstadoTrafico = () => {
         setImagen(null);
         setImagenPreview(null);
         setSelectedLocation(null);
+        setClickEnRuta(false);
       };
       reader.readAsDataURL(imagen);
     } catch (error) {
@@ -135,7 +182,6 @@ const EstadoTrafico = () => {
     const file = e.target.files[0];
     if (file) {
       setImagen(file);
-      // Crear una vista previa de la imagen
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagenPreview(e.target.result);
@@ -171,6 +217,14 @@ const EstadoTrafico = () => {
       (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
           setDirections(result);
+          
+          // Extraer los puntos de la ruta para poder detectar clics
+          const path = result.routes[0].overview_path.map(p => ({
+            lat: p.lat(),
+            lng: p.lng()
+          }));
+          setRutaPath(path);
+          
           mapRef.current.panTo(origen);
           mapRef.current.setZoom(8);
         } else {
@@ -198,7 +252,19 @@ const EstadoTrafico = () => {
         >
           <TrafficLayer />
           {userLocation && <Marker position={userLocation} label="Yo" />}
-          {selectedLocation && <Marker position={selectedLocation} />}
+          {selectedLocation && (
+            <Marker 
+              position={selectedLocation} 
+              icon={{
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: clickEnRuta ? 8 : 6,
+                fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: '#000000'
+              }}
+            />
+          )}
           {reportes.map((reporte) => (
             <Marker
               key={reporte.id}
@@ -221,6 +287,9 @@ const EstadoTrafico = () => {
                     alt="Incidente"
                     style={{ width: '100%', borderRadius: '5px', marginBottom: '18px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)' }}
                   />
+                )}
+                {selectedReporte.enRuta && (
+                  <p style={{ color: '#007bff', fontWeight: 'bold' }}>⚠️ Este incidente está en tu ruta</p>
                 )}
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '18px', paddingTop: '12px', borderTop: '2px solid rgba(0, 0, 0, 0.1)' }}>
                   <button 
@@ -258,7 +327,6 @@ const EstadoTrafico = () => {
           {directions && <DirectionsRenderer directions={directions} />}
         </GoogleMap>
 
-        {/* Icono para iniciar viaje */}
         <button
           onClick={() => setShowRutaModal(true)}
           style={{
@@ -279,7 +347,6 @@ const EstadoTrafico = () => {
         </button>
       </div>
 
-      {/* Modal de selección de ruta */}
       {showRutaModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -321,7 +388,6 @@ const EstadoTrafico = () => {
         </div>
       )}
 
-      {/* Modal de registro de incidente */}
       {selectedLocation && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -329,15 +395,23 @@ const EstadoTrafico = () => {
             <p>
               Ubicación seleccionada: {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
             </p>
+            {clickEnRuta && (
+              <p style={{ color: '#007bff', fontWeight: 'bold' }}>📍 Estás reportando un incidente en tu ruta</p>
+            )}
 
             <label>Tipo del incidente</label>
-            <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-              <option value="">Selecciona el tipo de incidente</option>
-              <option value="Accidente">Accidente</option>
-              <option value="Tráfico">Tráfico</option>
-              <option value="Emergencia">Emergencia</option>
-              <option value="Policía">Policía</option>
-            </select>
+            <div className="incidente-buttons">
+              {['Tráfico', 'Policía', 'Accidente', 'Peligro', 'Cierre', 'Carril bloqueado'].map((opcion) => (
+                <button
+                  key={opcion}
+                  className={`tipo-incidente-btn ${tipo === opcion ? 'selected' : ''}`}
+                  onClick={() => setTipo(opcion)}
+                >
+                  <img src={iconMap[opcion]} alt={opcion} width="24" />
+                  {opcion}
+                </button>
+              ))}
+            </div>
 
             <label>Descripción</label>
             <textarea

@@ -12,7 +12,6 @@ import Catalogo from "./views/Catalogorepor";
 import Perfil from "./views/Perfil"; 
 import Administrador from "./views/Administrador";
 import Graficos from "./views/Graficos";
-import ReporteAdmin from "./views/ReporteAdmin";
 
 function App() {
   return (
@@ -40,7 +39,6 @@ function App() {
               <Route path="/catalogo" element={<Catalogo />} />
               <Route path="/login" element={<Login />} />
               <Route path="/graficos" element={<Graficos />} />
-              <Route path="/reporteadmin" element={<ReporteAdmin />} />
               <Route path="/administrador" element={
                 <div className="inicio-container">
                   <Administrador />
