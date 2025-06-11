@@ -8,7 +8,6 @@ import './App.css';
 import EstadodeTrafico from "./views/EstadodeTrafico";
 import Reportes from "./views/Reportes";
 import Contacto from "./views/Contacto";
-import Catalogo from "./views/Catalogorepor";
 import Perfil from "./views/Perfil"; 
 import Administrador from "./views/Administrador";
 import Graficos from "./views/Graficos";
@@ -39,7 +38,6 @@ function App() {
               <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
               <Route path="/reportes" element={<Reportes />} />
               <Route path="/contacto" element={<Contacto />} />
-              <Route path="/catalogo" element={<Catalogo />} />
               <Route path="/login" element={<Login />} />
               <Route path="/graficos" element={<Graficos />} />
 

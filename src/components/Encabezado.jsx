@@ -128,13 +128,6 @@ const Encabezado = () => {
                           <strong>Gráficos</strong>
                         </Nav.Link>
                         <Nav.Link
-                          onClick={() => handleNavigate("/catalogo")}
-                          className={`nav-link ${location.pathname === "/catalogo" ? "active" : ""}`}
-                        >
-                          <i className="bi-bookmarks me-2"></i>
-                          <strong>Catalogos</strong>
-                        </Nav.Link>
-                        <Nav.Link
                           onClick={() => setShowPerfilModal(true)}
                           className="nav-link d-flex align-items-center gap-2"
                         >

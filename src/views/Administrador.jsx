@@ -119,30 +119,6 @@ const Administrador = () => {
               </Card.Title>
             </Card.Body>
           </Card>
-
-          <Card className="stats-card">
-            <Card.Body>
-              <Card.Title className="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <FaChartLine className="stat-icon" />
-                  <span>Traffic</span>
-                </div>
-                <h3 className="stat-number">{stats.trafico}</h3>
-              </Card.Title>
-            </Card.Body>
-          </Card>
-
-          <Card className="stats-card">
-            <Card.Body>
-              <Card.Title className="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <FaDatabase className="stat-icon" />
-                  <span>Catálogos</span>
-                </div>
-                <h3 className="stat-number">{stats.catalogos}</h3>
-              </Card.Title>
-            </Card.Body>
-          </Card>
         </CardGroup>
 
         {/* Tabla de gestión de reportes */}
@@ -170,7 +146,8 @@ const Administrador = () => {
                   >
                     <option value="pendiente">Pendiente</option>
                     <option value="en progreso">En progreso</option>
-                    <option value="resuelto">Resuelto</option>
+                    <option value="aceptado">Aceptado</option>
+                    <option value="rechazado">Rechazado</option>
                   </select>
                 </td>
               </tr>
