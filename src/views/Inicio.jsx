@@ -10,7 +10,7 @@ import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { Container, Button } from "react-bootstrap";
 import ModalInstalacionIOS from '../components/inicio/ModalInstalacionIOS';
-
+import '../styles/DownloadButtons.css';
 
 const { BaseLayer, Overlay } = LayersControl;
 
@@ -84,49 +84,64 @@ const Inicio = () => {
     doc.save(`${reporte.titulo}.pdf`);
   };
 
-  // 📌 Estados PWA con nombres solicitados
+  // Estados PWA con nombres solicitados
   const [solicitudInstalacion, setSolicitudInstalacion] = useState(null);
-  const [mostrarBotonInstalacion, setMostrarBotonInstalacion] = useState(false);
+  const [mostrarBotonInstalacion, setMostrarBotonInstalacion] = useState(true); // Forzado a true para pruebas
   const [esDispositivoIOS, setEsDispositivoIOS] = useState(false);
   const [mostrarModalInstrucciones, setMostrarModalInstrucciones] = useState(false);
 
-    // 🎯 useEffect para detectar dispositivo iOS
+  // useEffect para detectar dispositivo iOS
   useEffect(() => {
     const userAgent = window.navigator.userAgent.toLowerCase();
     const esIOS = /iphone|ipad|ipod/.test(userAgent);
+    console.log('Es dispositivo iOS:', esIOS);
     setEsDispositivoIOS(esIOS);
   }, []);
 
-  // 🎯 useEffect para capturar el evento beforeinstallprompt
+  // useEffect para capturar el evento beforeinstallprompt
   useEffect(() => {
     const handler = (e) => {
       e.preventDefault();
+      console.log('Evento beforeinstallprompt capturado');
       setSolicitudInstalacion(e);
       setMostrarBotonInstalacion(true);
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-// 🚀 Función para instalar la PWA
-  const instalarPWA = async () => {
-    if (!solicitudInstalacion) return;
+    console.log('Agregando event listener para beforeinstallprompt');
+    window.addEventListener('beforeinstallprompt', handler);
+    
+    // Forzar el estado para ver el botón
+    setMostrarBotonInstalacion(true);
 
-    try {
-      solicitudInstalacion.prompt();
-      const { outcome } = await solicitudInstalacion.userChoice;
-      console.log(outcome === "accepted" ? "✅ Instalación aceptada" : "❌ Instalación rechazada");
-    } catch (error) {
-      console.error("Error al intentar instalar la PWA:", error);
-    } finally {
-      setSolicitudInstalacion(null);
-      setMostrarBotonInstalacion(false);
+    return () => {
+      console.log('Limpiando event listener');
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
+  }, []);
+
+  // Función para instalar la PWA
+  const instalarPWA = async () => {
+    console.log('Intentando instalar PWA...');
+    if (solicitudInstalacion) {
+      console.log('Solicitud de instalación disponible');
+      try {
+        console.log('Mostrando prompt de instalación...');
+        solicitudInstalacion.prompt();
+        const { outcome } = await solicitudInstalacion.userChoice;
+        console.log(`El usuario ${outcome === 'accepted' ? 'aceptó' : 'rechazó'} la instalación`);
+      } catch (error) {
+        console.error('Error al intentar instalar la PWA:', error);
+      }
+    } else {
+      console.log('No hay solicitud de instalación disponible');
+      // Alternativa para navegadores que no soportan beforeinstallprompt
+      window.open('https://nicadriver.web.app', '_blank');
     }
   };
 
-  // 📄 Funciones para abrir/cerrar el modal
-  const abrirModalInstrucciones = () => setMostrarModalInstrucciones(true);
-  const cerrarModalInstrucciones = () => setMostrarModalInstrucciones(false);
+  const abrirModalInstrucciones = () => {
+    setMostrarModalInstrucciones(true);
+  };
 
   return (
     <div className="inicio-container">
@@ -169,31 +184,55 @@ const Inicio = () => {
           <p className="text-center">Contribuir a una infraestructura vial más eficiente y sostenible, promoviendo un transporte más seguro y accesible para ciudadanos, transportistas y autoridades gubernamentales.</p>
         </div>
       </div>
-      {/* Botón de instalación para Android/otros */}
-          {mostrarBotonInstalacion && !esDispositivoIOS && (
-            <div className="my-4">
-              <button className="btn btn-success btn-lg rounded-pill" onClick={instalarPWA}>
-                📲 Instalar App
-              </button>
-            </div>
-          )}
 
-          {/* Botón para instrucciones en iOS */}
-          {esDispositivoIOS && (
-            <div className="text-center my-4">
-              <button className="btn btn-info btn-lg rounded-pill" onClick={abrirModalInstrucciones}>
-                Cómo instalar NicaDriver en iPhone <i className="bi-phone"></i>
-              </button>
+      {/* Sección de Descarga de Aplicación */}
+      <div className="download-section text-center my-5 p-4 border rounded" style={{ 
+        backgroundColor: '#f8f9fa',
+        maxWidth: '900px',
+        margin: '0 auto',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+      }}>
+        <h3 className="mb-4 fw-bold" style={{ color: '#1e3d87' }}>Descarga NicaDriver</h3>
+        <p className="mb-4 text-muted">Selecciona tu plataforma para descargar la aplicación</p>
+        
+        <div className="download-buttons-container">
+          {/* Botón para Windows */}
+          <button 
+            className="download-button windows-button"
+            onClick={() => window.open('https://nicadriver.web.app/download/windows', '_blank')}
+          >
+            <div className="button-content">
+              <i className="bi bi-windows"></i>
+              <span>Windows</span>
             </div>
-          )}
-
-          {/* Modal de instrucciones para iOS */}
-      {esDispositivoIOS && mostrarModalInstrucciones && (
-        <ModalInstalacionIOS
-          mostrar={mostrarModalInstrucciones}
-          cerrar={cerrarModalInstrucciones}
-        />
-      )}
+            <div className="button-overlay"></div>
+          </button>
+          
+          {/* Botón para Android */}
+          <button 
+            className="download-button android-button"
+            onClick={() => window.open('https://play.google.com/store/apps/details?id=com.nicadriver.app', '_blank')}
+          >
+            <div className="button-content">
+              <i className="bi bi-android"></i>
+              <span>Android</span>
+            </div>
+            <div className="button-overlay"></div>
+          </button>
+          
+          {/* Botón para iPhone */}
+          <button 
+            className="download-button ios-button"
+            onClick={() => window.open('https://apps.apple.com/app/nicadriver/idYOUR_APP_ID', '_blank')}
+          >
+            <div className="button-content">
+              <i className="bi bi-apple"></i>
+              <span>iPhone</span>
+            </div>
+            <div className="button-overlay"></div>
+          </button>
+        </div>
+      </div>
 
       <div className="mapa-reporte-container">
         <div className="mapa-interactivo">
