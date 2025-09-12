@@ -80,161 +80,150 @@ const Reportes = () => {
   };
 
   return (
-    <div className="reportes-container">
-      {/* Loading state */}
-      {loading && (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Cargando reportes...</p>
-        </div>
-      )}
-
-      {/* Error message */}
-      {errorEliminacion && (
-        <div className="error-message" style={{
-          backgroundColor: '#ffebee',
-          color: '#f44336',
-          padding: '15px',
-          borderRadius: '6px',
-          marginBottom: '20px',
-          textAlign: 'center'
-        }}>
-          <FaExclamationTriangle style={{ marginRight: '10px' }} />
-          {errorEliminacion}
-        </div>
-      )}
-
-      {/* Header con título y controles */}
-      <div className="reportes-header">
-        <div className="header-title">
-          <h1>Gestión de Reportes</h1>
-          <p className="subtitle">Administra y revisa todos los reportes de incidentes</p>
-        </div>
-        
-        <div className="header-controls">
-          {/* Barra de búsqueda */}
-          <div className="search-container">
-            <div className="search-icon">
-              <FaSearch />
-            </div>
-            <input
-              type="text"
-              placeholder="Buscar reportes..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="search-input"
-              disabled={loading}
-            />
-            {filtroActivo && (
-              <button 
-                onClick={limpiarFiltros}
-                className="clear-filter-btn"
-                disabled={loading}
-              >
-                Limpiar
-              </button>
-            )}
-          </div>
-          
-          {/* Botón de registro */}
-          <button 
-            className="btn-registro"
-            onClick={() => setModalRegistro(true)}
-            disabled={loading}
-          >
-            <FaPlus /> Nuevo Reporte
-          </button>
-        </div>
-      </div>
-
-      {/* Resumen de estadísticas */}
-      <div className="stats-container">
-        <div className="stat-card">
-          <h3>Total Reportes</h3>
-          <p>{reportes.length}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Mostrando</h3>
-          <p>{reportesFiltrados.length}</p>
-        </div>
-        <div className="stat-card">
-          <h3>Página Actual</h3>
-          <p>{currentPage} de {Math.ceil(reportesFiltrados.length / itemsPerPage)}</p>
-        </div>
-      </div>
-
-      {/* Mensaje cuando no hay reportes */}
-      {(!loading && reportes.length === 0) && (
-        <div className="no-reports-message" style={{
-          textAlign: 'center',
-          padding: '40px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-          margin: '20px 0'
-        }}>
-          <FaPlus style={{ fontSize: '48px', color: '#1e3d87' }} />
-          <h3>No hay reportes disponibles</h3>
-          <p>¡Crea tu primer reporte haciendo clic en el botón "Nuevo Reporte"!</p>
-        </div>
-      )}
-
-      {/* Tabla y paginación */}
-      <div className="tabla-paginacion-container">
-        <TablaReportes 
-          reportes={currentItems}
-          setModalEditar={setModalEditar}
-          setModalEliminar={setModalEliminar}
-          setReporteSeleccionado={setReporteSeleccionado}
-          setReporteSeleccionadoEliminar={setReporteSeleccionadoEliminar}
-          reporteSeleccionadoEliminar={reporteSeleccionadoEliminar}
-        />
-        
-        {reportesFiltrados.length > 0 ? (
-          <Paginacion
-            totalItems={reportesFiltrados.length}
-            itemsPerPage={itemsPerPage}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
-        ) : (
-          <div className="no-results">
-            <p>No se encontraron reportes con los criterios de búsqueda</p>
-            <button onClick={limpiarFiltros} disabled={loading}>
-              Limpiar filtros
-            </button>
+    <div className="reportes-container bg-background text-foreground">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Loading state */}
+        {loading && (
+          <div className="loading-container card p-6 rounded-xl text-center">
+            <div className="spinner"></div>
+            <p>Cargando reportes...</p>
           </div>
         )}
+
+        {/* Error message */}
+        {errorEliminacion && (
+          <div className="error-message card p-4 rounded-lg" style={{ backgroundColor: '#ffebee', color: '#f44336' }}>
+            <FaExclamationTriangle style={{ marginRight: '10px' }} />
+            {errorEliminacion}
+          </div>
+        )}
+
+        {/* Header con título y controles */}
+        <div className="reportes-header flex flex-col gap-4">
+          <div className="header-title">
+            <h1 className="text-3xl font-bold">Gestión de Reportes</h1>
+            <p className="subtitle text-muted-foreground">Administra y revisa todos los reportes de incidentes</p>
+          </div>
+          
+          <div className="header-controls flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+            {/* Barra de búsqueda */}
+            <div className="search-container card p-2 rounded-lg flex-1">
+              <div className="search-icon">
+                <FaSearch />
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar reportes..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="search-input"
+                disabled={loading}
+              />
+              {filtroActivo && (
+                <button 
+                  onClick={limpiarFiltros}
+                  className="clear-filter-btn btn btn-outline btn-sm"
+                  disabled={loading}
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+            
+            {/* Botón de registro */}
+            <button 
+              className="btn btn-default btn-md"
+              onClick={() => setModalRegistro(true)}
+              disabled={loading}
+            >
+              <FaPlus /> Nuevo Reporte
+            </button>
+          </div>
+        </div>
+
+        {/* Resumen de estadísticas */}
+        <div className="stats-container grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+          <div className="stat-card">
+            <h3>Total Reportes</h3>
+            <p>{reportes.length}</p>
+          </div>
+          <div className="stat-card">
+            <h3>Mostrando</h3>
+            <p>{reportesFiltrados.length}</p>
+          </div>
+          <div className="stat-card">
+            <h3>Página Actual</h3>
+            <p>{currentPage} de {Math.ceil(reportesFiltrados.length / itemsPerPage)}</p>
+          </div>
+        </div>
+
+        {/* Mensaje cuando no hay reportes */}
+        {(!loading && reportes.length === 0) && (
+          <div className="no-reports-message card p-8 rounded-xl text-center" style={{ backgroundColor: '#f8f9fa' }}>
+            <FaPlus style={{ fontSize: '48px', color: '#1e3d87' }} />
+            <h3>No hay reportes disponibles</h3>
+            <p>¡Crea tu primer reporte haciendo clic en el botón "Nuevo Reporte"!</p>
+          </div>
+        )}
+
+        {/* Tabla y paginación */}
+        <div className="tabla-paginacion-container card p-4 rounded-xl mt-4">
+          <TablaReportes 
+            reportes={currentItems}
+            setModalEditar={setModalEditar}
+            setModalEliminar={setModalEliminar}
+            setReporteSeleccionado={setReporteSeleccionado}
+            setReporteSeleccionadoEliminar={setReporteSeleccionadoEliminar}
+            reporteSeleccionadoEliminar={reporteSeleccionadoEliminar}
+          />
+          
+          {reportesFiltrados.length > 0 ? (
+            <Paginacion
+              totalItems={reportesFiltrados.length}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+          ) : (
+            <div className="no-results text-center text-muted-foreground">
+              <p>No se encontraron reportes con los criterios de búsqueda</p>
+              <button className="btn btn-outline btn-sm" onClick={limpiarFiltros} disabled={loading}>
+                Limpiar filtros
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Modales */}
+        {modalRegistro && (
+          <ModalRegistroReportes
+            setModalRegistro={setModalRegistro}
+            actualizar={actualizarReportes}
+          />
+        )}
+
+        {modalEditar && reporteSeleccionado && (
+          <ModalEdicionReportes
+            setModalEditar={setModalEditar}
+            reporte={reporteSeleccionado}
+            actualizar={actualizarReportes}
+          />
+        )}
+
+        {modalEliminar && reporteSeleccionadoEliminar && (
+          <ModalEliminarReportes
+            setModalEliminar={setModalEliminar}
+            reporte={reporteSeleccionadoEliminar}
+            actualizar={actualizarReportes}
+            setError={setErrorEliminacion}
+            onClose={() => {
+              setModalEliminar(false);
+              setReporteSeleccionadoEliminar(null);
+              setErrorEliminacion(null);
+            }}
+          />
+        )}
       </div>
-
-      {/* Modales */}
-      {modalRegistro && (
-        <ModalRegistroReportes
-          setModalRegistro={setModalRegistro}
-          actualizar={actualizarReportes}
-        />
-      )}
-
-      {modalEditar && reporteSeleccionado && (
-        <ModalEdicionReportes
-          setModalEditar={setModalEditar}
-          reporte={reporteSeleccionado}
-          actualizar={actualizarReportes}
-        />
-      )}
-
-      {modalEliminar && reporteSeleccionadoEliminar && (
-        <ModalEliminarReportes
-          setModalEliminar={setModalEliminar}
-          reporte={reporteSeleccionadoEliminar}
-          actualizar={actualizarReportes}
-          setError={setErrorEliminacion}
-          onClose={() => {
-            setModalEliminar(false);
-            setReporteSeleccionadoEliminar(null);
-            setErrorEliminacion(null);
-          }}
-        />
-      )}
     </div>
   );
 };

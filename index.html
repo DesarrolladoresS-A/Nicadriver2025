@@ -5,8 +5,8 @@
     <!-- PWA -->
   <meta name="theme-color" content="#FF6F00" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="apple-touch-icon" href="/public/Logo.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="/src/assets/logonicadriver.png" />
+  <link rel="apple-touch-icon" href="/Logo.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/Logo.png" />
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="NicaDriver" />
@@ -27,6 +27,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0 user-scalable=no" />
     <title>NicaDriver</title>
 
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              nicadriver: {
+                orange: "#FF7E00",
+                yellow: "#FFC100",
+                blue: "#1e3d87",
+              }
+            },
+            fontFamily: {
+              sans: ["Inter", "Poppins", "sans-serif"],
+            },
+            animation: {
+              float: "float 6s ease-in-out infinite",
+            },
+            keyframes: {
+              float: {
+                "0%, 100%": { transform: "translateY(0px)" },
+                "50%": { transform: "translateY(-20px)" },
+              },
+            },
+          },
+        },
+      }
+    </script>
+    <!-- Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for solid icons used in Nosotros -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pVI0NwXQpJHnQ7m8rS8CwB4i7Qn8DgqzFzj2Qk+7fN5lX0Jr5k3eYdQ2pQmL1cY2V6A5JjKkN3m8iS9f0nV0A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-E594D8ZZSD"></script>
     <script>
@@ -43,4 +78,3 @@
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-

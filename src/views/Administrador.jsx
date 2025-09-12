@@ -117,76 +117,77 @@ const Administrador = () => {
   );
 
   return (
-    <div className="administrador-container">
-      <Container fluid className="p-4">
-        <h2 className="text-center mb-4">Dashboard de Administrador</h2>
+    <div className="administrador-container bg-background text-foreground">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h2 className="text-3xl font-bold text-center mb-6">Dashboard de Administrador</h2>
+        <Container fluid className="p-0">
+          <CardGroup className="mb-4">
+            <Card className="stats-card">
+              <Card.Body>
+                <Card.Title className="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <FaFileAlt className="stat-icon" />
+                    <span>Reportes</span>
+                  </div>
+                  <h3 className="stat-number">{stats.reportes}</h3>
+                </Card.Title>
+              </Card.Body>
+            </Card>
 
-        <CardGroup className="mb-4">
-          <Card className="stats-card">
-            <Card.Body>
-              <Card.Title className="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <FaFileAlt className="stat-icon" />
-                  <span>Reportes</span>
-                </div>
-                <h3 className="stat-number">{stats.reportes}</h3>
-              </Card.Title>
-            </Card.Body>
-          </Card>
-
-          <Card className="stats-card activities-card">
-            <Card.Body>
-              <Card.Title className="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <FaChartLine className="stat-icon" />
-                  <span>Actividades</span>
-                </div>
-              </Card.Title>
-              <div className="activities-list">
-                {reportes
-                  .sort((a, b) => new Date(b.fechaHora) - new Date(a.fechaHora))
-                  .slice(0, 5)
-                  .map((reporte) => (
-                    <div className="activity-item" key={reporte.id}>
-                      <span className="activity-icon">📝</span>
-                      <div className="activity-details">
-                        <div className="activity-title">{reporte.titulo}</div>
-                        <div className="activity-time">{calcularTiempoTranscurrido(reporte.fechaHora)}</div>
+            <Card className="stats-card activities-card">
+              <Card.Body>
+                <Card.Title className="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <FaChartLine className="stat-icon" />
+                    <span>Actividades</span>
+                  </div>
+                </Card.Title>
+                <div className="activities-list">
+                  {reportes
+                    .sort((a, b) => new Date(b.fechaHora) - new Date(a.fechaHora))
+                    .slice(0, 5)
+                    .map((reporte) => (
+                      <div className="activity-item" key={reporte.id}>
+                        <span className="activity-icon">📝</span>
+                        <div className="activity-details">
+                          <div className="activity-title">{reporte.titulo}</div>
+                          <div className="activity-time">{calcularTiempoTranscurrido(reporte.fechaHora)}</div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-              </div>
-            </Card.Body>
-          </Card>
-        </CardGroup>
+                    ))}
+                </div>
+              </Card.Body>
+            </Card>
+          </CardGroup>
 
-        <h3 className="mt-5 mb-3">Gestión de Reportes</h3>
-        
-        <button className="btn btn-success mb-3" onClick={exportarExcel}>
-          Exportar a Excel
-        </button>
+          <h3 className="text-2xl font-semibold mt-8 mb-4">Gestión de Reportes</h3>
+          
+          <button className="btn btn-default btn-sm mb-3" onClick={exportarExcel}>
+            Exportar a Excel
+          </button>
 
-        <table className="table table-bordered table-striped">
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Descripción</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reportesActuales.map((reporte) => (
-              <tr key={reporte.id}>
-                <td>{reporte.titulo}</td>
-                <td>{reporte.descripcion}</td>
-                <td>{reporte.estado}</td>
+          <table className="table table-bordered table-striped card overflow-hidden">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Estado</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {reportesActuales.map((reporte) => (
+                <tr key={reporte.id}>
+                  <td>{reporte.titulo}</td>
+                  <td>{reporte.descripcion}</td>
+                  <td>{reporte.estado}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        {renderPaginacion()}
-      </Container>
+          {renderPaginacion()}
+        </Container>
+      </div>
     </div>
   );
 };

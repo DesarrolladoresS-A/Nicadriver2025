@@ -68,7 +68,11 @@ const Encabezado = () => {
                     </Nav.Link>
                     <Nav.Link onClick={() => handleNavigate("/login")} className="nav-link">
                       <i className="bi-box-arrow-in-right me-2"></i>
-                      <strong>Iniciar Sesión</strong>
+                      <strong>Entrar</strong>
+                    </Nav.Link>
+                    <Nav.Link onClick={() => handleNavigate("/login?register=1")} className="nav-link">
+                      <i className="bi-person-plus me-2"></i>
+                      <strong>Registrar</strong>
                     </Nav.Link>
                   </>
                 )}
@@ -113,7 +117,7 @@ const Encabezado = () => {
                           className="nav-link"
                         >
                           <i className="bi-box-arrow-right me-2"></i>
-                          <strong>Cerrar Sesión</strong>
+                          <strong>Salir</strong>
                         </Nav.Link>
                       </>
                     ) : (
@@ -152,7 +156,7 @@ const Encabezado = () => {
                           className="nav-link"
                         >
                           <i className="bi-box-arrow-right me-2"></i>
-                          <strong>Cerrar Sesión</strong>
+                          <strong>Salir</strong>
                         </Nav.Link>
                       </>
                     )}

@@ -100,3 +100,167 @@
 .margen-superior-main {
   margin-top: 70px;
 }
+
+/* ===================== */
+/* Estilos globales UI   */
+/* ===================== */
+:root {
+  --primary: #FF7E00;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #1f2937;
+  --accent: #FFC100;
+  --accent-foreground: #1f2937;
+  --background: #ffffff;
+  --foreground: #111827;
+  --muted: #f9fafb;
+  --muted-foreground: #6b7280;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #FF7E00;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: #030712;
+  --foreground: #f9fafb;
+  --card: #111827;
+  --card-foreground: #f9fafb;
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;
+  --border: #1f2937;
+  --input: #1f2937;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #FF7E00 0%, #FFC100 50%, #1e3d87 100%);
+}
+
+.glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.dark .glass-effect {
+  background: rgba(17, 24, 39, 0.95);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  outline: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.btn:disabled { pointer-events: none; opacity: 0.5; }
+
+.btn-default { background-color: var(--primary); color: var(--primary-foreground); }
+.btn-default:hover { background-color: #e57100; }
+
+.btn-secondary { background-color: var(--secondary); color: var(--secondary-foreground); }
+.btn-secondary:hover { background-color: #e5e7eb; }
+
+.btn-outline { border-color: var(--border); background-color: var(--background); color: var(--foreground); }
+.btn-outline:hover { background-color: var(--accent); color: var(--accent-foreground); border-color: var(--accent); }
+
+.btn-ghost { background-color: transparent; color: var(--foreground); }
+.btn-ghost:hover { background-color: var(--accent); color: var(--accent-foreground); }
+
+.btn-sm { height: 2.25rem; padding: 0 0.75rem; }
+.btn-md { height: 2.5rem; padding: 0 1rem; }
+.btn-lg { height: 2.75rem; padding: 0 1.5rem; }
+
+/* Cards */
+.card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Inputs */
+.input {
+  display: flex;
+  height: 2.5rem;
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--input);
+  background-color: transparent;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+}
+.input:focus { outline: none; border-color: var(--ring); box-shadow: 0 0 0 2px rgba(255, 126, 0, 0.2); }
+
+.textarea {
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--input);
+  background-color: transparent;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.2s;
+}
+.textarea:focus { outline: none; border-color: var(--ring); box-shadow: 0 0 0 2px rgba(255, 126, 0, 0.2); }
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 100;
+  display: flex;
+  max-width: 24rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-color: var(--background);
+  color: var(--foreground);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+.toast.show { transform: translateX(0); }
+.toast-destructive { background-color: #ef4444; color: white; }
+
+/* Footer con el mismo estilo del encabezado */
+.footer-navbar {
+  background-color: #FF7E00;
+  background-image: linear-gradient(90deg, #FF7E00 0%, #FFC100 100%);
+  color: #ffffff;
+}
+.footer-navbar a { color: #ffffff; text-decoration: none; }
+.footer-navbar a:hover { color: #1e3d87; }
+.footer-divider { border-color: rgba(255,255,255,0.25); }
