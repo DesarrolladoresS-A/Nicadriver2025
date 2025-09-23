@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert } from "react-bootstrap";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
@@ -11,10 +11,46 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [particles, setParticles] = useState([]);
+  const [floatingElements, setFloatingElements] = useState([]);
 
   const { user } = useAuth();
   const navigate = useNavigate();
   const auth = getAuth(appfirebase);
+
+  // Crear partículas de fondo
+  useEffect(() => {
+    createParticles();
+    createFloatingElements();
+  }, []);
+
+  const createParticles = () => {
+    const newParticles = [];
+    for (let i = 0; i < 50; i++) {
+      newParticles.push({
+        id: i,
+        size: Math.random() * 3 + 1,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        animationDelay: Math.random() * 6,
+      });
+    }
+    setParticles(newParticles);
+  };
+
+  const createFloatingElements = () => {
+    const elements = [];
+    for (let i = 0; i < 8; i++) {
+      elements.push({
+        id: i,
+        size: Math.random() * 100 + 50,
+        left: Math.random() * 100,
+        top: Math.random() * 100,
+        animationDelay: Math.random() * 8,
+      });
+    }
+    setFloatingElements(elements);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -25,13 +61,24 @@ const Login = () => {
       await signInWithEmailAndPassword(auth, email, password);
       localStorage.setItem("adminEmail", email);
       
-      if (email === "desarrolladoressa2000@gmail.com") {
-        navigate("/administrador");
-      } else {
-        navigate("/inicio");
-      }
+      // Animación de éxito antes de navegar
+      document.querySelector('.login-container').style.animation = 'successPulse 0.6s ease';
+      
+      setTimeout(() => {
+        if (email === "desarrolladoressa2000@gmail.com") {
+          navigate("/administrador");
+        } else {
+          navigate("/inicio");
+        }
+      }, 600);
+      
     } catch (error) {
       setError("Credenciales incorrectas. Por favor verifica.");
+      // Animación de error
+      document.querySelector('.login-container').style.animation = 'errorShake 0.5s ease';
+      setTimeout(() => {
+        document.querySelector('.login-container').style.animation = '';
+      }, 500);
     } finally {
       setLoading(false);
     }
@@ -43,58 +90,122 @@ const Login = () => {
   }
 
   return (
-    <div className="bg-background text-foreground">
-      <div className="min-h-[70vh] flex items-center justify-center px-4 py-10">
-        <div className="card w-full max-w-md p-6 rounded-2xl">
-          <div className="mb-6 text-center">
-            <h1 className="text-3xl font-bold">Inicio de Sesión</h1>
-          </div>
-          {error && <Alert variant="danger" className="alert-danger">{error}</Alert>}
-          
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="form-group">
-              <label className="form-label">Correo electrónico</label>
-              <input
-                type="email"
-                className="form-control input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Contraseña</label>
-              <input
-                type="password"
-                className="form-control input"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            
-            <button 
-              type="submit" 
-              className="btn btn-default btn-md w-full"
-              disabled={loading}
-            >
-              {loading ? "Ingresando..." : "Ingresar"}
-            </button>
-          </form>
+    <div className="login-page bg-background text-foreground">
+      {/* Partículas de fondo */}
+      <div className="particles">
+        {particles.map(particle => (
+          <div
+            key={particle.id}
+            className="particle"
+            style={{
+              width: `${particle.size}px`,
+              height: `${particle.size}px`,
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              animationDelay: `${particle.animationDelay}s`,
+            }}
+          />
+        ))}
+      </div>
 
-          <div className="register-link">
-            <p>¿No tienes cuenta?</p>
-            <button
-              type="button"
-              className="register-btn"
-              onClick={() => navigate('/register')}
-            >
-              Crear cuenta
-            </button>
+      {/* Elementos flotantes */}
+      <div className="floating-elements">
+        {floatingElements.map(element => (
+          <div
+            key={element.id}
+            className="floating-element"
+            style={{
+              width: `${element.size}px`,
+              height: `${element.size}px`,
+              left: `${element.left}%`,
+              top: `${element.top}%`,
+              animationDelay: `${element.animationDelay}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div>
+        <div className="login-background">
+          <div className="login-container">
+            <div className="login-header">
+              <h1>Bienvenido</h1>
+              <p>Inicia sesión en tu cuenta</p>
+            </div>
+            
+            {error && (
+              <Alert variant="danger" className="alert alert-danger">
+                {error}
+              </Alert>
+            )}
+          
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="form-group">
+                <label className="form-label">Correo electrónico</label>
+                <input
+                  type="email"
+                  className="form-control input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="tu@email.com"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label className="form-label">Contraseña</label>
+                <input
+                  type="password"
+                  className="form-control input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                />
+              </div>
+              
+              <div className="btn-container">
+                <button 
+                  type="submit" 
+                  className="btn btn-default"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="loading-dots">Ingresando</span>
+                  ) : (
+                    "Ingresar"
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <div className="register-link text-center mt-4">
+              <p className="text-gray-600 mb-2">¿No tienes cuenta?</p>
+              <button
+                type="button"
+                className="register-btn"
+                onClick={() => navigate('/register')}
+              >
+                Crear cuenta
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes successPulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.02); box-shadow: 0 0 30px rgba(76, 175, 80, 0.4); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes errorShake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+      `}</style>
     </div>
   );
 };

@@ -141,7 +141,7 @@ const Nosotros = () => {
             </article>
             <article className="member">
               <div className="avatar-wrap">
-                <div className="avatar">BY</div>
+                <div className="avatar">BG</div>
               </div>
               <div className="member-body">
                 <h5>Byron García</h5>
