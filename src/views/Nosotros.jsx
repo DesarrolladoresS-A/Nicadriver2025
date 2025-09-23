@@ -15,7 +15,7 @@ const Nosotros = () => {
               reparar baches, señalización y daños en la vía pública de forma rápida y trazable.
             </p>
             <div className="hero-cta">
-              <a className="btn btn-primary" href="#equipo">Conoce al equipo</a>
+              <a className="btn btn-primary" href="#equipo">¿Quienes somos?</a>
               <a className="btn btn-ghost" href="#historia">Nuestra historia</a>
             </div>
             <div className="pill-grid">
@@ -95,41 +95,7 @@ const Nosotros = () => {
           </div>
         </div>
 
-        {/* HISTORIA / TIMELINE */}
-        <div className="section-title" id="historia">
-          <span>Historia</span><span className="line"></span>
-        </div>
-        <section className="timeline" aria-label="Línea de tiempo">
-          <article className="tl-item">
-            <div className="tl-dot" aria-hidden="true"></div>
-            <div className="tl-card">
-              <h4>2018 — Primeros pilotos de bacheo</h4>
-              <p>Iniciamos levantamientos de baches y pruebas de coordinación con cuadrillas locales.</p>
-            </div>
-          </article>
-          <article className="tl-item">
-            <div className="tl-dot" aria-hidden="true"></div>
-            <div className="tl-card">
-              <h4>2020 — Integración con alcaldías</h4>
-              <p>Conectamos la plataforma con sistemas municipales para órdenes y seguimiento en tiempo real.</p>
-            </div>
-          </article>
-          <article className="tl-item">
-            <div className="tl-dot" aria-hidden="true"></div>
-            <div className="tl-card">
-              <h4>2022 — Escalamiento operativo</h4>
-              <p>Optimizamos rutas y priorización con IA, reduciendo tiempos de atención y costos logísticos.</p>
-            </div>
-          </article>
-          <article className="tl-item">
-            <div className="tl-dot" aria-hidden="true"></div>
-            <div className="tl-card">
-              <h4>2024 — Mantenimiento predictivo</h4>
-              <p>Modelos de riesgo vial y prevención de daños en pavimento, drenaje y señalización.</p>
-            </div>
-          </article>
-        </section>
-
+      
         {/* EQUIPO */}
         <div className="section-title" id="equipo">
           <span>Equipo</span><span className="line"></span>
@@ -138,29 +104,27 @@ const Nosotros = () => {
           <div className="team-grid">
             <article className="member">
               <div className="avatar-wrap">
-                <div className="avatar">AG</div>
+                <div className="avatar">AM</div>
               </div>
               <div className="member-body">
                 <h5>Amin Marin</h5>
-                <div className="role">AM</div>
+                <div className="role">Marketing</div>
                 <div className="tags">
-                  <span className="tag">Despacho</span>
-                  <span className="tag">SLA</span>
-                  <span className="tag">KPIs</span>
+                  <span className="tag">Publicista</span>
+                  <span className="tag">Comunicador</span>
                 </div>
               </div>
             </article>
             <article className="member">
               <div className="avatar-wrap">
-                <div className="avatar">JS</div>
+                <div className="avatar">JL</div>
               </div>
               <div className="member-body">
-                <h5>Josnel</h5>
-                <div className="role">el Jefaso</div>
+                <h5>Josnel López</h5>
+                <div className="role">Programador</div>
                 <div className="tags">
-                  <span className="tag">Bacheo</span>
+                  <span className="tag">Analista</span>
                   <span className="tag">Seguridad</span>
-                  <span className="tag">Logística</span>
                 </div>
               </div>
             </article>
@@ -170,11 +134,8 @@ const Nosotros = () => {
               </div>
               <div className="member-body">
                 <h5>Iza Duartez</h5>
-                <div className="role">La novia del Jefaso</div>
+                <div className="role">Deseñadora</div>
                 <div className="tags">
-                  <span className="tag">Mapas</span>
-                  <span className="tag">Ruteo</span>
-                  <span className="tag">Prioridades</span>
                 </div>
               </div>
             </article>
@@ -186,21 +147,19 @@ const Nosotros = () => {
                 <h5>Byron García</h5>
                 <div className="role">Programador</div>
                 <div className="tags">
-                  <span className="tag">Diseño</span>
-                  <span className="tag">Integraciones</span>
-                  <span className="tag">Escalabilidad</span>
+                  <span className="tag">Diseñador</span>
                 </div>
               </div>
             </article>
             <article className="member">
               <div className="avatar-wrap">
-                <div className="avatar">MA</div>
+                <div className="avatar">MR</div>
               </div>
               <div className="member-body">
-                <h5>Mauricio</h5>
+                <h5>Mauricio Rubio</h5>
                 <div className="role">Programador</div>
                 <div className="tags">
-                  <span className="tag">Integraciones</span>
+                  <span className="tag">Cyber Seguridad</span>
                 </div>
               </div>
             </article>
@@ -212,8 +171,6 @@ const Nosotros = () => {
           <h3>¿Listo para recuperar tus calles?</h3>
           <p>Diseñemos tu plan de mantenimiento vial y gestionemos reparaciones de extremo a extremo.</p>
           <div className="hero-cta">
-            <a className="btn btn-primary" href="mailto:hola@tuempresa.com">Escríbenos</a>
-            <a className="btn btn-ghost" href="/contacto">Hablar con el equipo</a>
           </div>
         </section>
       </main>

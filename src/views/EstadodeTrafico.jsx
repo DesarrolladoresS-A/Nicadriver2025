@@ -302,22 +302,18 @@ const EstadoTrafico = () => {
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Estado del Tráfico</h2>
-      
+    <div className="trafico-page">
+      <div className="trafico-hero">
+        <h1>Estado del Tráfico</h1>
+        <p>Explora el tráfico en tiempo real y planifica tu ruta</p>
+      </div>
+       
       {locationError && (
-        <div style={{ 
-          backgroundColor: '#ffebee', 
-          color: '#c62828', 
-          padding: '10px', 
-          borderRadius: '4px',
-          marginBottom: '15px',
-          textAlign: 'center'
-        }}>
+        <div className="geo-alert">
           {locationError}
         </div>
       )}
-      
+       
       <div className="search-container">
         <div className="search-bar">
           <input
@@ -343,7 +339,7 @@ const EstadoTrafico = () => {
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+      <div className="map-wrapper">
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={userLocation || defaultCenter}
@@ -431,21 +427,11 @@ const EstadoTrafico = () => {
 
         <button
           onClick={() => setShowRutaModal(true)}
-          style={{
-            position: 'absolute',
-            bottom: 20,
-            left: 20,
-            zIndex: 10,
-            fontSize: '24px',
-            backgroundColor: '#ffffffdd',
-            borderRadius: '50%',
-            padding: '10px',
-            border: '2px solid #007bff',
-            cursor: 'pointer'
-          }}
+          className="fab fab-primary"
           title="Iniciar viaje"
+          aria-label="Iniciar viaje"
         >
-          🚗
+          <span className="fab-icon">🚗</span>
         </button>
 
         {showRutaModal && (
@@ -464,7 +450,7 @@ const EstadoTrafico = () => {
               {!usarUbicacionActual && (
                 <>
                   <label>Ciudad de origen</label>
-                  <select value={ciudadOrigenSeleccionada} onChange={(e) => setCiudadOrigenSeleccionada(e.target.value)}>
+                  <select className="form-select" value={ciudadOrigenSeleccionada} onChange={(e) => setCiudadOrigenSeleccionada(e.target.value)}>
                     <option value="">Selecciona una ciudad</option>
                     {ciudadesNicaragua.map((ciudad) => (
                       <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
@@ -474,7 +460,7 @@ const EstadoTrafico = () => {
               )}
 
               <label>Ciudad de destino</label>
-              <select value={ciudadDestino} onChange={(e) => setCiudadDestino(e.target.value)}>
+              <select className="form-select" value={ciudadDestino} onChange={(e) => setCiudadDestino(e.target.value)}>
                 <option value="">Selecciona una ciudad</option>
                 {ciudadesNicaragua.map((ciudad) => (
                   <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
@@ -482,8 +468,8 @@ const EstadoTrafico = () => {
               </select>
 
               <div className="button-group">
-                <button onClick={iniciarViaje}>Buscar ruta</button>
-                <button onClick={() => setShowRutaModal(false)}>Cancelar</button>
+                <button className="btn btn-primary" onClick={iniciarViaje}>Buscar ruta</button>
+                <button className="btn btn-secondary" onClick={() => setShowRutaModal(false)}>Cancelar</button>
               </div>
             </div>
           </div>
@@ -554,18 +540,8 @@ const EstadoTrafico = () => {
               </div>
 
               <div className="button-group">
-                <button 
-                  className="guardar-btn"
-                  onClick={handleGuardarReporte}
-                >
-                  Guardar reporte
-                </button>
-                <button 
-                  className="cancel-btn"
-                  onClick={() => setSelectedLocation(null)}
-                >
-                  Cancelar
-                </button>
+                <button className="btn btn-primary" onClick={handleGuardarReporte}>Guardar reporte</button>
+                <button className="btn btn-secondary" onClick={() => setSelectedLocation(null)}>Cancelar</button>
               </div>
             </div>
           </div>

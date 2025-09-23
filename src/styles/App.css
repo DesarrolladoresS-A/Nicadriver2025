@@ -27,11 +27,23 @@
 }
 
 html {
-  font-size: 16px;
+  font-family: 'Montserrat', 'Inter', 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif !important;
+}
+
+*, *::before, *::after {
+  font-family: inherit !important;
+}
+
+input, button, select, textarea, label, .btn, .navbar, .nav-link, .offcanvas, .modal, table, th, td {
+  font-family: inherit !important;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, a, li, strong, em, small, code, pre, blockquote {
+  font-family: inherit !important;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: inherit !important;
   line-height: 1.5;
   color: #212529;
   background-color: #f8f9fa;

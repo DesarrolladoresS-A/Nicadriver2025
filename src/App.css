@@ -134,6 +134,25 @@
   --input: #1f2937;
 }
 
+html {
+  font-family: 'Montserrat', 'Inter', 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif !important;
+}
+
+/* Asegurar que todos los elementos hereden la fuente */
+*, *::before, *::after {
+  font-family: inherit !important;
+}
+
+/* Controles de formulario y botones con la misma fuente */
+input, button, select, textarea, label, .btn, .navbar, .nav-link, .offcanvas, .modal {
+  font-family: inherit !important;
+}
+
+/* Encabezados también con Montserrat */
+h1, h2, h3, h4, h5, h6 {
+  font-family: inherit !important;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -264,3 +283,93 @@ body {
 .footer-navbar a { color: #ffffff; text-decoration: none; }
 .footer-navbar a:hover { color: #1e3d87; }
 .footer-divider { border-color: rgba(255,255,255,0.25); }
+
+/* ===================== */
+/* Notificaciones header */
+/* ===================== */
+.notif-bell {
+  position: relative;
+  margin-left: auto;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.notif-bell:hover { background: rgba(255,255,255,0.15); }
+.notif-bell:active { transform: scale(0.96); }
+
+.notif-bell i { font-size: 1.2rem; }
+
+.notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #ef4444; /* rojo */
+  color: #fff;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.8);
+}
+
+.notif-panel {
+  position: absolute;
+  top: 46px;
+  right: 0;
+  width: 280px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  border: 1px solid rgba(0,0,0,0.06);
+  z-index: 1051; /* sobre offcanvas btn */
+}
+
+.notif-empty {
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.notif-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.notif-item:last-child { border-bottom: none; }
+
+.notif-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.notif-text {
+  font-size: 0.8rem;
+  line-height: 1.2rem;
+  color: #374151;
+  white-space: pre-line; /* respetar saltos de línea en mensajes */
+}
+
+/* Variantes por estado */
+.notif-pendiente { background: #fff7ed; /* naranja muy claro */ }
+.notif-aceptado, .notif-aprobado { background: #ecfdf5; /* verde claro */ }
+.notif-rechazado { background: #fef2f2; /* rojo claro */ }
+
+/* Ajustes de responsividad para contener bien el layout */
+@media (max-width: 576px) {
+  .notif-panel { width: 90vw; right: -10vw; }
+}

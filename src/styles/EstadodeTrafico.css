@@ -18,11 +18,11 @@
     --gradient-info: linear-gradient(135deg, #17a2b8, #1da1f2);
 }
 
-/* Estilos generales */
+/* Estilos generales (usar fuente global Montserrat y colores por defecto) */
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #ffffff;
-    color: #fffdfd;
+    font-family: 'Montserrat', 'Inter', 'Poppins', sans-serif;
+    background-color: inherit;
+    color: inherit;
 }
 
 /* Contenedor principal */
@@ -1673,4 +1673,231 @@ body {
 .cancelar-ruta-button:hover {
   background: #c82333;
   transform: translateY(-2px);
+}
+
+/* ===== Nuevo diseño para Estado de Tráfico ===== */
+.trafico-page {
+  padding: 20px;
+  padding-top: 88px; /* espacio por navbar fija */
+  background: #fafafa;
+  min-height: 100vh;
+}
+
+.trafico-hero {
+  max-width: 1100px;
+  margin: 0 auto 10px auto;
+  background: linear-gradient(135deg, rgba(255,126,0,0.06), rgba(255,193,0,0.06));
+  border: 1px solid rgba(255,126,0,0.15);
+  padding: 18px 22px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  text-align: center;
+}
+
+.trafico-hero h1 {
+  margin: 0 0 6px 0;
+  color: #1f2937;
+  font-weight: 800;
+  font-size: 28px;
+}
+
+.trafico-hero p {
+  margin: 0;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.geo-alert {
+  max-width: 700px;
+  margin: 14px auto;
+  background-color: #ffebee;
+  color: #b71c1c;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #ffcdd2;
+  text-align: center;
+}
+
+.map-wrapper {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+/* Floating Action Button */
+.fab {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 10;
+  height: 52px;
+  width: 52px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  background: #ffffffdd;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+}
+
+.fab-primary {
+  border-color: var(--primary-color);
+}
+
+.fab-icon {
+  font-size: 22px;
+}
+
+/* Generic buttons to unify styling */
+.btn {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(255,126,0,0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(255,126,0,0.3);
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+/* Form select used in modal */
+.form-select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.8px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 15px;
+  transition: all .2s ease;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255,126,0,0.15);
+}
+
+/* Small tweak: keep search container nicely aligned with hero */
+.search-container { max-width: 900px; }
+
+@media (max-width: 768px) {
+  .trafico-hero { border-radius: 12px; padding: 14px 16px; }
+  .trafico-hero h1 { font-size: 22px; }
+  .fab { bottom: 14px; left: 14px; height: 48px; width: 48px; }
+}
+
+/* ===== Overrides: Modal legible y moderno ===== */
+/* Hacemos el overlay semitransparente oscuro para foco visual */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Cuerpo del modal con mejor contraste y pulido */
+.modal-content {
+  background: #ffffff !important;
+  color: #111827 !important; /* texto oscuro legible */
+  border-radius: 16px !important;
+  border: 1px solid rgba(17, 24, 39, 0.06) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18) !important;
+}
+
+/* Título con color de marca */
+.modal-content h3 {
+  color: var(--primary-color) !important;
+}
+
+/* Etiquetas e inputs con contraste correcto */
+.modal-content label {
+  color: #374151 !important; /* gris oscuro */
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="datetime-local"],
+.modal-content textarea,
+.modal-content select,
+.modal-content .form-select {
+  color: #111827 !important;
+  background: #fff !important;
+  border: 1.8px solid #e5e7eb !important;
+  border-radius: 10px !important;
+}
+
+.modal-content input[type="text"]::placeholder,
+.modal-content textarea::placeholder {
+  color: #9ca3af;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content input[type="datetime-local"]:focus,
+.modal-content textarea:focus,
+.modal-content select:focus,
+.modal-content .form-select:focus {
+  outline: none;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(255,126,0,0.15) !important;
+}
+
+/* Botonera coherente con el nuevo estilo */
+.modal-content .button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-content .btn {
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.modal-content .btn-primary {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(255,126,0,0.28);
+}
+
+.modal-content .btn-primary:hover {
+  transform: translateY(-2px);
+}
+
+.modal-content .btn-secondary {
+  background: #eef2f7;
+  color: #111827;
+}
+
+/* Ajuste del checkbox de "usar ubicación actual" */
+.modal-content input[type="checkbox"] {
+  accent-color: #ff7e00;
+}
+
+/* Mejora de la X del preview de imagen (cuando aplique) */
+.remove-image {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }

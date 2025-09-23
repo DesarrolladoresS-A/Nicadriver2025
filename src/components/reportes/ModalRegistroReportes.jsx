@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { db } from "../../database/firebaseconfig";
 import { collection, addDoc } from "firebase/firestore";
+import { useAuth } from "../../database/authcontext";
 
 const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [titulo, setTitulo] = useState("");
@@ -9,6 +10,8 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [fechaHora, setFechaHora] = useState("");
   const [foto, setFoto] = useState(null);
   const [cargando, setCargando] = useState(false);
+
+  const { user } = useAuth();
 
   const [errores, setErrores] = useState({
     titulo: false,
@@ -55,14 +58,16 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         fotoBase64 = await convertirImagenABase64(foto);
       }
 
+      const ahora = new Date();
       const nuevoReporte = {
         titulo: titulo.trim(),
         descripcion: descripcion.trim(),
         ubicacion: ubicacion.trim(),
         fechaHora,
         foto: fotoBase64,
-        fechaRegistro: new Date().toISOString(),
-        estado: "pendiente" // Campo extra útil para gestión de reportes
+        fechaRegistro: ahora.toISOString(),
+        estado: "pendiente", // Campo extra útil para gestión de reportes
+        userEmail: user?.email || null
       };
 
       await addDoc(collection(db, "reportes"), nuevoReporte);
