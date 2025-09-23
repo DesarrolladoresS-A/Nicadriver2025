@@ -213,12 +213,12 @@ body {
 }
 
 /* Botones con efecto 3D */
-.btn-container {
+.login-page .btn-container {
     position: relative;
     margin-top: 2.5rem;
 }
 
-.btn-default {
+.login-page .btn-default {
     position: relative;
     width: 100%;
     padding: 1.3rem;
@@ -236,7 +236,7 @@ body {
     z-index: 1;
 }
 
-.btn-default::before {
+.login-page .btn-default::before {
     content: '';
     position: absolute;
     top: 0;
@@ -247,27 +247,27 @@ body {
     transition: left 0.5s;
 }
 
-.btn-default:hover::before {
+.login-page .btn-default:hover::before {
     left: 100%;
 }
 
-.btn-default:hover {
+.login-page .btn-default:hover {
     transform: translateY(-3px) scale(1.02);
     box-shadow: 0 15px 30px rgba(255, 126, 0, 0.4);
 }
 
-.btn-default:active {
+.login-page .btn-default:active {
     transform: translateY(-1px) scale(1.01);
 }
 
-.btn-default:disabled {
+.login-page .btn-default:disabled {
     opacity: 0.7;
     transform: none;
     cursor: not-allowed;
 }
 
 /* Botón de registro mejorado */
-.register-btn {
+.login-page .register-btn {
     width: 100%;
     padding: 1.2rem;
     background: transparent;
@@ -284,7 +284,7 @@ body {
     overflow: hidden;
 }
 
-.register-btn::before {
+.login-page .register-btn::before {
     content: '';
     position: absolute;
     top: 0;
@@ -296,11 +296,11 @@ body {
     z-index: -1;
 }
 
-.register-btn:hover::before {
+.login-page .register-btn:hover::before {
     width: 100%;
 }
 
-.register-btn:hover {
+.login-page .register-btn:hover {
     color: #1e3d87;
     transform: translateY(-3px);
     box-shadow: 0 10px 25px rgba(255, 126, 0, 0.3);
@@ -392,7 +392,7 @@ body {
         font-size: 2rem;
     }
     
-    .btn-default, .register-btn {
+    .login-page .btn-default, .login-page .register-btn {
         padding: 1rem;
     }
 }
