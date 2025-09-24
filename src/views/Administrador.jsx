@@ -166,24 +166,26 @@ const Administrador = () => {
             Exportar a Excel
           </button>
 
-          <table className="table table-bordered table-striped card overflow-hidden">
-            <thead>
-              <tr>
-                <th>Título</th>
-                <th>Descripción</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportesActuales.map((reporte) => (
-                <tr key={reporte.id}>
-                  <td>{reporte.titulo}</td>
-                  <td>{reporte.descripcion}</td>
-                  <td>{reporte.estado}</td>
+          <div className="table-responsive">
+            <table className="table table-bordered table-striped card overflow-hidden">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Descripción</th>
+                  <th>Estado</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {reportesActuales.map((reporte) => (
+                  <tr key={reporte.id}>
+                    <td>{reporte.titulo}</td>
+                    <td>{reporte.descripcion}</td>
+                    <td>{reporte.estado}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {renderPaginacion()}
         </Container>

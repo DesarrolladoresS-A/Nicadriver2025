@@ -373,3 +373,22 @@ body {
 @media (max-width: 576px) {
   .notif-panel { width: 90vw; right: -10vw; }
 }
+
+/* ===================== */
+/* Tablas responsivas    */
+/* ===================== */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Evitar desbordes en celdas en pantallas pequeñas */
+@media (max-width: 576px) {
+  .tabla-reportes th,
+  .tabla-reportes td,
+  .table th,
+  .table td {
+    white-space: nowrap;
+  }
+}

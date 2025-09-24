@@ -18,31 +18,33 @@ function Layout() {
   const showFooter = location.pathname === '/inicio' || location.pathname === '/nosotros';
 
   return (
-    <div className="app-container min-h-screen flex flex-col">
+    <div className="app">
       <Encabezado />
-      <main className="margen-superior-main flex-1">
-        <Routes>
-          <Route path="/" element={<Navigate to="/inicio" replace />} />
-          <Route path="/inicio" element={
-            <div className="inicio-container">
-              <Inicio />
-            </div>
-          } />
-          <Route path="/nosotros" element={<Nosotros />} />
-          <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
-          <Route path="/reportes" element={<Reportes />} />
-          <Route path="/contacto" element={<Contacto />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/graficos" element={<Graficos />} />
-          <Route path="/reporteAdmin" element={<ReporteAdmin />} />
-          <Route path="/administrador" element={
-            <div className="inicio-container">
-              <Administrador />
-            </div>
-          } />
-        </Routes>
-      </main>
+      <div className="main container">
+        <main className="content margen-superior-main flex-1">
+          <Routes>
+            <Route path="/" element={<Navigate to="/inicio" replace />} />
+            <Route path="/inicio" element={
+              <div className="inicio-container">
+                <Inicio />
+              </div>
+            } />
+            <Route path="/nosotros" element={<Nosotros />} />
+            <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
+            <Route path="/reportes" element={<Reportes />} />
+            <Route path="/contacto" element={<Contacto />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/graficos" element={<Graficos />} />
+            <Route path="/reporteAdmin" element={<ReporteAdmin />} />
+            <Route path="/administrador" element={
+              <div className="inicio-container">
+                <Administrador />
+              </div>
+            } />
+          </Routes>
+        </main>
+      </div>
 
       {showFooter && (
         <footer className="footer-navbar">
@@ -89,7 +91,7 @@ function Layout() {
                 <div className="flex items-center gap-4 text-white">
                   {/* Reemplaza # con las URLs oficiales cuando las tengas */}
                   <a href="#" aria-label="Facebook" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-facebook text-2xl"></i></a>
-                  <a href="#" aria-label="Instagram" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-instagram text-2xl"></i></a>
+                  <a href="https://www.instagram.com/nicadriver_of?utm_source=ig_web_button_share_sheet&igsh=aDE1cW1zd3Bnbzh4" aria-label="Instagram" className="hover:text-[#1e3d87] transition-colors" target="_blank" rel="noopener noreferrer"><i className="bi bi-instagram text-2xl"></i></a>
                   <a href="#" aria-label="Twitter" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-twitter text-2xl"></i></a>
                   <a href="#" aria-label="YouTube" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-youtube text-2xl"></i></a>
                   <a href="#" aria-label="LinkedIn" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-linkedin text-2xl"></i></a>

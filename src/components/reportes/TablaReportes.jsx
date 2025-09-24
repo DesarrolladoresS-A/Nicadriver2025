@@ -148,62 +148,65 @@ const TablaReportes = ({
         <p>Administra los reportes de incidentes</p>
       </div>
 
-      <table className="tabla-reportes">
-        <thead>
-          <tr>
-            <th>Tipo de incidente</th>
-            <th>Ubicación</th>
-            <th>Descripción</th>
-            <th>Fecha y Hora</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reportes.map((reporte) => (
-            <tr key={reporte.id}>
-              <td>{reporte.titulo}</td>
-              <td>{reporte.ubicacion}</td>
-              <td>
-                {reporte.descripcion.substring(0, 50)}
-                {reporte.descripcion.length > 50 ? "..." : ""}
-              </td>
-              <td>{formatearFechaHora(reporte.fechaHora)}</td>
-              <td>{reporte.estado || "Pendiente"}</td>
-              <td className="acciones">
-                <button
-                  className="btn-accion btn-ver"
-                  onClick={() => abrirModalVisualizacion(reporte)}
-                  title="Ver detalles"
-                >
-                  <i className="bi bi-eye-fill"></i>
-                </button>
-                <button
-                  className="btn-accion btn-editar"
-                  onClick={() => {
-                    setReporteSeleccionado(reporte);
-                    setModalEditar(true);
-                  }}
-                  title="Editar"
-                >
-                  <i className="bi bi-pencil-fill"></i>
-                </button>
-                <button
-                  className="btn-accion btn-eliminar"
-                  onClick={() => {
-                    setReporteSeleccionadoEliminar(null);
-                    setReporteSeleccionadoEliminar(reporte);
-                    setModalEliminar(true);
-                  }}
-                  title="Eliminar"
-                >
-                  <i className="bi bi-trash-fill"></i>
-                </button>
-              </td>
+      {/* Contenedor responsivo para scroll horizontal en móvil */}
+      <div className="table-responsive">
+        <table className="table tabla-reportes">
+          <thead>
+            <tr>
+              <th>Tipo de incidente</th>
+              <th>Ubicación</th>
+              <th>Descripción</th>
+              <th>Fecha y Hora</th>
+              <th>Estado</th>
+              <th>Acciones</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {reportes.map((reporte) => (
+              <tr key={reporte.id}>
+                <td>{reporte.titulo}</td>
+                <td>{reporte.ubicacion}</td>
+                <td>
+                  {reporte.descripcion.substring(0, 50)}
+                  {reporte.descripcion.length > 50 ? "..." : ""}
+                </td>
+                <td>{formatearFechaHora(reporte.fechaHora)}</td>
+                <td>{reporte.estado || "Pendiente"}</td>
+                <td className="acciones">
+                  <button
+                    className="btn-accion btn-ver"
+                    onClick={() => abrirModalVisualizacion(reporte)}
+                    title="Ver detalles"
+                  >
+                    <i className="bi bi-eye-fill"></i>
+                  </button>
+                  <button
+                    className="btn-accion btn-editar"
+                    onClick={() => {
+                      setReporteSeleccionado(reporte);
+                      setModalEditar(true);
+                    }}
+                    title="Editar"
+                  >
+                    <i className="bi bi-pencil-fill"></i>
+                  </button>
+                  <button
+                    className="btn-accion btn-eliminar"
+                    onClick={() => {
+                      setReporteSeleccionadoEliminar(null);
+                      setReporteSeleccionadoEliminar(reporte);
+                      setModalEliminar(true);
+                    }}
+                    title="Eliminar"
+                  >
+                    <i className="bi bi-trash-fill"></i>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
