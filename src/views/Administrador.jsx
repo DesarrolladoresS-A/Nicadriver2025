@@ -118,7 +118,7 @@ const Administrador = () => {
 
   return (
     <div className="administrador-container bg-background text-foreground">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-100 p-0 m-0">
         <h2 className="text-3xl font-bold text-center mb-6">Dashboard de Administrador</h2>
         <Container fluid className="p-0">
           <CardGroup className="mb-4">

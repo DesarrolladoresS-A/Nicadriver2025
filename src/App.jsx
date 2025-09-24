@@ -20,28 +20,24 @@ function Layout() {
   const isInicio = location.pathname === '/inicio';
   const isEstado = location.pathname === '/estadodeTrafico' || location.pathname === '/estadodetrafico';
   const isReportes = location.pathname === '/reportes';
+  const isAdministrador = location.pathname === '/administrador';
 
   return (
     <div className="app">
       <Encabezado />
-      <div className={`main ${isNosotros || isInicio || isEstado || isReportes ? 'no-padding-top' : ''}`}>
-        <main className={`content flex-1 ${isNosotros || isInicio || isEstado || isReportes ? '' : 'margen-superior-main'}`}>
+      <div className={`main ${isNosotros || isInicio || isEstado || isReportes || isAdministrador ? 'no-padding-top' : ''}`}>
+        <main className={`content flex-1 ${isNosotros || isInicio || isEstado || isReportes || isAdministrador ? '' : 'margen-superior-main'}`}>
           <Routes>
             <Route path="/" element={<Navigate to="/inicio" replace />} />
             <Route path="/inicio" element={<Inicio />} />
             <Route path="/nosotros" element={<Nosotros />} />
             <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
-            <Route path="/reportes" element={<Reportes />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/graficos" element={<Graficos />} />
             <Route path="/reporteAdmin" element={<ReporteAdmin />} />
-            <Route path="/administrador" element={
-              <div className="inicio-container">
-                <Administrador />
-              </div>
-            } />
+            <Route path="/administrador" element={<Administrador />} />
           </Routes>
         </main>
       </div>
