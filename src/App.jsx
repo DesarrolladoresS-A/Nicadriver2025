@@ -10,7 +10,7 @@ import Reportes from "./views/Reportes";
 import Contacto from "./views/Contacto";
 import Administrador from "./views/Administrador";
 import Graficos from "./views/Graficos";
-import ReporteAdmin from './views/ReporteAdmin';
+import ReporteAdminCards from './views/ReporteAdminCards';
 import Register from './views/Register';
 
 function Layout() {
@@ -36,7 +36,7 @@ function Layout() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/graficos" element={<Graficos />} />
-            <Route path="/reporteAdmin" element={<ReporteAdmin />} />
+            <Route path="/reporteAdmin" element={<ReporteAdminCards />} />
             <Route path="/administrador" element={<Administrador />} />
           </Routes>
         </main>
