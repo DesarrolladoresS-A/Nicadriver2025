@@ -639,14 +639,13 @@ body {
 }
 
 .nosotros-page a { color: inherit; text-decoration: none; }
-.nosotros-page img { max-width: 100%; display: block; }
 
 .nosotros-page .container { width: 100%; max-width: var(--maxw); padding: 0 20px; margin: 0 auto; }
 
 /* Header / Hero */
 .nosotros-page .hero {
   position: relative;
-  padding: 24px 0 40px; /* reducido para quedar pegado al header */
+  padding: 0 0 40px; /* sin espacio arriba: pegado al encabezado */
   overflow: hidden;
   min-height: 70vh;
   display: flex;
@@ -654,20 +653,36 @@ body {
   color: var(--text); /* texto claro sobre imagen */
   background:
     linear-gradient(180deg, rgba(11,18,32,0.55), rgba(10,19,34,0.65)),
-    url('/imagen/fotohackathon.jpeg');
+    url('/imagen/FotoGrupal.jpeg');
   background-size: cover;
-  background-position: center 0%;
+  background-position: center 10% !important; /* encuadre abajo para mostrar rostros */
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
 
-.nosotros-page .hero-inner { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: var(--gap); align-items: center; }
+.nosotros-page .hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(11,18,32,0.7), rgba(11,18,32,0.4) 50%, rgba(11,18,32,0.2) 100%);
+  z-index: 1;
+}
+
+.nosotros-page .hero > .container {
+  position: relative;
+  z-index: 2;
+}
+
+.nosotros-page .hero-inner { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: var(--gap); align-items: center; padding-top: 8px; }
+
+.nosotros-page .hero h1 { margin-top: 0; margin-bottom: 14px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.08; font-size: clamp(34px, 5vw, 56px); text-wrap: balance; }
 
 .nosotros-page .badge { display: inline-flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 999px; background: linear-gradient(180deg, rgba(108,140,255,0.18), rgba(108,140,255,0.06)); border: 1px solid rgba(108,140,255,0.35); color: #cfd8ff; font-weight: 600; font-size: 13px; letter-spacing: .2px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
 .nosotros-page .glow-dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(180deg, var(--accent), #4f6bf7); box-shadow: 0 0 0 6px rgba(108,140,255,0.22), 0 0 26px rgba(108,140,255,0.6); }
 
-.nosotros-page .hero h1 { margin: 14px 0 14px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.08; font-size: clamp(34px, 5vw, 56px); text-wrap: balance; }
-.nosotros-page .hero p { margin: 0 0 22px; color: var(--muted); font-size: clamp(15px, 2vw, 18px); max-width: 60ch; }
 
 .nosotros-page .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
 .nosotros-page .btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 12px; font-weight: 600; border: 1px solid transparent; transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease; cursor: pointer; user-select: none; }
@@ -757,9 +772,9 @@ body {
 /* Mobile performance: avoid fixed attachment on small screens */
 @media (max-width: 900px) {
   .nosotros-page .hero { 
-    background-attachment: scroll; 
-    background-position: center 10%; /* móvil: un poco menos extremo para mejor composición */
-    padding-top: 16px; /* aún más compacto en móvil */
+    background-attachment: fixed; 
+    background-position: center 140% !important; /* móvil: aún más abajo por relación de aspecto */
+    background-size: cover;
   }
 }
 

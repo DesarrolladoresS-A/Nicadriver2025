@@ -16,12 +16,13 @@ import Register from './views/Register';
 function Layout() {
   const location = useLocation();
   const showFooter = location.pathname === '/inicio' || location.pathname === '/nosotros';
+  const isNosotros = location.pathname === '/nosotros';
 
   return (
     <div className="app">
       <Encabezado />
-      <div className="main container">
-        <main className="content margen-superior-main flex-1">
+      <div className={`main container ${isNosotros ? 'no-padding-top' : ''}`}>
+        <main className={`content flex-1 ${isNosotros ? '' : 'margen-superior-main'}`}>
           <Routes>
             <Route path="/" element={<Navigate to="/inicio" replace />} />
             <Route path="/inicio" element={
