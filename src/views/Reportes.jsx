@@ -80,8 +80,9 @@ const Reportes = () => {
   };
 
   return (
-    <div className="reportes-container bg-background text-foreground">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="reportes-container bg-background text-foreground full-bleed">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+
         {/* Loading state */}
         {loading && (
           <div className="loading-container card p-6 rounded-xl text-center">

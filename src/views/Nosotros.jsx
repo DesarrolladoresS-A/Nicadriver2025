@@ -37,36 +37,38 @@ const Nosotros = () => {
           <div className="hero-art">
             <div className="orbit"></div>
 
-            <div className="floating-card">
-              <div className="kpi">
-                <div className="dot"></div>
-                <div>
-                  <div className="label">Órdenes activas</div>
-                  <div className="value">42</div>
+            <div className="floating-group">
+              <div className="floating-card">
+                <div className="kpi">
+                  <div className="dot"></div>
+                  <div>
+                    <div className="label">Órdenes activas</div>
+                    <div className="value">42</div>
+                  </div>
+                </div>
+                <div className="kpi">
+                  <div className="dot" style={{ background: 'var(--warning)', boxShadow: '0 0 16px rgba(245,158,11,.55)' }}></div>
+                  <div>
+                    <div className="label">Tiempo medio de reparación</div>
+                    <div className="value">3.8 días</div>
+                  </div>
                 </div>
               </div>
-              <div className="kpi">
-                <div className="dot" style={{ background: 'var(--warning)', boxShadow: '0 0 16px rgba(245,158,11,.55)' }}></div>
-                <div>
-                  <div className="label">Tiempo medio de reparación</div>
-                  <div className="value">3.8 días</div>
-                </div>
-              </div>
-            </div>
 
-            <div className="floating-card">
-              <div className="kpi">
-                <div className="dot" style={{ background: 'var(--accent)', boxShadow: '0 0 16px rgba(108,140,255,.55)' }}></div>
-                <div>
-                  <div className="label">Satisfacción municipal</div>
-                  <div className="value">94</div>
+              <div className="floating-card">
+                <div className="kpi">
+                  <div className="dot" style={{ background: 'var(--accent)', boxShadow: '0 0 16px rgba(108,140,255,.55)' }}></div>
+                  <div>
+                    <div className="label">Satisfacción municipal</div>
+                    <div className="value">94</div>
+                  </div>
                 </div>
-              </div>
-              <div className="kpi">
-                <div className="dot" style={{ background: 'var(--danger)', boxShadow: '0 0 16px rgba(239,68,68,.55)' }}></div>
-                <div>
-                  <div className="label">Incidencias reabiertas</div>
-                  <div className="value">0.7%</div>
+                <div className="kpi">
+                  <div className="dot" style={{ background: 'var(--danger)', boxShadow: '0 0 16px rgba(239,68,68,.55)' }}></div>
+                  <div>
+                    <div className="label">Incidencias reabiertas</div>
+                    <div className="value">0.7%</div>
+                  </div>
                 </div>
               </div>
             </div>

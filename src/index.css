@@ -50,8 +50,11 @@ body {
 
 /* ============ Contenedores y layout ============ */
 .container {
-  width: min(1200px, 100% - 2rem);
-  margin-inline: auto;
+  width: 100% !important;
+  max-width: none !important;
+  margin-inline: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 .app {
@@ -88,7 +91,19 @@ body {
   display: flex;
   flex: 1 1 auto;
   gap: 1rem;
-  padding: 1rem;
+  padding: 0 8px; /* gutters suaves para que no pegue a los bordes */
+  width: 99.5%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Full-bleed section: ocupa 100vw y anula gutters del contenedor padre */
+.full-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw) !important;
+  margin-right: calc(50% - 50vw) !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 /* Utilidad para quitar solo el padding-top en la vista Nosotros */
@@ -260,7 +275,7 @@ body {
 }
 
 @media (max-width: 992px) {
-  .main { flex-direction: column; }
+  .main { flex-direction: column; width: 100%; padding: 0 12px; }
   .sidebar { position: relative; top: 0; max-height: none; width: 100%; flex: 0 0 auto; }
 }
 

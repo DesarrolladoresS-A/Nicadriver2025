@@ -303,7 +303,7 @@ const EstadoTrafico = () => {
 
   return (
     <div className="trafico-page">
-      <div className="trafico-hero">
+      <div className="trafico-hero" style={{ paddingTop: 0 }}>
         <h1>Estado del Tráfico</h1>
         <p>Explora el tráfico en tiempo real y planifica tu ruta</p>
       </div>
@@ -314,8 +314,9 @@ const EstadoTrafico = () => {
         </div>
       )}
        
-      <div className="search-container">
-        <div className="search-bar">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="search-container">
+          <div className="search-bar">
           <input
             type="text"
             placeholder="Ingrese su destino..."
@@ -336,6 +337,7 @@ const EstadoTrafico = () => {
               Cancelar Ruta
             </button>
           )}
+          </div>
         </div>
       </div>
 

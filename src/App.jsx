@@ -17,19 +17,18 @@ function Layout() {
   const location = useLocation();
   const showFooter = location.pathname === '/inicio' || location.pathname === '/nosotros';
   const isNosotros = location.pathname === '/nosotros';
+  const isInicio = location.pathname === '/inicio';
+  const isEstado = location.pathname === '/estadodeTrafico' || location.pathname === '/estadodetrafico';
+  const isReportes = location.pathname === '/reportes';
 
   return (
     <div className="app">
       <Encabezado />
-      <div className={`main container ${isNosotros ? 'no-padding-top' : ''}`}>
-        <main className={`content flex-1 ${isNosotros ? '' : 'margen-superior-main'}`}>
+      <div className={`main ${isNosotros || isInicio || isEstado || isReportes ? 'no-padding-top' : ''}`}>
+        <main className={`content flex-1 ${isNosotros || isInicio || isEstado || isReportes ? '' : 'margen-superior-main'}`}>
           <Routes>
             <Route path="/" element={<Navigate to="/inicio" replace />} />
-            <Route path="/inicio" element={
-              <div className="inicio-container">
-                <Inicio />
-              </div>
-            } />
+            <Route path="/inicio" element={<Inicio />} />
             <Route path="/nosotros" element={<Nosotros />} />
             <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
             <Route path="/reportes" element={<Reportes />} />

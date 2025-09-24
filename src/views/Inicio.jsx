@@ -97,7 +97,7 @@ const Inicio = () => {
   return (
     <div className="bg-background text-foreground">
       {/* Hero Section */}
-      <section className="hero-gradient min-h-[80vh] flex items-center justify-center pt-6">
+      <section className="hero-gradient full-bleed min-h-[95vh] flex items-center justify-center pt-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 w-full">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="hero-content text-center lg:text-left">
