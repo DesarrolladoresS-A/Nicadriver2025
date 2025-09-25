@@ -174,10 +174,10 @@
   pointer-events: none;
 }
 
-/* Mobile performance: avoid fixed attachment on small screens */
+/* Mobile performance: avoid scroll attachment on small screens */
 @media (max-width: 900px) {
   .nosotros-page .hero { 
-    background-attachment: fixed; 
+    background-attachment: scroll; 
     background-position: center 170% !important; /* móvil: baja más para mostrar rostros */
     background-size: cover;
   }
@@ -202,3 +202,40 @@
 .nosotros-page .pill h3 { color: inherit; }
 .nosotros-page .pill p { color: var(--muted); }
 .nosotros-page .hero > .container > *:first-child { margin-top: 0 !important; }
+
+/* Fix hero ancho completo sin rayas blancas */
+.nosotros-page .hero {
+  width: 100vw;                /* ocupar todo el ancho de la pantalla */
+  min-height: 100vh;           /* asegura cubrir alto si es necesario */
+  margin-left: calc(50% - 50vw); /* eliminar margen lateral del container */
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat;
+  background-color: #0b1220;   /* relleno del mismo color del fondo */
+  overflow-x: hidden;
+}
+
+html, body {
+  background-color: #0e1628; /* mismo color del diseño */
+
+}
+
+/* Contenido textual del hero con padding lateral */
+.nosotros-page .hero-inner > div:first-child {
+  padding-left: 32px;  /* espacio desde el borde izquierdo */
+  padding-right: 32px; /* espacio desde el borde derecho */
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .nosotros-page .hero-inner > div:first-child {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.nosotros-page .hero {
+  background-attachment: scroll; /* permite mover la imagen */
+  background-position: center 5% !important; /* mueve la imagen hacia abajo */
+  background-size: 107% !important; /* menos de 100% = más pequeña */
+}
