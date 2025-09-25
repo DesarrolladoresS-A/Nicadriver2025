@@ -12,15 +12,15 @@ import '../styles/ReporteAdmin.css';
 import '../styles/Administrador.css';
 import LoaderTractor from "../components/common/LoaderTractor";
 
-const ReporteAdminCards = () => {
+const ReporteAdminCardsPaged = () => {
   const navigate = useNavigate();
   const [reportes, setReportes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [minDelayDone, setMinDelayDone] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
   const [filtroEstado, setFiltroEstado] = useState(null); // 'pendiente' | 'proceso' | 'aceptado' | 'rechazado' | null
+  const itemsPerPage = 8;
 
   useEffect(() => {
     const timer = setTimeout(() => setMinDelayDone(true), 900);
@@ -200,6 +200,7 @@ const ReporteAdminCards = () => {
     navigate(`/reporteAdmin/${reporte.id}/detalle`, { state: { reporte } });
   };
 
+  // Aplicar búsqueda y filtro por estado
   const reportesFiltrados = reportes
     .filter((r) => {
       if (!busqueda) return true;
@@ -215,10 +216,10 @@ const ReporteAdminCards = () => {
       return String(r.estado || '').toLowerCase() === filtroEstado;
     });
 
-  // Reiniciar a la primera página cuando cambie la búsqueda, el filtro o la cantidad de resultados
+  // Reiniciar a la primera página cuando cambie la búsqueda, el total o el filtro de estado
   useEffect(() => {
     setCurrentPage(1);
-  }, [busqueda, filtroEstado, reportes.length]);
+  }, [busqueda, reportes.length, filtroEstado]);
 
   const toggleFiltro = (estado) => {
     setFiltroEstado((prev) => (prev === estado ? null : estado));
@@ -261,7 +262,7 @@ const ReporteAdminCards = () => {
         />
       </div>
 
-      {/* Filtros por estado */}
+      {/* Filtros por estado (estilo similar al Administrador) */}
       <div className="d-flex flex-wrap gap-2 mb-3">
         <button
           className={`action-btn btn btn-nuevos ${filtroEstado === 'pendiente' ? 'active' : ''}`}
@@ -313,4 +314,4 @@ const ReporteAdminCards = () => {
   );
 };
 
-export default ReporteAdminCards;
+export default ReporteAdminCardsPaged;

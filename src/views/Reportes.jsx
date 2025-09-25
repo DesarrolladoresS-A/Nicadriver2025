@@ -18,12 +18,11 @@ const Reportes = () => {
   const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
   const [reporteSeleccionadoEliminar, setReporteSeleccionadoEliminar] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage, setItemsPerPage] = useState(8);
   const [errorEliminacion, setErrorEliminacion] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [filtroActivo, setFiltroActivo] = useState(false);
   const [loading, setLoading] = useState(true);
-
   const obtenerReportes = async () => {
     setLoading(true);
     setErrorEliminacion(null);
@@ -74,6 +73,8 @@ const Reportes = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = reportesFiltrados.slice(indexOfFirstItem, indexOfLastItem);
+  const mostrarInicio = reportesFiltrados.length === 0 ? 0 : indexOfFirstItem + 1;
+  const mostrarFin = Math.min(indexOfLastItem, reportesFiltrados.length);
 
   const actualizarReportes = () => {
     obtenerReportes();
@@ -99,13 +100,12 @@ const Reportes = () => {
           </div>
         )}
 
-        {/* Header con título y controles */}
         <div className="reportes-header flex flex-col gap-4">
           <div className="header-title">
             <h1 className="text-3xl font-bold">Gestión de Reportes</h1>
             <p className="subtitle text-muted-foreground">Administra y revisa todos los reportes de incidentes</p>
           </div>
-          
+
           <div className="header-controls flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
             {/* Barra de búsqueda */}
             <div className="search-container card p-2 rounded-lg flex-1">
@@ -131,14 +131,28 @@ const Reportes = () => {
               )}
             </div>
             
-            {/* Botón de registro */}
-            <button 
-              className="btn btn-default btn-md"
-              onClick={() => setModalRegistro(true)}
-              disabled={loading}
-            >
-              <FaPlus /> Nuevo Reporte
-            </button>
+            {/* Botón de registro y selector de cantidad por página */}
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-muted-foreground">Por página:</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                className="form-select"
+                disabled={loading}
+                style={{ padding: '6px 8px', borderRadius: '8px', border: '1px solid #e5e7eb' }}
+              >
+                <option value={8}>8</option>
+                <option value={16}>16</option>
+                <option value={24}>24</option>
+              </select>
+              <button 
+                className="btn btn-default btn-md"
+                onClick={() => setModalRegistro(true)}
+                disabled={loading}
+              >
+                <FaPlus /> Nuevo Reporte
+              </button>
+            </div>
           </div>
         </div>
 
@@ -150,7 +164,7 @@ const Reportes = () => {
           </div>
           <div className="stat-card">
             <h3>Mostrando</h3>
-            <p>{reportesFiltrados.length}</p>
+            <p>{mostrarInicio}–{mostrarFin} de {reportesFiltrados.length}</p>
           </div>
           <div className="stat-card">
             <h3>Página Actual</h3>

@@ -12,9 +12,14 @@ import Administrador from "./views/Administrador";
 import Graficos from "./views/Graficos";
 import ReporteAdminCards from './views/ReporteAdminCards';
 import Register from './views/Register';
+import ReporteAdminDetalle from './views/ReporteAdminDetalle';
+import { useEffect, useState } from 'react';
+import LoaderTractor from './components/common/LoaderTractor';
 
 function Layout() {
   const location = useLocation();
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [minDelayTimer, setMinDelayTimer] = useState(null);
   const showFooter = location.pathname === '/inicio' || location.pathname === '/nosotros';
   const isNosotros = location.pathname === '/nosotros';
   const isInicio = location.pathname === '/inicio';
@@ -22,8 +27,22 @@ function Layout() {
   const isReportes = location.pathname === '/reportes';
   const isAdministrador = location.pathname === '/administrador';
 
+  // Pequeña superposición global en cada cambio de ruta
+  useEffect(() => {
+    // Mostrar el loader brevemente al cambiar de ruta
+    setRouteLoading(true);
+    const t = setTimeout(() => setRouteLoading(false), 800); // ~0.8s
+    setMinDelayTimer(t);
+    return () => {
+      if (t) clearTimeout(t);
+    };
+  }, [location.pathname]);
+
   return (
     <div className="app">
+      {routeLoading && (
+        <LoaderTractor overlay={true} mensaje="Cargando..." />
+      )}
       <Encabezado />
       <div className={`main ${isNosotros || isInicio || isEstado || isReportes || isAdministrador ? 'no-padding-top' : ''}`}>
         <main className={`content flex-1 ${isNosotros || isInicio || isEstado || isReportes || isAdministrador ? '' : 'margen-superior-main'}`}>
@@ -37,6 +56,7 @@ function Layout() {
             <Route path="/register" element={<Register />} />
             <Route path="/graficos" element={<Graficos />} />
             <Route path="/reporteAdmin" element={<ReporteAdminCards />} />
+            <Route path="/reporteAdmin/:id/detalle" element={<ReporteAdminDetalle />} />
             <Route path="/administrador" element={<Administrador />} />
           </Routes>
         </main>
