@@ -14,20 +14,62 @@ const estadoClase = (estadoRaw) => {
 const ReporteCards = ({ reportes = [], onVisualizar = () => {} }) => {
   const elementos = useMemo(() => reportes, [reportes]);
 
-  const onPDF = (reporte) => {
+  const onPDF = async (reporte) => {
     try {
       const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 12;
+
       doc.setFontSize(18);
-      doc.text(`Reporte: ${reporte.tipo}`, 10, 16);
+      doc.text(`Reporte: ${reporte.tipo || 'Sin título'}`, margin, 18);
       doc.setFontSize(12);
-      doc.text(`ID: ${reporte.id}`, 10, 26);
-      doc.text(`Fecha: ${reporte.fecha}`, 10, 34);
-      doc.text(`Estado: ${reporte.estado}`, 10, 42);
-      doc.text(`Ubicación: ${reporte.ubicacion || 'Sin ubicación'}`, 10, 50);
-      doc.text('Detalles:', 10, 60);
+
+      let cursorY = 26;
+
+      // Imagen (si existe)
+      if (reporte.foto) {
+        try {
+          const dataUrl = await (async function getImageDataUrl(url) {
+            const res = await fetch(url);
+            const blob = await res.blob();
+            const reader = new FileReader();
+            return await new Promise((resolve, reject) => {
+              reader.onloadend = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          })(reporte.foto);
+
+          // Determinar tipo de imagen por el dataURL
+          const imgType = typeof dataUrl === 'string' && dataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+
+          // Calcular tamaño respetando márgenes
+          const maxWidth = pageWidth - margin * 2;
+          const imgWidth = maxWidth;
+          const imgHeight = imgWidth * 0.56; // relación aprox. 16:9 para no exagerar
+
+          doc.addImage(dataUrl, imgType, margin, cursorY, imgWidth, imgHeight);
+          cursorY += imgHeight + 10;
+        } catch (imgErr) {
+          console.warn('No se pudo incorporar la imagen en el PDF:', imgErr);
+        }
+      }
+
+      doc.text(`ID: ${reporte.id}`, margin, cursorY);
+      cursorY += 8;
+      doc.text(`Fecha: ${reporte.fecha}`, margin, cursorY);
+      cursorY += 8;
+      doc.text(`Estado: ${reporte.estado}`, margin, cursorY);
+      cursorY += 8;
+      doc.text(`Ubicación: ${reporte.ubicacion || 'Sin ubicación'}`, margin, cursorY);
+      cursorY += 10;
+
+      doc.text('Detalles:', margin, cursorY);
+      cursorY += 6;
       const detalles = (reporte.detalles || '').toString();
-      const lines = doc.splitTextToSize(detalles, 180);
-      doc.text(lines, 10, 68);
+      const lines = doc.splitTextToSize(detalles, pageWidth - margin * 2);
+      doc.text(lines, margin, cursorY);
+
       doc.save(`reporte_${reporte.id}.pdf`);
     } catch (e) {
       console.error('Error al generar PDF:', e);

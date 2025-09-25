@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ReporteCards from "../components/reporte_admin/ReporteCards";
+import Paginacion from "../components/ordenamiento/Paginacion";
 import { db } from "../database/firebaseconfig";
 import { collection, query, getDocs, orderBy, doc, updateDoc } from "firebase/firestore";
 import jsPDF from 'jspdf';
@@ -8,14 +9,18 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { autoTable } from 'jspdf-autotable';
 import '../styles/ReporteAdmin.css';
+import '../styles/Administrador.css';
 import LoaderTractor from "../components/common/LoaderTractor";
 
-const ReporteAdminCards = () => {
+const ReporteAdminCardsPaged = () => {
   const navigate = useNavigate();
   const [reportes, setReportes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [minDelayDone, setMinDelayDone] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filtroEstado, setFiltroEstado] = useState(null); // 'pendiente' | 'proceso' | 'aceptado' | 'rechazado' | null
+  const itemsPerPage = 8;
 
   useEffect(() => {
     const timer = setTimeout(() => setMinDelayDone(true), 900);
@@ -195,15 +200,34 @@ const ReporteAdminCards = () => {
     navigate(`/reporteAdmin/${reporte.id}/detalle`, { state: { reporte } });
   };
 
-  const reportesFiltrados = reportes.filter((r) => {
-    if (!busqueda) return true;
-    const q = busqueda.toLowerCase();
-    return (
-      (r.tipo || "").toLowerCase().includes(q) ||
-      (r.ubicacion || "").toLowerCase().includes(q) ||
-      (r.detalles || "").toLowerCase().includes(q)
-    );
-  });
+  // Aplicar búsqueda y filtro por estado
+  const reportesFiltrados = reportes
+    .filter((r) => {
+      if (!busqueda) return true;
+      const q = busqueda.toLowerCase();
+      return (
+        (r.tipo || "").toLowerCase().includes(q) ||
+        (r.ubicacion || "").toLowerCase().includes(q) ||
+        (r.detalles || "").toLowerCase().includes(q)
+      );
+    })
+    .filter((r) => {
+      if (!filtroEstado) return true;
+      return String(r.estado || '').toLowerCase() === filtroEstado;
+    });
+
+  // Reiniciar a la primera página cuando cambie la búsqueda, el total o el filtro de estado
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [busqueda, reportes.length, filtroEstado]);
+
+  const toggleFiltro = (estado) => {
+    setFiltroEstado((prev) => (prev === estado ? null : estado));
+  };
+
+  const totalItems = reportesFiltrados.length;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentReportes = reportesFiltrados.slice(startIndex, startIndex + itemsPerPage);
 
   if (loading || !minDelayDone) {
     return (
@@ -238,9 +262,56 @@ const ReporteAdminCards = () => {
         />
       </div>
 
-      <ReporteCards reportes={reportesFiltrados} onVisualizar={handleVisualizar} />
+      {/* Filtros por estado (estilo similar al Administrador) */}
+      <div className="d-flex flex-wrap gap-2 mb-3">
+        <button
+          className={`action-btn btn btn-nuevos ${filtroEstado === 'pendiente' ? 'active' : ''}`}
+          onClick={() => toggleFiltro('pendiente')}
+          aria-pressed={filtroEstado === 'pendiente'}
+          title="Mostrar reportes nuevos"
+        >
+          <i className="bi bi-file-earmark-plus-fill me-2"></i>Nuevos
+        </button>
+        <button
+          className={`action-btn btn btn-proceso ${filtroEstado === 'proceso' ? 'active' : ''}`}
+          onClick={() => toggleFiltro('proceso')}
+          aria-pressed={filtroEstado === 'proceso'}
+          title="Mostrar reportes en proceso"
+        >
+          <i className="bi bi-arrow-repeat me-2"></i>Proceso
+        </button>
+        <button
+          className={`action-btn btn btn-aceptado ${filtroEstado === 'aceptado' ? 'active' : ''}`}
+          onClick={() => toggleFiltro('aceptado')}
+          aria-pressed={filtroEstado === 'aceptado'}
+          title="Mostrar reportes aceptados"
+        >
+          <i className="bi bi-check-circle-fill me-2"></i>Aceptado
+        </button>
+        <button
+          className={`action-btn btn btn-rechazado ${filtroEstado === 'rechazado' ? 'active' : ''}`}
+          onClick={() => toggleFiltro('rechazado')}
+          aria-pressed={filtroEstado === 'rechazado'}
+          title="Mostrar reportes rechazados"
+        >
+          <i className="bi bi-x-circle-fill me-2"></i>Rechazado
+        </button>
+      </div>
+
+      <ReporteCards reportes={currentReportes} onVisualizar={handleVisualizar} />
+
+      {totalItems > itemsPerPage && (
+        <div className="d-flex justify-content-center mt-4">
+          <Paginacion
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   );
 };
 
-export default ReporteAdminCards;
+export default ReporteAdminCardsPaged;
