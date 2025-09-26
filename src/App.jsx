@@ -88,7 +88,7 @@ function Layout() {
               {/* Redes Sociales */}
               <div>
                 <h4 className="font-semibold text-white mb-4">Síguenos</h4>
-                <div className="flex items-center gap-4 text-white">
+                <div className="grid grid-cols-3 gap-2 text-white justify-items-center">
                   {/* Reemplaza # con las URLs oficiales cuando las tengas */}
                   <a href="#" aria-label="Facebook" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-facebook text-2xl"></i></a>
                   <a href="https://www.instagram.com/nicadriver_of?utm_source=ig_web_button_share_sheet&igsh=aDE1cW1zd3Bnbzh4" aria-label="Instagram" className="hover:text-[#1e3d87] transition-colors" target="_blank" rel="noopener noreferrer"><i className="bi bi-instagram text-2xl"></i></a>

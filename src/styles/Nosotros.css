@@ -239,3 +239,10 @@ html, body {
   background-position: center 5% !important; /* mueve la imagen hacia abajo */
   background-size: 107% !important; /* menos de 100% = más pequeña */
 }
+
+.hero-cta {
+  display: flex;
+  gap: 12px; /* espacio entre botones */
+  flex-wrap: wrap; /* por si en móvil deben saltar a otra línea */
+}
+
