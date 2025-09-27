@@ -85,7 +85,15 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="registro-reporte-formulario">
+      <div className="registro-reporte-formulario"
+          
+          style={{
+          width: "100%",
+          maxWidth: "500px",
+          maxHeight: "80vh",   // límite de altura (80% de la pantalla)
+          overflowY: "auto",   // si sobrepasa, aparece scroll vertical
+        }}>
+
         <div className="modal-title">
           <h2>Registrar reporte</h2>
           <button className="close-modal-btn" onClick={() => setModalRegistro(false)}>×</button>

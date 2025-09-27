@@ -69,11 +69,17 @@ const TablaReportes = ({
   };
 
   return (
-    <div className="tabla-reportes-container">
+    <div className="tabla-reportes-container" >
       {/* Modal de Visualización */}
       {modalVer && reporteAVisualizar && (
         <div className="modal-overlay">
-          <div className="modal-ver-reporte">
+          <div className="modal-ver-reporte"          
+                style={{
+                width: "100%",
+                maxWidth: "500px",
+                maxHeight: "80vh",   // límite de altura (80% de la pantalla)
+                overflowY: "auto",   // si sobrepasa, aparece scroll vertical
+              }}>
             <div className="modal-header">
               <h2>Detalles del Reporte</h2>
               <button
