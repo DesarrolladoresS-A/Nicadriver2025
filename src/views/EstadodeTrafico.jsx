@@ -215,11 +215,18 @@ const EstadoTrafico = () => {
     setImagenPreview(null);
   };
 
-  const handleBuscarRuta = async () => {
-    if (!destino) {
-      alert('Por favor, ingrese un destino');
-      return;
-    }
+const handleBuscarRuta = async () => {
+  if (!destino) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Destino requerido',
+      text: 'Por favor, ingrese un destino antes de buscar la ruta.',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#3085d6',
+      width: '400px', // 🔹 ajusta el ancho del modal
+    });
+    return;
+  }
 
     if (!userLocation || !userLocation.lat || !userLocation.lng) {
       alert('No se pudo obtener su ubicación actual. Usando ubicación predeterminada.');
