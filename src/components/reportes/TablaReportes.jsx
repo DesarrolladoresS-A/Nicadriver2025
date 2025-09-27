@@ -148,65 +148,86 @@ const TablaReportes = ({
         <p>Administra los reportes de incidentes</p>
       </div>
 
-      {/* Contenedor responsivo para scroll horizontal en móvil */}
-      <div className="table-responsive">
-        <table className="table tabla-reportes">
-          <thead>
+      {/* Contenedor responsivo con scroll en móvil */}
+      <div className="overflow-x-auto w-full">
+        <table className="table-auto w-full border border-gray-300 bg-white text-sm">
+          <thead className="bg-gray-100 hidden md:table-header-group">
             <tr>
-              <th>Tipo de incidente</th>
-              <th>Ubicación</th>
-              <th>Descripción</th>
-              <th>Fecha y Hora</th>
-              <th>Estado</th>
-              <th>Acciones</th>
+              <th className="px-3 py-2 text-left border">Tipo de incidente</th>
+              <th className="px-3 py-2 text-left border">Ubicación</th>
+              <th className="px-3 py-2 text-left border">Descripción</th>
+              <th className="px-3 py-2 text-left border">Fecha y Hora</th>
+              <th className="px-3 py-2 text-left border">Estado</th>
+              <th className="px-3 py-2 text-left border">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {reportes.map((reporte) => (
-              <tr key={reporte.id}>
-                <td>{reporte.titulo}</td>
-                <td>{reporte.ubicacion}</td>
-                <td>
+            {reportes.map((reporte, index) => (
+              <tr
+                key={reporte.id}
+                className={`border-b border-gray-300 md:table-row block md:table-row ${
+                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                } hover:bg-gray-100`}
+              >
+                {/* Tipo */}
+                <td className="px-3 py-2 border md:table-cell block md:border-0 before:content-['Tipo:'] before:font-semibold before:mr-2 md:before:content-none">
+                  {reporte.titulo}
+                </td>
+                {/* Ubicación */}
+                <td className="px-3 py-2 border md:table-cell block md:border-0 before:content-['Ubicación:'] before:font-semibold before:mr-2 md:before:content-none">
+                  {reporte.ubicacion}
+                </td>
+                {/* Descripción */}
+                <td className="px-3 py-2 border md:table-cell block md:border-0 before:content-['Descripción:'] before:font-semibold before:mr-2 md:before:content-none">
                   {reporte.descripcion.substring(0, 50)}
                   {reporte.descripcion.length > 50 ? "..." : ""}
                 </td>
-                <td>{formatearFechaHora(reporte.fechaHora)}</td>
-                <td>{reporte.estado || "Pendiente"}</td>
-                <td className="acciones">
-                  <button
-                    className="btn-accion btn-ver"
-                    onClick={() => abrirModalVisualizacion(reporte)}
-                    title="Ver detalles"
-                  >
-                    <i className="bi bi-eye-fill"></i>
-                  </button>
-                  <button
-                    className="btn-accion btn-editar"
-                    onClick={() => {
-                      setReporteSeleccionado(reporte);
-                      setModalEditar(true);
-                    }}
-                    title="Editar"
-                  >
-                    <i className="bi bi-pencil-fill"></i>
-                  </button>
-                  <button
-                    className="btn-accion btn-eliminar"
-                    onClick={() => {
-                      setReporteSeleccionadoEliminar(null);
-                      setReporteSeleccionadoEliminar(reporte);
-                      setModalEliminar(true);
-                    }}
-                    title="Eliminar"
-                  >
-                    <i className="bi bi-trash-fill"></i>
-                  </button>
+                {/* Fecha */}
+                <td className="px-3 py-2 border md:table-cell block md:border-0 before:content-['Fecha:'] before:font-semibold before:mr-2 md:before:content-none">
+                  {formatearFechaHora(reporte.fechaHora)}
+                </td>
+                {/* Estado */}
+                <td className="px-3 py-2 border md:table-cell block md:border-0 before:content-['Estado:'] before:font-semibold before:mr-2 md:before:content-none">
+                  {reporte.estado || "Pendiente"}
+                </td>
+                {/* Acciones */}
+                <td className="px-3 py-2 border md:table-cell block md:border-0 before:content-['Acciones:'] before:font-semibold before:mr-2 md:before:content-none">
+                  <div className="flex flex-wrap gap-2 mt-1 md:mt-0">
+                    <button
+                      className="p-2 rounded-full bg-green-100 text-green-600 hover:bg-green-200"
+                      onClick={() => abrirModalVisualizacion(reporte)}
+                      title="Ver detalles"
+                    >
+                      <i className="bi bi-eye-fill"></i>
+                    </button>
+                    <button
+                      className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200"
+                      onClick={() => {
+                        setReporteSeleccionado(reporte);
+                        setModalEditar(true);
+                      }}
+                      title="Editar"
+                    >
+                      <i className="bi bi-pencil-fill"></i>
+                    </button>
+                    <button
+                      className="p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
+                      onClick={() => {
+                        setReporteSeleccionadoEliminar(reporte);
+                        setModalEliminar(true);
+                      }}
+                      title="Eliminar"
+                    >
+                      <i className="bi bi-trash-fill"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
     </div>
   );
 };
