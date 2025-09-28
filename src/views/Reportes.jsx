@@ -3,6 +3,8 @@ import { db } from "../database/firebaseconfig";
 import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { useAuth } from "../database/authcontext";
 import ModalRegistroReportes from "../components/reportes/ModalRegistroReportes";
+import ModalEdicionReportes from "../components/reportes/ModalEdicionReportes";
+import ModalEliminacionReportes from "../components/reportes/ModalEliminacionReportes";
 import Paginacion from "../components/ordenamiento/Paginacion";
 import ReporteCards from "../components/reporte_admin/ReporteCards";
 import LoaderTractor from "../components/common/LoaderTractor";
@@ -16,6 +18,12 @@ const Reportes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const [errorEliminacion, setErrorEliminacion] = useState(null);
+  // Estado para ver detalles
+  const [modalVer, setModalVer] = useState(false);
+  const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
+  // Estado para editar/eliminar
+  const [modalEditar, setModalEditar] = useState(false);
+  const [modalEliminar, setModalEliminar] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [filtroActivo, setFiltroActivo] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -140,6 +148,9 @@ const Reportes = () => {
   const actualizarReportes = () => {
     obtenerReportes();
   };
+
+  // Buscar el reporte original por id para evitar perder campos (titulo, descripcion, fechaHora, foto)
+  const getReporteOriginalById = (id) => reportes.find((r) => r.id === id) || null;
 
   const tarjetas = useMemo(() => {
     // Mapear a la estructura usada por ReporteCards (como en admin)
@@ -277,7 +288,14 @@ const Reportes = () => {
 
         {/* Tarjetas y paginación */}
         <div className="card p-4 rounded-xl mt-4">
-          <ReporteCards reportes={currentItems.map((r) => tarjetas.find(t => t.id === r.id) || r)} />
+          <ReporteCards
+            reportes={currentItems.map((r) => tarjetas.find(t => t.id === r.id) || r)}
+            onVisualizar={(cardItem) => {
+              const original = getReporteOriginalById(cardItem.id);
+              setReporteSeleccionado(original || cardItem);
+              setModalVer(true);
+            }}
+          />
 
           {reportesFiltrados.length > 0 ? (
             <Paginacion
@@ -296,11 +314,132 @@ const Reportes = () => {
           )}
         </div>
 
-        {/* Modales */}
+        {/* Modales de creación */}
         {modalRegistro && (
           <ModalRegistroReportes
             setModalRegistro={setModalRegistro}
             actualizar={actualizarReportes}
+          />
+        )}
+
+        {/* Modal de detalles con botones Actualizar y Eliminar */}
+        {modalVer && reporteSeleccionado && (
+          <div className="modal-overlay">
+            <div className="modal-ver-reporte">
+              <div className="modal-header">
+                <h2>Detalles del Reporte</h2>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    className="btn-accion btn-editar"
+                    title="Actualizar"
+                    onClick={() => {
+                      setModalVer(false);
+                      setModalEditar(true);
+                    }}
+                  >
+                    Actualizar
+                  </button>
+                  <button
+                    className="btn-accion btn-eliminar"
+                    title="Eliminar"
+                    onClick={() => {
+                      setModalVer(false);
+                      setModalEliminar(true);
+                    }}
+                  >
+                    Eliminar
+                  </button>
+                  <button
+                    className="btn-accion btn-cancelar"
+                    title="Cancelar"
+                    onClick={() => setModalVer(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    className="close-modal-btn"
+                    onClick={() => setModalVer(false)}
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <div className="reporte-detalles">
+                <div className="detalle-item">
+                  <strong>Tipo de incidente:</strong>
+                  <p>{reporteSeleccionado.titulo || reporteSeleccionado.tipo}</p>
+                </div>
+
+                <div className="detalle-item">
+                  <strong>Ubicación:</strong>
+                  <p>{reporteSeleccionado.ubicacion}</p>
+                </div>
+
+                <div className="detalle-item">
+                  <strong>Descripción:</strong>
+                  <p>{reporteSeleccionado.descripcion || reporteSeleccionado.detalles}</p>
+                </div>
+
+                <div className="detalle-item">
+                  <strong>Fecha y Hora:</strong>
+                  <p>{(() => {
+                    try {
+                      const f = reporteSeleccionado;
+                      if (f.fechaHora?.toDate) return f.fechaHora.toDate().toLocaleString('es-NI');
+                      if (f.fechaHora) return new Date(f.fechaHora).toLocaleString('es-NI');
+                      if (f.fecha) return f.fecha; // de tarjetas
+                    } catch (_) {}
+                    return 'Sin fecha y hora';
+                  })()}</p>
+                </div>
+
+                <div className="detalle-item">
+                  <strong>Estado:</strong>
+                  <p>{reporteSeleccionado.estado || 'pendiente'}</p>
+                </div>
+
+                {reporteSeleccionado.foto && (
+                  <div className="detalle-item">
+                    <strong>Imagen:</strong>
+                    <div className="imagen-container">
+                      <img
+                        src={reporteSeleccionado.foto}
+                        alt="Imagen del reporte"
+                        className="imagen-reporte"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de edición */}
+        {modalEditar && reporteSeleccionado && (
+          <ModalEdicionReportes
+            setModalEditar={setModalEditar}
+            reporte={{
+              id: reporteSeleccionado.id,
+              titulo: reporteSeleccionado.titulo || reporteSeleccionado.tipo || '',
+              descripcion: reporteSeleccionado.descripcion || reporteSeleccionado.detalles || '',
+              ubicacion: reporteSeleccionado.ubicacion || '',
+              fechaHora: reporteSeleccionado.fechaHora || reporteSeleccionado.fecha || '',
+              foto: reporteSeleccionado.foto || null,
+            }}
+            actualizar={actualizarReportes}
+          />
+        )}
+
+        {/* Modal de eliminación */}
+        {modalEliminar && reporteSeleccionado && (
+          <ModalEliminacionReportes
+            setModalEliminar={setModalEliminar}
+            reporte={reporteSeleccionado}
+            actualizar={actualizarReportes}
+            setError={setErrorEliminacion}
+            onClose={() => setModalEliminar(false)}
           />
         )}
       </div>
