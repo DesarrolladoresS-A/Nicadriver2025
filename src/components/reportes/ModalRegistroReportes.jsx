@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { db, storage } from "../../database/firebaseconfig";
 import { collection, addDoc } from "firebase/firestore";
 import { useAuth } from "../../database/authcontext";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
  // Flag para deshabilitar subida de imagen temporalmente si hay problemas de CORS
  const DISABLE_IMAGE_UPLOAD = import.meta.env?.VITE_DISABLE_IMAGE_UPLOAD === 'true';
@@ -22,14 +22,16 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
     titulo: false,
     descripcion: false,
     ubicacion: false,
-    fechaHora: false
+    fechaHora: false,
+    foto: false
   });
 
   const mensajesError = {
     titulo: "Por favor seleccione el tipo de incidente",
     descripcion: "Por favor describa el incidente",
     ubicacion: "Por favor indique la ubicación del incidente",
-    fechaHora: "Por favor seleccione la fecha y hora del incidente"
+    fechaHora: "Por favor seleccione la fecha y hora del incidente",
+    foto: "Por favor seleccione una imagen del incidente"
   };
 
   const validarCampos = () => {
@@ -37,19 +39,31 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       titulo: !titulo.trim(),
       descripcion: !descripcion.trim(),
       ubicacion: !ubicacion.trim(),
-      fechaHora: !fechaHora
+      fechaHora: !fechaHora,
+      foto: !foto
     };
     setErrores(nuevosErrores);
     return !Object.values(nuevosErrores).some((error) => error);
   };
 
-  // Subir archivo a Storage y devolver URL de descarga
+  // Subir archivo a Storage y devolver URL de descarga con subida reanudable
   const subirImagenYObtenerURL = async (archivo, uid) => {
+    if (!uid) throw new Error("No hay uid de usuario para subir a Storage. Asegúrate de estar autenticado.");
     const nombreSeguro = archivo.name?.replace(/[^a-zA-Z0-9_.-]/g, "_") || `foto_${Date.now()}.jpg`;
-    const ruta = `reportes/${uid || 'anon'}/${Date.now()}_${nombreSeguro}`;
+    const ruta = `reportes/${uid}/${Date.now()}_${nombreSeguro}`;
     const storageRef = ref(storage, ruta);
-    const snap = await uploadBytes(storageRef, archivo);
-    const url = await getDownloadURL(snap.ref);
+    const metadata = { contentType: archivo.type || 'application/octet-stream' };
+
+    const task = uploadBytesResumable(storageRef, archivo, metadata);
+    await new Promise((resolve, reject) => {
+      task.on(
+        'state_changed',
+        undefined,
+        (err) => reject(err),
+        () => resolve()
+      );
+    });
+    const url = await getDownloadURL(storageRef);
     return url;
   };
 
@@ -57,6 +71,10 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
     if (!validarCampos()) return;
     if (!user) {
       alert("Debes iniciar sesión para enviar un reporte.");
+      return;
+    }
+    if (DISABLE_IMAGE_UPLOAD) {
+      setMensajeError('La subida de imágenes está deshabilitada por configuración. Habilítala para poder guardar reportes con imagen.');
       return;
     }
     setCargando(true);
@@ -68,10 +86,13 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         // Subir a Storage en lugar de Base64 en Firestore (evita límite de 1 MiB)
         try {
           console.log("[Reporte] Subiendo imagen a Storage...");
-          fotoURL = await subirImagenYObtenerURL(foto, user.uid || user.email);
+          fotoURL = await subirImagenYObtenerURL(foto, user.uid);
           console.log("[Reporte] Imagen subida. URL:", fotoURL);
         } catch (errImg) {
           console.warn("[Reporte] Falló la subida de imagen, se guardará sin foto:", errImg?.code || errImg?.message || errImg);
+          if (typeof errImg?.message === 'string' && errImg.message.toLowerCase().includes('cors')) {
+            console.warn('[Reporte] Sugerencia: Aplica cors.json al bucket y verifica orígenes permitidos.');
+          }
           // Continuar sin imagen
           fotoURL = null;
         }
@@ -229,6 +250,9 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             <p style={{ marginTop: '8px', color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', padding: '6px 10px', borderRadius: '6px' }}>
               La subida de imágenes está deshabilitada temporalmente. El reporte se guardará sin foto.
             </p>
+          )}
+          {errores.foto && (
+            <p className="mensaje-error">{mensajesError.foto}</p>
           )}
           {foto && (
             <div className="imagen-previa">
