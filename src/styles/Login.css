@@ -31,7 +31,7 @@ body {
     100% { background-position: 0% 50%; }
 }
 
-/* Partículas de fondo (solo en Login) */
+
 .login-page .particles {
     position: absolute;
     top: 0;
