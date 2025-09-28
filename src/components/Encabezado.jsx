@@ -236,10 +236,6 @@ const Encabezado = () => {
                       <i className="bi-box-arrow-in-right me-2"></i>
                       <strong>Entrar</strong>
                     </Nav.Link>
-                    <Nav.Link onClick={() => handleNavigate("/login?register=1")} className="nav-link">
-                      <i className="bi-person-plus me-2"></i>
-                      <strong>Registrar</strong>
-                    </Nav.Link>
                   </>
                 )}
 
@@ -258,8 +254,8 @@ const Encabezado = () => {
                           <strong>Inicio Administrador</strong>
                         </Nav.Link>
                         <Nav.Link
-                          onClick={() => handleNavigate("/estadodetrafico")}
-                          className={`nav-link ${location.pathname === "/estadodetrafico" ? "active" : ""}`}
+                          onClick={() => handleNavigate("/estadodeTrafico")}
+                          className={`nav-link ${location.pathname === "/estadodeTrafico" ? "active" : ""}`}
                         >
                           <i className="bi-cone-striped me-2"></i>
                           <strong>Estado del Tráfico</strong>
@@ -304,8 +300,8 @@ const Encabezado = () => {
                           <strong>Nosotros</strong>
                         </Nav.Link>
                         <Nav.Link
-                          onClick={() => handleNavigate("/estadodetrafico")}
-                          className={`nav-link ${location.pathname === "/estadodetrafico" ? "active" : ""}`}
+                          onClick={() => handleNavigate("/estadodeTrafico")}
+                          className={`nav-link ${location.pathname === "/estadodeTrafico" ? "active" : ""}`}
                         >
                           <i className="bi-cone-striped me-2"></i>
                           <strong>Estado del Trafico</strong>

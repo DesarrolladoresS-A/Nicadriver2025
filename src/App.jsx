@@ -51,10 +51,13 @@ function Layout() {
             <Route path="/inicio" element={<Inicio />} />
             <Route path="/nosotros" element={<Nosotros />} />
             <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
+            {/* Alias en minúsculas para compatibilidad con enlaces existentes */}
+            <Route path="/estadodetrafico" element={<EstadodeTrafico />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/graficos" element={<Graficos />} />
+            <Route path="/reportes" element={<Reportes />} />
             <Route path="/reporteAdmin" element={<ReporteAdminCards />} />
             <Route path="/reporteAdmin/:id/detalle" element={<ReporteAdminDetalle />} />
             <Route path="/administrador" element={<Administrador />} />

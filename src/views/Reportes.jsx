@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { db } from "../database/firebaseconfig";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
+import { useAuth } from "../database/authcontext";
 import ModalRegistroReportes from "../components/reportes/ModalRegistroReportes";
-import ModalEdicionReportes from "../components/reportes/ModalEdicionReportes";
-import ModalEliminarReportes from "../components/reportes/ModalEliminacionReportes";
-import TablaReportes from "../components/reportes/TablaReportes";
 import Paginacion from "../components/ordenamiento/Paginacion";
+import ReporteCards from "../components/reporte_admin/ReporteCards";
+import LoaderTractor from "../components/common/LoaderTractor";
 import { FaSearch, FaPlus, FaExclamationTriangle } from "react-icons/fa";
 import "../styles/Reporte.css";
 
@@ -13,39 +13,100 @@ const Reportes = () => {
   const [reportes, setReportes] = useState([]);
   const [reportesFiltrados, setReportesFiltrados] = useState([]);
   const [modalRegistro, setModalRegistro] = useState(false);
-  const [modalEditar, setModalEditar] = useState(false);
-  const [modalEliminar, setModalEliminar] = useState(false);
-  const [reporteSeleccionado, setReporteSeleccionado] = useState(null);
-  const [reporteSeleccionadoEliminar, setReporteSeleccionadoEliminar] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const [errorEliminacion, setErrorEliminacion] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [filtroActivo, setFiltroActivo] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [minDelayDone, setMinDelayDone] = useState(false);
+  const { user } = useAuth();
   const obtenerReportes = async () => {
-    setLoading(true);
-    setErrorEliminacion(null);
+    // Mantenemos esta función para compatibilidad con "actualizar",
+    // pero la fuente principal será onSnapshot. Forzamos un refetch simple.
+    if (!user?.email) {
+      setReportes([]);
+      setReportesFiltrados([]);
+      return;
+    }
     try {
-      const data = await getDocs(collection(db, "reportes"));
-      const reportesData = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-      setReportes(reportesData);
-      setReportesFiltrados(reportesData);
+      const data = await getDocs(query(collection(db, "reportes"), where("userEmail", "==", user.email)));
+      const propios = data.docs.map((docu) => ({ ...docu.data(), id: docu.id }));
+      propios.sort((a, b) => {
+        const getTime = (x) => {
+          try {
+            if (x?.fechaRegistro) return new Date(x.fechaRegistro).getTime();
+            if (x?.fechaHora?.toDate) return x.fechaHora.toDate().getTime();
+            if (x?.fechaHora?.seconds) return x.fechaHora.seconds * 1000;
+            if (x?.fechaHora) return new Date(x.fechaHora).getTime();
+          } catch (_) {}
+          return 0;
+        };
+        return getTime(b) - getTime(a);
+      });
+      setReportes(propios);
+      setReportesFiltrados(propios);
     } catch (error) {
-      console.error("Error al obtener los reportes:", error);
+      console.error("Error al obtener los reportes (refetch):", error);
       setErrorEliminacion(
         error.code === "permission-denied"
           ? "No tienes permisos para ver los reportes. Contacta al administrador."
           : "Hubo un error al cargar los reportes. Por favor, inténtalo de nuevo."
       );
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    obtenerReportes();
-  }, []);
+    const t = setTimeout(() => setMinDelayDone(true), 700);
+    // Suscripción en tiempo real filtrada por usuario
+    setErrorEliminacion(null);
+    setLoading(true);
+    
+    if (!user?.email) {
+      // Si no hay usuario, limpiamos y dejamos de cargar
+      setReportes([]);
+      setReportesFiltrados([]);
+      setLoading(false);
+      return () => clearTimeout(t);
+    }
+
+    const q = query(collection(db, "reportes"), where("userEmail", "==", user.email));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const propios = snapshot.docs.map((docu) => ({ ...docu.data(), id: docu.id }));
+        propios.sort((a, b) => {
+          const getTime = (x) => {
+            try {
+              if (x?.fechaRegistro) return new Date(x.fechaRegistro).getTime();
+              if (x?.fechaHora?.toDate) return x.fechaHora.toDate().getTime();
+              if (x?.fechaHora?.seconds) return x.fechaHora.seconds * 1000;
+              if (x?.fechaHora) return new Date(x.fechaHora).getTime();
+            } catch (_) {}
+            return 0;
+          };
+          return getTime(b) - getTime(a);
+        });
+        setReportes(propios);
+        setReportesFiltrados(propios);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error en suscripción de reportes:", error);
+        setErrorEliminacion(
+          error.code === "permission-denied"
+            ? "No tienes permisos para ver los reportes. Contacta al administrador."
+            : "Hubo un error al cargar los reportes. Por favor, inténtalo de nuevo."
+        );
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      clearTimeout(t);
+      unsubscribe();
+    };
+  }, [user?.email]);
 
   useEffect(() => {
     if (busqueda.trim() === "") {
@@ -53,11 +114,11 @@ const Reportes = () => {
       setFiltroActivo(false);
     } else {
       const resultados = reportes.filter((reporte) => {
-        return (
-          reporte.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-          reporte.ubicacion.toLowerCase().includes(busqueda.toLowerCase()) ||
-          reporte.descripcion.toLowerCase().includes(busqueda.toLowerCase())
-        );
+        const q = busqueda.toLowerCase();
+        const t = (reporte.titulo || "").toLowerCase();
+        const u = (reporte.ubicacion || "").toLowerCase();
+        const d = (reporte.descripcion || "").toLowerCase();
+        return t.includes(q) || u.includes(q) || d.includes(q);
       });
       setReportesFiltrados(resultados);
       setFiltroActivo(true);
@@ -80,17 +141,42 @@ const Reportes = () => {
     obtenerReportes();
   };
 
+  const tarjetas = useMemo(() => {
+    // Mapear a la estructura usada por ReporteCards (como en admin)
+    return reportesFiltrados.map((r) => {
+      // fecha a string legible
+      const fecha = (() => {
+        try {
+          if (r.fechaHora && typeof r.fechaHora === 'object' && r.fechaHora.toDate) {
+            return r.fechaHora.toDate().toLocaleString('es-NI');
+          }
+          if (r.fechaRegistro) return new Date(r.fechaRegistro).toLocaleString('es-NI');
+          if (r.fechaHora) return new Date(r.fechaHora).toLocaleString('es-NI');
+        } catch (_) {}
+        return 'Sin fecha y hora';
+      })();
+      return {
+        id: r.id,
+        fecha,
+        tipo: r.titulo,
+        ubicacion: r.ubicacion,
+        estado: r.estado || 'pendiente',
+        detalles: r.descripcion,
+        foto: r.foto,
+      };
+    });
+  }, [reportesFiltrados]);
+
+  if (loading || !minDelayDone) {
+    return <LoaderTractor mensaje="Cargando tus reportes..." overlay={true} />;
+  }
+
   return (
     <div className="reportes-container bg-background text-foreground full-bleed">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Loading state */}
-        {loading && (
-          <div className="loading-container card p-6 rounded-xl text-center">
-            <div className="spinner"></div>
-            <p>Cargando reportes...</p>
-          </div>
-        )}
+        {/* Loader manejado arriba con LoaderTractor */}
 
         {/* Error message */}
         {errorEliminacion && (
@@ -131,7 +217,8 @@ const Reportes = () => {
               )}
             </div>
             
-            {/* Botón de registro y selector de cantidad por página */}
+            {/* Botón de registro y selector de cantidad por página */
+            }
             <div className="flex items-center gap-3">
               <label className="text-sm text-muted-foreground">Por página:</label>
               <select
@@ -172,8 +259,15 @@ const Reportes = () => {
           </div>
         </div>
 
-        {/* Mensaje cuando no hay reportes */}
-        {(!loading && reportes.length === 0) && (
+        {/* Mensajes de estado */}
+        {!user?.email && (
+          <div className="no-reports-message card p-8 rounded-xl text-center" style={{ backgroundColor: '#f8f9fa' }}>
+            <h3>Inicia sesión para ver tus reportes</h3>
+            <p>Ingresa con tu cuenta para crear y visualizar tus reportes.</p>
+          </div>
+        )}
+
+        {user?.email && (!loading && reportes.length === 0) && (
           <div className="no-reports-message card p-8 rounded-xl text-center" style={{ backgroundColor: '#f8f9fa' }}>
             <FaPlus style={{ fontSize: '48px', color: '#1e3d87' }} />
             <h3>No hay reportes disponibles</h3>
@@ -181,17 +275,10 @@ const Reportes = () => {
           </div>
         )}
 
-        {/* Tabla y paginación */}
-        <div className="tabla-paginacion-container card p-4 rounded-xl mt-4">
-          <TablaReportes 
-            reportes={currentItems}
-            setModalEditar={setModalEditar}
-            setModalEliminar={setModalEliminar}
-            setReporteSeleccionado={setReporteSeleccionado}
-            setReporteSeleccionadoEliminar={setReporteSeleccionadoEliminar}
-            reporteSeleccionadoEliminar={reporteSeleccionadoEliminar}
-          />
-          
+        {/* Tarjetas y paginación */}
+        <div className="card p-4 rounded-xl mt-4">
+          <ReporteCards reportes={currentItems.map((r) => tarjetas.find(t => t.id === r.id) || r)} />
+
           {reportesFiltrados.length > 0 ? (
             <Paginacion
               totalItems={reportesFiltrados.length}
@@ -214,28 +301,6 @@ const Reportes = () => {
           <ModalRegistroReportes
             setModalRegistro={setModalRegistro}
             actualizar={actualizarReportes}
-          />
-        )}
-
-        {modalEditar && reporteSeleccionado && (
-          <ModalEdicionReportes
-            setModalEditar={setModalEditar}
-            reporte={reporteSeleccionado}
-            actualizar={actualizarReportes}
-          />
-        )}
-
-        {modalEliminar && reporteSeleccionadoEliminar && (
-          <ModalEliminarReportes
-            setModalEliminar={setModalEliminar}
-            reporte={reporteSeleccionadoEliminar}
-            actualizar={actualizarReportes}
-            setError={setErrorEliminacion}
-            onClose={() => {
-              setModalEliminar(false);
-              setReporteSeleccionadoEliminar(null);
-              setErrorEliminacion(null);
-            }}
           />
         )}
       </div>

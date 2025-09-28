@@ -17,11 +17,11 @@ import {
   deleteDoc,
   doc,
 } from 'firebase/firestore';
-import { db } from '../database/firebaseconfig';
+import { db, storage } from '../database/firebaseconfig';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import '../styles/EstadodeTrafico.css';
-
 const containerStyle = {
   width: '80vw',
   height: '600px',
@@ -102,7 +102,7 @@ const EstadoTrafico = () => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000, // Increased timeout to 10 seconds
+          timeout: 10000,
           maximumAge: 0
         }
       );
@@ -136,7 +136,7 @@ const EstadoTrafico = () => {
       const estaEnRuta = isPointOnPath(
         clickedLocation,
         rutaPath,
-        0.0002 // Radio de tolerancia en grados decimales (~20 metros)
+        0.0002
       );
 
       setClickEnRuta(estaEnRuta);
@@ -171,14 +171,25 @@ const EstadoTrafico = () => {
 
   const handleGuardarReporte = async () => {
     try {
+      // Subir imagen a Storage si existe
+      let imagenUrl = null;
+      if (imagen) {
+        try {
+          const safeName = imagen.name?.replace(/[^a-zA-Z0-9_.-]/g, '_') || `incidente_${Date.now()}.jpg`;
+          const path = `incidentes/${Date.now()}_${safeName}`;
+          const ref = storageRef(storage, path);
+          const snap = await uploadBytes(ref, imagen);
+          imagenUrl = await getDownloadURL(snap.ref);
+        } catch (e) {
+          console.warn('Fallo al subir imagen a Storage, se guarda sin imagen:', e);
+          imagenUrl = null;
+        }
+      }
+
       await addDoc(collection(db, 'incidentes'), {
         tipo: tipo || 'Tráfico',
         descripcion: descripcion || 'Reporte sin descripción',
-        imagenBase64: imagen ? await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(imagen);
-        }) : null,
+        imagenUrl: typeof imagenUrl === 'string' && /^https?:\/\//i.test(imagenUrl) ? imagenUrl : null,
         lat: selectedLocation?.lat || 0,
         lng: selectedLocation?.lng || 0,
         fecha: serverTimestamp(),
@@ -381,9 +392,9 @@ const EstadoTrafico = () => {
               <div style={{ maxWidth: '280px' }}>
                 <h4 style={{ color: '#FF5722', marginBottom: '12px', fontSize: '18px', fontWeight: '600' }}>{selectedReporte.tipo}</h4>
                 <p style={{ margin: '0 0 18px 0', color: '#333', fontSize: '14px', lineHeight: '1.4' }}>{selectedReporte.descripcion}</p>
-                {selectedReporte.imagenBase64 && (
+                {(selectedReporte.imagenUrl || selectedReporte.imagenBase64) && (
                   <img
-                    src={selectedReporte.imagenBase64}
+                    src={selectedReporte.imagenUrl || selectedReporte.imagenBase64}
                     alt="Incidente"
                     style={{ width: '100%', borderRadius: '5px', marginBottom: '18px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)' }}
                   />
