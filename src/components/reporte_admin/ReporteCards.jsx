@@ -106,6 +106,12 @@ const ReporteCards = ({ reportes = [], onVisualizar = () => {} }) => {
                   <span className="meta-label">Fecha</span>
                   <span className="meta-value">{r.fecha}</span>
                 </div>
+                {typeof r.vistas !== 'undefined' && r.vistas !== null && (
+                  <div className="meta-row">
+                    <span className="meta-label">Vistas</span>
+                    <span className="meta-value">{r.vistas}</span>
+                  </div>
+                )}
               </div>
               <p className="card-detalles" title={r.detalles}>{r.detalles || 'Sin detalles'}</p>
             </div>

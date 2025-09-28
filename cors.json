@@ -1,8 +1,24 @@
 [
-    {
-      "origin": ["http://localhost:5173"],
-      "method": ["GET", "POST", "PUT", "DELETE"],
-      "maxAgeSeconds": 3600,
-      "responseHeader": ["Content-Type", "Authorization"]
-    }
-  ]
+  {
+    "origin": [
+      "http://localhost:5173",
+      "https://nicadriver.netlify.app"
+    ],
+    "method": [
+      "GET",
+      "HEAD",
+      "POST",
+      "PUT",
+      "DELETE",
+      "OPTIONS"
+    ],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "x-goog-meta-*",
+      "x-goog-resumable",
+      "x-client-data"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]
