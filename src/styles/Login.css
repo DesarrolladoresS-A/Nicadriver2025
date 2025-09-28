@@ -12,7 +12,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Fondo solo para la vista de Login */
 .login-page {
     background: linear-gradient(-45deg, #1e3d87, #2c5282, #4a5568, #2d3748);
     background-size: 400% 400%;
