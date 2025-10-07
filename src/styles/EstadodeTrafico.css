@@ -12,10 +12,6 @@
     --background-color: #f8f9fa;
     --shadow-color: rgba(0, 0, 0, 0.15);
     --gradient-primary: linear-gradient(135deg, #FF7E00, #FFC100);
-    --gradient-success: linear-gradient(135deg, #28a745, #34d058);
-    --gradient-danger: linear-gradient(135deg, #dc3545, #e03b4a);
-    --gradient-warning: linear-gradient(135deg, #ffc107, #ffd700);
-    --gradient-info: linear-gradient(135deg, #17a2b8, #1da1f2);
 }
 
 /* Estilos generales (usar fuente global Montserrat y colores por defecto) */
@@ -25,6 +21,22 @@ body {
     color: inherit;
 }
 
+/* Reducir espacio superior bajo el encabezado en la vista de Tráfico */
+/* Altura del header fija utilizada para calcular el alto disponible */
+:root { --trafico-header-h: 72px; }
+.trafico-page {
+    position: fixed;
+    top: var(--trafico-header-h);
+    left: 0; right: 0; bottom: 0;
+    padding-top: 0.5rem !important;
+    overflow: hidden; /* evitar scroll vertical de la página en esta vista */
+}
+.trafico-page > *:first-child { margin-top: 0 !important; }
+.trafico-hero { margin-top: 0 !important; padding-top: 0.1rem; }
+.trafico-hero h1 { margin-top: 0; }
+.trafico-hero p { margin-top: 0.1rem; }
+.geo-alert { margin-top: 0.25rem; }
+
 /* Contenedor principal */
 .trafico-container {
     padding: 1rem;
@@ -33,6 +45,55 @@ body {
     background: white;
     border-radius: 15px;
     box-shadow: 0 10px 30px var(--shadow-color);
+}
+
+/* El contenedor del mapa ocupa toda la altura disponible */
+.map-wrapper {
+    position: relative;
+    height: 100%;
+}
+
+/* Overlay para título/alertas/búsqueda sobre el mapa */
+.trafico-overlay {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 0;
+}
+
+/* Barra de búsqueda compacta en esquina */
+.trafico-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 10px;
+    padding: 6px 8px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+.trafico-controls .search-input { width: 260px; padding: 8px 10px; }
+.trafico-controls .search-button,
+.trafico-controls .listo-button,
+.trafico-controls .cancelar-ruta-button {
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+
+/* Badge pequeño para estado de geolocalización */
+.geo-badge {
+    background: rgba(255, 241, 241, 0.95);
+    color: #c2410c;
+    border: 1px solid rgba(194, 65, 12, 0.2);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    max-width: 360px;
 }
 
 /* Mapa interactivo */
@@ -1822,8 +1883,8 @@ body {
 /* Floating Action Button */
 .fab {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
+  top: 72px; /* justo debajo de la barra de búsqueda */
+  left: 12px;
   z-index: 10;
   height: 52px;
   width: 52px;
@@ -1838,87 +1899,24 @@ body {
   cursor: pointer;
   transition: transform .2s ease, box-shadow .2s ease;
 }
-
 .fab:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(0,0,0,0.18);
 }
-
-.fab-primary {
-  border-color: var(--primary-color);
-}
-
-.fab-icon {
-  font-size: 22px;
-}
-
-/* Generic buttons to unify styling */
-.btn {
-  padding: 12px 18px;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-primary {
-  background: var(--gradient-primary);
-  color: #fff;
-  box-shadow: 0 6px 18px rgba(255,126,0,0.25);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(255,126,0,0.3);
-}
-
-.btn-secondary {
-  background: #e5e7eb;
-  color: #111827;
-}
-
-.btn-secondary:hover {
-  background: #d1d5db;
-}
-
-/* Form select used in modal */
-.form-select {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.8px solid #e5e7eb;
-  border-radius: 10px;
-  background: #fff;
-  font-size: 15px;
-  transition: all .2s ease;
-}
-
-.form-select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(255,126,0,0.15);
-}
-
-/* Small tweak: keep search container nicely aligned with hero */
 .search-container { max-width: 900px; }
 
 @media (max-width: 768px) {
   .trafico-hero { border-radius: 12px; padding: 14px 16px; }
   .trafico-hero h1 { font-size: 22px; }
-  .fab { bottom: 14px; left: 14px; height: 48px; width: 48px; }
+  .fab { top: 66px; left: 10px; height: 48px; width: 48px; }
 }
 
 /* ===== Overrides: Modal legible y moderno ===== */
-/* Hacemos el overlay semitransparente oscuro para foco visual */
-.modal-overlay {
-  background-color: rgba(0, 0, 0, 0.35) !important;
-}
 
 /* Cuerpo del modal con mejor contraste y pulido */
 .modal-content {
   background: #ffffff !important;
   color: #111827 !important; /* texto oscuro legible */
-  border-radius: 16px !important;
   border: 1px solid rgba(17, 24, 39, 0.06) !important;
   box-shadow: 0 24px 60px rgba(0,0,0,0.18) !important;
 }

@@ -22,11 +22,11 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import '../styles/EstadodeTrafico.css';
+// Contenedor del mapa: ocupará el 100% del contenedor padre
 const containerStyle = {
-  width: '80vw',
-  height: '600px',
-  borderRadius: '12px',
-  maxHeight: '700px',
+  width: '100%',
+  height: '100%',
+  borderRadius: '12px'
 };
 
 const defaultCenter = {
@@ -314,45 +314,37 @@ const EstadoTrafico = () => {
 
   return (
     <div className="trafico-page">
-      <div className="trafico-hero" style={{ paddingTop: 0 }}>
-        <h1>Estado del Tráfico</h1>
-        <p>Explora el tráfico en tiempo real y planifica tu ruta</p>
-      </div>
-       
-      {locationError && (
-        <div className="geo-alert">
-          {locationError}
-        </div>
-      )}
-       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="search-container">
-          <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Ingrese su destino..."
-            value={destino}
-            onChange={(e) => setDestino(e.target.value)}
-            className="search-input"
-          />
-          <button onClick={handleBuscarRuta} className="search-button">
-            Buscar Ruta
-          </button>
-          {rutaCalculada && (
-            <button onClick={handleListo} className="listo-button">
-              Listo
-            </button>
-          )}
-          {rutaSeleccionada && (
-            <button onClick={handleCancelarRuta} className="cancelar-ruta-button">
-              Cancelar Ruta
-            </button>
-          )}
-          </div>
-        </div>
-      </div>
-
       <div className="map-wrapper">
+        {/* Overlay superior compacto: búsqueda en esquina superior izquierda */}
+        <div className="trafico-overlay">
+          <div className="trafico-controls">
+            <input
+              type="text"
+              placeholder="Ingrese su destino..."
+              value={destino}
+              onChange={(e) => setDestino(e.target.value)}
+              className="search-input"
+            />
+            <button onClick={handleBuscarRuta} className="search-button">
+              Buscar Ruta
+            </button>
+            {rutaCalculada && (
+              <button onClick={handleListo} className="listo-button">
+                Listo
+              </button>
+            )}
+            {rutaSeleccionada && (
+              <button onClick={handleCancelarRuta} className="cancelar-ruta-button">
+                Cancelar
+              </button>
+            )}
+          </div>
+
+          {locationError && (
+            <div className="geo-badge">{locationError}</div>
+          )}
+        </div>
+
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={userLocation || defaultCenter}

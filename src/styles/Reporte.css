@@ -8,6 +8,14 @@
   gap: 2rem;
 }
 
+/* Reducir espacio superior bajo el encabezado */
+.reportes-container {
+  padding-top: 0; /* quitar espacio superior */
+}
+
+/* Asegurar que el primer elemento no agregue margen superior */
+.reportes-container > *:first-child { margin-top: 0 !important; }
+
 /* Header principal */
 .reportes-header {
   background: linear-gradient(135deg, #1a237e, #0d47a1);
