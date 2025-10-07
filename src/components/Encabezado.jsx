@@ -6,7 +6,7 @@ import Navbar from "react-bootstrap/Navbar";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { useAuth } from "../database/authcontext";
 import { db } from "../database/firebaseconfig";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import "../App.css";
 
@@ -75,10 +75,11 @@ const Encabezado = () => {
   // Suscripción a los reportes del usuario para notificaciones
   useEffect(() => {
     if (!user || user?.email === "desarrolladoressa2000@gmail.com") return; // No para admin
+    // Suscribe SOLO a documentos del usuario autenticado para evitar recibir cambios de otros usuarios
     const colRef = collection(db, "reportes");
-    const unsub = onSnapshot(colRef, (snap) => {
-      const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      const items = all.filter((r) => r.userEmail === user.email);
+    const q = query(colRef, where("userEmail", "==", user.email));
+    const unsub = onSnapshot(q, (snap) => {
+      const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       console.log("Notificaciones: encontrados", items.length, "reportes del usuario");
       // Ordenar por fechaRegistro (ISO) descendente y limitar a 20
       items.sort((a, b) => {
