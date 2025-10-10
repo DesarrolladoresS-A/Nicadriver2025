@@ -89,13 +89,14 @@ body {
     position: relative;
     width: 100%;
     max-width: 450px;
-    padding: 3rem 2.5rem;
+    padding: 3rem;  /* <-- ahora igual en todos los lados */
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
     animation: slideUp 0.8s ease-out;
     z-index: 1;
 }
+
 
 @keyframes slideUp {
     from { 

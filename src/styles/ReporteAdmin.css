@@ -608,3 +608,39 @@
   background-color: #157347;
   color: white;
 }
+
+/* Media query para móviles */
+@media (max-width: 576px) {
+  /* Contenedor principal del header */
+  .reporte-admin-container > .d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-direction: column; /* Pasa todo a columna */
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  /* Título y subtítulo */
+  .reporte-admin-container > .d-flex.justify-content-between.align-items-center.mb-4 > .d-flex.flex-column {
+    order: 0; /* Mantener primero */
+    width: 100%;
+  }
+
+  /* Contenedor de botones Excel/PDF */
+  .reporte-admin-container > .d-flex.justify-content-between.align-items-center.mb-4 > .d-flex.gap-2 {
+    order: 1; /* Aparece después del título/subtítulo */
+    width: 100%; /* Ocupa todo el ancho */
+    flex-direction: column; /* Botones en columna */
+    gap: 8px;
+  }
+
+  .reporte-admin-container > .d-flex.justify-content-between.align-items-center.mb-4 > .d-flex.gap-2 button {
+    width: 100%; /* Botones ocupan todo el ancho */
+    margin-bottom: 0;
+    text-align: center;
+  }
+
+  /* Barra de búsqueda */
+  .reporte-admin-container > .mb-3 {
+    order: 2; /* Aparece después de los botones */
+    width: 100%;
+  }
+}

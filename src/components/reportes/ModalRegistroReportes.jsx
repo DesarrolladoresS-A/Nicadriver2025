@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { db, storage } from "../../database/firebaseconfig";
+import { db } from "../../database/firebaseconfig";
 import { collection, addDoc } from "firebase/firestore";
 import { useAuth } from "../../database/authcontext";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -71,6 +71,15 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
     ]);
     const url = await getDownloadURL(storageRef);
     return url;
+
+  // Función para convertir archivo en Base64
+  const convertirABase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   const guardarReporte = async () => {
@@ -80,17 +89,18 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       return;
     }
     // Si la subida está deshabilitada por config, seguimos guardando sin foto
+
+
     setCargando(true);
     setMensajeError("");
 
     try {
-      let fotoURL = null;
-      if (foto && !DISABLE_IMAGE_UPLOAD) {
-        // Subir a Storage en lugar de Base64 en Firestore (evita límite de 1 MiB)
+      let fotoBase64 = null;
+
+      if (foto) {
         try {
-          console.log("[Reporte] Subiendo imagen a Storage...");
-          fotoURL = await subirImagenYObtenerURL(foto, user.uid);
-          console.log("[Reporte] Imagen subida. URL:", fotoURL);
+          console.log("[Reporte] Convirtiendo imagen a Base64...");
+          fotoBase64 = await convertirABase64(foto);
         } catch (errImg) {
           console.warn("[Reporte] Falló/timeout la subida de imagen, se guardará sin foto:", errImg?.code || errImg?.message || errImg);
           if (typeof errImg?.message === 'string' && errImg.message.toLowerCase().includes('cors')) {
@@ -99,71 +109,32 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
           // Continuar sin imagen
           fotoURL = null;
         }
-      } else if (foto && DISABLE_IMAGE_UPLOAD) {
-        console.warn('[Reporte] Subida de imagen deshabilitada por VITE_DISABLE_IMAGE_UPLOAD. El reporte se guardará sin foto.');
       }
 
       const ahora = new Date();
-
-      // Salvaguardas: evitar almacenar Base64 u otros strings largos no-URL
-      if (typeof fotoURL === 'string') {
-        if (fotoURL.startsWith('data:')) {
-          console.warn('[Reporte] Detectado dataURL en fotoURL, se limpiará para cumplir límite de Firestore');
-          fotoURL = null;
-        } else if (!/^https?:\/\//i.test(fotoURL)) {
-          console.warn('[Reporte] fotoURL no parece una URL http(s), se limpiará');
-          fotoURL = null;
-        }
-      }
 
       const nuevoReporte = {
         titulo: titulo.trim(),
         descripcion: descripcion.trim(),
         ubicacion: ubicacion.trim(),
         fechaHora, // string de input datetime-local
-        foto: fotoURL,
+        foto: fotoBase64, // 🔹 aquí guardamos la imagen en Base64
         fechaRegistro: ahora.toISOString(),
-        estado: "pendiente", // Campo extra útil para gestión de reportes
+        estado: "pendiente",
         userEmail: user?.email || null
       };
 
-      const fotoInfo = typeof nuevoReporte.foto === 'string' ? `${nuevoReporte.foto.slice(0, 30)}... len=${nuevoReporte.foto.length}` : nuevoReporte.foto;
-      console.log("[Reporte] Guardando documento en Firestore... foto=", fotoInfo);
+      console.log("[Reporte] Guardando documento en Firestore...");
       await addDoc(collection(db, "reportes"), nuevoReporte);
-      console.log("[Reporte] Reporte guardado correctamente.")
+      console.log("[Reporte] Reporte guardado correctamente ✅");
 
       if (actualizar) actualizar();
       setModalRegistro(false);
     } catch (error) {
       console.error("Error al guardar el reporte:", error);
-      const msg = error?.code === 'permission-denied'
-        ? 'No tienes permisos para crear reportes. Inicia sesión o contacta al administrador.'
-        : error?.message || 'Ocurrió un error al guardar el reporte.';
-      // Si el error es por tamaño de la propiedad foto (>1MiB), reintentar sin foto
-      const isFotoMuyGrande = typeof error?.message === 'string' && error.message.includes('The value of property "foto" is longer than');
-      if (isFotoMuyGrande) {
-        try {
-          console.warn('[Reporte] Reintentando guardado sin imagen por límite de Firestore...');
-          const ahora = new Date();
-          const fallback = {
-            titulo: titulo.trim(),
-            descripcion: descripcion.trim(),
-            ubicacion: ubicacion.trim(),
-            fechaHora,
-            foto: null,
-            fechaRegistro: ahora.toISOString(),
-            estado: 'pendiente',
-            userEmail: user?.email || null
-          };
-          await addDoc(collection(db, 'reportes'), fallback);
-          console.log('[Reporte] Guardado exitoso sin imagen tras reintento.');
-          if (actualizar) actualizar();
-          setModalRegistro(false);
-          return;
-        } catch (e2) {
-          console.error('[Reporte] Falló el reintento sin imagen:', e2);
-        }
-      }
+      const msg = error?.code === "permission-denied"
+        ? "No tienes permisos para crear reportes. Inicia sesión o contacta al administrador."
+        : error?.message || "Ocurrió un error al guardar el reporte.";
       setMensajeError(msg);
     } finally {
       setCargando(false);
@@ -178,16 +149,15 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
           <button className="close-modal-btn" onClick={() => setModalRegistro(false)}>×</button>
         </div>
 
-        {/* Campo tipo de incidente */}
+        {/* Tipo de incidente */}
         <div className="form-field-container">
           <label>Tipo de incidente</label>
           <select
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
-            className={errores.titulo ? 'campo-error' : ''}
+            className={errores.titulo ? "campo-error" : ""}
           >
             <option value="">Seleccione un tipo de incidente</option>
-            {/* Opciones organizadas */}
             <optgroup label="Daños en la superficie de la vía">
               <option value="Baches">Baches</option>
               <option value="Fisuras o grietas">Fisuras o grietas</option>
@@ -195,7 +165,6 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
               <option value="Deformaciones del pavimento">Deformaciones del pavimento</option>
               <option value="Desnivel entre carriles">Desnivel entre carriles</option>
             </optgroup>
-            {/* Más opciones omitidas por brevedad */}
           </select>
           {errores.titulo && <p className="mensaje-error">{mensajesError.titulo}</p>}
         </div>
@@ -208,7 +177,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             placeholder="Ej. Calle 123, Zona A"
             value={ubicacion}
             onChange={(e) => setUbicacion(e.target.value)}
-            className={errores.ubicacion ? 'campo-error' : ''}
+            className={errores.ubicacion ? "campo-error" : ""}
           />
           {errores.ubicacion && <p className="mensaje-error">{mensajesError.ubicacion}</p>}
         </div>
@@ -220,7 +189,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             placeholder="Describe lo sucedido"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
-            className={errores.descripcion ? 'campo-error' : ''}
+            className={errores.descripcion ? "campo-error" : ""}
           />
           {errores.descripcion && <p className="mensaje-error">{mensajesError.descripcion}</p>}
         </div>
@@ -232,7 +201,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             type="datetime-local"
             value={fechaHora}
             onChange={(e) => setFechaHora(e.target.value)}
-            className={errores.fechaHora ? 'campo-error' : ''}
+            className={errores.fechaHora ? "campo-error" : ""}
           />
           {errores.fechaHora && <p className="mensaje-error">{mensajesError.fechaHora}</p>}
         </div>
@@ -260,7 +229,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
               <img
                 src={URL.createObjectURL(foto)}
                 alt="Vista previa"
-                style={{ maxWidth: '100px', maxHeight: '100px' }}
+                style={{ maxWidth: "100px", maxHeight: "100px" }}
               />
             </div>
           )}
@@ -269,17 +238,13 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         {/* Botones */}
         <div className="action-buttons">
           <button className="btn-cancelar" onClick={() => setModalRegistro(false)}>Cancelar</button>
-          <button
-            className="btn-guardar"
-            onClick={guardarReporte}
-            disabled={cargando}
-          >
+          <button className="btn-guardar" onClick={guardarReporte} disabled={cargando}>
             {cargando ? "Guardando..." : "Guardar reporte"}
           </button>
         </div>
 
         {mensajeError && (
-          <div style={{ marginTop: '12px', color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: '8px 12px', borderRadius: '8px' }}>
+          <div style={{ marginTop: "12px", color: "#b91c1c", background: "#fee2e2", border: "1px solid #fecaca", padding: "8px 12px", borderRadius: "8px" }}>
             {mensajeError}
           </div>
         )}
