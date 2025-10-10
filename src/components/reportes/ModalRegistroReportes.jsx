@@ -6,6 +6,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
  // Flag para deshabilitar subida de imagen temporalmente si hay problemas de CORS
  const DISABLE_IMAGE_UPLOAD = import.meta.env?.VITE_DISABLE_IMAGE_UPLOAD === 'true';
+ const UPLOAD_TIMEOUT_MS = 15000; // 15s de tiempo límite para la subida
 
 const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [titulo, setTitulo] = useState("");
@@ -40,7 +41,8 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       descripcion: !descripcion.trim(),
       ubicacion: !ubicacion.trim(),
       fechaHora: !fechaHora,
-      foto: !foto
+      // Foto ya NO es obligatoria para evitar bloqueos por CORS/Storage
+      foto: false
     };
     setErrores(nuevosErrores);
     return !Object.values(nuevosErrores).some((error) => error);
@@ -55,14 +57,18 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
     const metadata = { contentType: archivo.type || 'application/octet-stream' };
 
     const task = uploadBytesResumable(storageRef, archivo, metadata);
-    await new Promise((resolve, reject) => {
-      task.on(
-        'state_changed',
-        undefined,
-        (err) => reject(err),
-        () => resolve()
-      );
-    });
+    // Subida con tiempo límite para evitar quedarse colgado por CORS
+    await Promise.race([
+      new Promise((resolve, reject) => {
+        task.on(
+          'state_changed',
+          undefined,
+          (err) => reject(err),
+          () => resolve()
+        );
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout-upload')), UPLOAD_TIMEOUT_MS))
+    ]);
     const url = await getDownloadURL(storageRef);
     return url;
   };
@@ -73,10 +79,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       alert("Debes iniciar sesión para enviar un reporte.");
       return;
     }
-    if (DISABLE_IMAGE_UPLOAD) {
-      setMensajeError('La subida de imágenes está deshabilitada por configuración. Habilítala para poder guardar reportes con imagen.');
-      return;
-    }
+    // Si la subida está deshabilitada por config, seguimos guardando sin foto
     setCargando(true);
     setMensajeError("");
 
@@ -89,7 +92,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
           fotoURL = await subirImagenYObtenerURL(foto, user.uid);
           console.log("[Reporte] Imagen subida. URL:", fotoURL);
         } catch (errImg) {
-          console.warn("[Reporte] Falló la subida de imagen, se guardará sin foto:", errImg?.code || errImg?.message || errImg);
+          console.warn("[Reporte] Falló/timeout la subida de imagen, se guardará sin foto:", errImg?.code || errImg?.message || errImg);
           if (typeof errImg?.message === 'string' && errImg.message.toLowerCase().includes('cors')) {
             console.warn('[Reporte] Sugerencia: Aplica cors.json al bucket y verifica orígenes permitidos.');
           }
@@ -251,9 +254,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
               La subida de imágenes está deshabilitada temporalmente. El reporte se guardará sin foto.
             </p>
           )}
-          {errores.foto && (
-            <p className="mensaje-error">{mensajesError.foto}</p>
-          )}
+          {/* Foto ya no es obligatoria */}
           {foto && (
             <div className="imagen-previa">
               <img
