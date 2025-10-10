@@ -89,26 +89,17 @@ const Register = () => {
   };
 
   const handleCedulaChange = (e) => {
-    // Permite formato: xxx-xxxxxx-xxxxA (13 dígitos + 2 guiones + 1 letra)
-    let value = e.target.value.toUpperCase();
-    // Capturar solo dígitos para formateo numérico
-    const digitsOnly = value.replace(/[^0-9]/g, "").slice(0, 13);
-    // Tomar a lo sumo una letra
-    const letter = (value.match(/[A-Z]/g) || [])[0] || "";
-
+    let value = e.target.value.replace(/[^0-9-]/g, "");
+    const digits = value.replace(/-/g, "").slice(0, 13);
     let formatted = "";
-    if (digitsOnly.length > 0) {
-      formatted = digitsOnly.slice(0, 3);
-      if (digitsOnly.length >= 4) {
-        formatted += "-" + digitsOnly.slice(3, 9);
+    if (digits.length > 0) {
+      formatted = digits.slice(0, 3);
+      if (digits.length >= 4) {
+        formatted += "-" + digits.slice(3, 9);
       }
-      if (digitsOnly.length >= 10) {
-        formatted += "-" + digitsOnly.slice(9, 13);
+      if (digits.length >= 10) {
+        formatted += "-" + digits.slice(9, 13);
       }
-    }
-    // Agregar la letra solo cuando ya están los 13 dígitos
-    if (digitsOnly.length === 13 && letter) {
-      formatted += letter;
     }
     setRegisterData({ ...registerData, cedula: formatted });
   };
@@ -135,8 +126,8 @@ const Register = () => {
     setLoading(true);
     setError(null);
 
-    if (!/^\d{3}-\d{6}-\d{4}[A-Z]$/.test(registerData.cedula)) {
-      setError("Formato de cédula inválido. Debe ser: xxx-xxxxxx-xxxxA (con letra final)");
+    if (!/^\d{3}-\d{6}-\d{4}$/.test(registerData.cedula)) {
+      setError("Formato de cédula inválido. Debe ser: 123-123456-1234");
       setLoading(false);
       return;
     }
@@ -190,7 +181,7 @@ const Register = () => {
 
   return (
     <div className="bg-background text-foreground">
-      <div className="min-h-[100vh] flex items-center justify-center px-4 py-10">
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-10">
         <div className="card w-full max-w-3xl p-6 rounded-2xl">
           <div className="mb-2 text-center">
             <h2 className="panel-title">Registro de Usuario</h2>
@@ -246,16 +237,16 @@ const Register = () => {
             <div className="row g-3">
               <div className="col-md-6">
                 <div className="form-group">
-                  <label className="form-label">Cédula (123-123456-1234A)</label>
+                  <label className="form-label">Cédula (123-123456-1234)</label>
                   <input
                     type="text"
                     className="form-control"
                     name="cedula"
                     value={registerData.cedula}
                     onChange={handleCedulaChange}
-                    placeholder="001-123456-7890A"
+                    placeholder="001-123456-7890"
                     required
-                    maxLength={16}
+                    maxLength={15}
                   />
                 </div>
               </div>

@@ -2,11 +2,6 @@ import React, { useState } from "react";
 import { db } from "../../database/firebaseconfig";
 import { collection, addDoc } from "firebase/firestore";
 import { useAuth } from "../../database/authcontext";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-
- // Flag para deshabilitar subida de imagen temporalmente si hay problemas de CORS
- const DISABLE_IMAGE_UPLOAD = import.meta.env?.VITE_DISABLE_IMAGE_UPLOAD === 'true';
- const UPLOAD_TIMEOUT_MS = 15000; // 15s de tiempo límite para la subida
 
 const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [titulo, setTitulo] = useState("");
@@ -41,36 +36,11 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       descripcion: !descripcion.trim(),
       ubicacion: !ubicacion.trim(),
       fechaHora: !fechaHora,
-      // Foto ya NO es obligatoria para evitar bloqueos por CORS/Storage
-      foto: false
+      foto: !foto
     };
     setErrores(nuevosErrores);
     return !Object.values(nuevosErrores).some((error) => error);
   };
-
-  // Subir archivo a Storage y devolver URL de descarga con subida reanudable
-  const subirImagenYObtenerURL = async (archivo, uid) => {
-    if (!uid) throw new Error("No hay uid de usuario para subir a Storage. Asegúrate de estar autenticado.");
-    const nombreSeguro = archivo.name?.replace(/[^a-zA-Z0-9_.-]/g, "_") || `foto_${Date.now()}.jpg`;
-    const ruta = `reportes/${uid}/${Date.now()}_${nombreSeguro}`;
-    const storageRef = ref(storage, ruta);
-    const metadata = { contentType: archivo.type || 'application/octet-stream' };
-
-    const task = uploadBytesResumable(storageRef, archivo, metadata);
-    // Subida con tiempo límite para evitar quedarse colgado por CORS
-    await Promise.race([
-      new Promise((resolve, reject) => {
-        task.on(
-          'state_changed',
-          undefined,
-          (err) => reject(err),
-          () => resolve()
-        );
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout-upload')), UPLOAD_TIMEOUT_MS))
-    ]);
-    const url = await getDownloadURL(storageRef);
-    return url;
 
   // Función para convertir archivo en Base64
   const convertirABase64 = (file) => {
@@ -88,8 +58,6 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       alert("Debes iniciar sesión para enviar un reporte.");
       return;
     }
-    // Si la subida está deshabilitada por config, seguimos guardando sin foto
-
 
     setCargando(true);
     setMensajeError("");
@@ -102,12 +70,8 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
           console.log("[Reporte] Convirtiendo imagen a Base64...");
           fotoBase64 = await convertirABase64(foto);
         } catch (errImg) {
-          console.warn("[Reporte] Falló/timeout la subida de imagen, se guardará sin foto:", errImg?.code || errImg?.message || errImg);
-          if (typeof errImg?.message === 'string' && errImg.message.toLowerCase().includes('cors')) {
-            console.warn('[Reporte] Sugerencia: Aplica cors.json al bucket y verifica orígenes permitidos.');
-          }
-          // Continuar sin imagen
-          fotoURL = null;
+          console.warn("[Reporte] Error al convertir imagen, se guardará sin foto:", errImg);
+          fotoBase64 = null;
         }
       }
 
@@ -218,12 +182,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             accept="image/*"
             onChange={(e) => setFoto(e.target.files[0])}
           />
-          {DISABLE_IMAGE_UPLOAD && (
-            <p style={{ marginTop: '8px', color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', padding: '6px 10px', borderRadius: '6px' }}>
-              La subida de imágenes está deshabilitada temporalmente. El reporte se guardará sin foto.
-            </p>
-          )}
-          {/* Foto ya no es obligatoria */}
+          {errores.foto && <p className="mensaje-error">{mensajesError.foto}</p>}
           {foto && (
             <div className="imagen-previa">
               <img
