@@ -244,7 +244,7 @@ const Reportes = () => {
                 <option value={24}>24</option>
               </select>
               <button 
-                className="btn btn-default btn-md"
+                className="btn-registro"
                 onClick={() => setModalRegistro(true)}
                 disabled={loading}
               >

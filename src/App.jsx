@@ -26,7 +26,6 @@ function Layout() {
   const isEstado = location.pathname === '/estadodeTrafico' || location.pathname === '/estadodetrafico';
   const isReportes = location.pathname === '/reportes';
   const isAdministrador = location.pathname === '/administrador';
-  const ytmusicUrl = import.meta.env.VITE_YTMUSIC_URL || '#';
 
   // Pequeña superposición global en cada cambio de ruta
   useEffect(() => {
@@ -115,10 +114,6 @@ function Layout() {
                   <a href="#" aria-label="Twitter" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-twitter text-2xl"></i></a>
                   <a href="#" aria-label="YouTube" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-youtube text-2xl"></i></a>
                   <a href="#" aria-label="LinkedIn" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-linkedin text-2xl"></i></a>
-                  {/* YouTube Music configurable por .env */}
-                  <a href={ytmusicUrl} aria-label="YouTube Music" className="hover:text-[#1e3d87] transition-colors" target="_blank" rel="noopener noreferrer" title="YouTube Music">
-                    <i className="bi bi-music-note-beamed text-2xl"></i>
-                  </a>
                 </div>
               </div>
             </div>
