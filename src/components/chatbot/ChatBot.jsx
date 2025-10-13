@@ -5,7 +5,7 @@ import "../../styles/ChatButton.css";
 
 const ChatBot = ({ onClose }) => {
     const [messages, setMessages] = useState([
-        { from: "bot", text: "👋 ¡Hola! Soy NicaClimaBot. Pregúntame sobre el clima de tu ciudad o el pronóstico de hoy." }
+        { from: "bot", text: "👋 ¡Hola! Soy NicaBot. Pregúntame sobre el clima de tu ciudad, el pronóstico de hoy o acerca de la aplicacion." }
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -27,7 +27,7 @@ const ChatBot = ({ onClose }) => {
     return (
         <div className="chatbot-container shadow-lg">
         <div className="chatbot-header bg-primary text-white d-flex justify-content-between align-items-center px-3 py-2">
-            <span>☁️ NicaClimaBot</span>
+            <span>☁️ NicaBot</span>
             <button onClick={onClose} className="btn-close btn-close-white"></button>
         </div>
 
