@@ -8,6 +8,9 @@ import jsPDF from 'jspdf';
 import Paginacion from '../components/ordenamiento/Paginacion';
 import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { MessageCircle } from "lucide-react"; //
+import '../styles/ChatButton.css';
+import ChatButton from '../components/chatbot/ChatButton';
 
 const { BaseLayer } = LayersControl;
 
@@ -341,12 +344,11 @@ const Inicio = () => {
         </div>
       </section>
 
-      {/* Botón de tema flotante */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button className="btn btn-default btn-sm rounded-full w-12 h-12 p-0" onClick={toggleTheme} aria-label="Cambiar tema">
-          <i data-lucide="moon" className="w-5 h-5"></i>
-        </button>
-      </div>
+      {/* Botón de chatbot */}
+    <div className="fixed bottom-6 right-6 z-40">
+      <ChatButton />
+    </div>
+
     </div>
   );
 };
