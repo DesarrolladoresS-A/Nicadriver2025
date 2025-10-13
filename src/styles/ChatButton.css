@@ -1,0 +1,66 @@
+/* ==== ChatBot.css ==== */
+
+/* Contenedor del ChatBot */
+.chatbot-container {
+    position: fixed;
+    bottom: 5rem;       /* un poco arriba del botón */
+    right: 1.5rem;
+    width: 350px;
+    max-width: 90%;
+    height: 500px;
+    background-color: white;  /* fondo sólido */
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+/* Cabecera del ChatBot */
+.chatbot-header {
+    background-color: #17a2b8;  /* azul info */
+    color: white;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Cuerpo del chat */
+.chatbot-body {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    background-color: #f8f9fa;  /* gris claro */
+}
+
+/* Input y enviar mensaje */
+.chatbot-input {
+    display: flex;
+    gap: 0.5rem;
+    border-top: 1px solid #dee2e6;
+    padding: 0.5rem;
+    background-color: white;
+}
+
+/* Burbujas de mensaje */
+.chat-bubble.bot {
+    background-color: #e9ecef;
+    color: #212529;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    max-width: 80%;
+}
+
+.chat-bubble.user {
+    background-color: #17a2b8;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    max-width: 80%;
+    align-self: flex-end;
+}
