@@ -5,7 +5,7 @@ import "../../styles/ChatButton.css";
 
 const ChatBot = ({ onClose }) => {
     const [messages, setMessages] = useState([
-        { from: "bot", text: "👋 ¡Hola! Soy NicaBot. Pregúntame sobre el clima de tu ciudad, el pronóstico de hoy o acerca de la aplicacion." }
+        { from: "bot", text: "👋 ¡Hola! Soy NicaBot. Pregúntame sobre el clima de tu ciudad, el pronóstico de hoy o acerca de la aplicación." }
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
