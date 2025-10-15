@@ -23,11 +23,6 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import '../styles/EstadodeTrafico.css';
-// Contenedor del mapa: ocupará el 100% del contenedor padre
-const containerStyle = {
-  width: '100%',
-  height: '100%',
-  borderRadius: '12px'
 import { GOOGLE_PLACES_CONFIG, getPlaceIcon, getPlaceTypeDescription, filterSuggestions } from '../config/googlePlacesConfig';
 
 const containerStyle = {
@@ -864,16 +859,7 @@ const EstadoTrafico = () => {
                 Cancelar
               </button>
             )}
-      <div className="trafico-hero">
-        <div className="hero-content">
-          <h1 className="hero-title">Estado del Tráfico</h1>
-          <p className="hero-subtitle">Explora el tráfico en tiempo real y planifica tu ruta</p>
-          {isTraveling && (
-            <div className="travel-indicator">
-              <span className="travel-dot"></span>
-              <span>Viaje en progreso - Seguimiento activo</span>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -947,162 +933,73 @@ const EstadoTrafico = () => {
           </div>
 
           {locationError && (
-            <div className="geo-badge">{locationError}</div>
+            <div className="geo-alert">
+              <div className="alert-content">
+                <span className="alert-icon">⚠️</span>
+                <span>{locationError}</span>
+              </div>
+            </div>
           )}
-        </div>
 
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={userLocation || defaultCenter}
-          zoom={13}
-          onLoad={handleMapLoad}
-          onClick={handleMapClick}
-          mapTypeId="hybrid"
-        >
-          <TrafficLayer />
-          {userLocation && <Marker position={userLocation} label="Yo" />}
-          {selectedLocation && (
-            <Marker 
-              position={selectedLocation} 
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: clickEnRuta ? 8 : 6,
-                fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
-                fillOpacity: 1,
-                strokeWeight: 2,
-                strokeColor: '#000000'
-              }}
-            />
-          )}
-          {reportes.map((reporte) => (
-            <Marker
-              key={reporte.id}
-              position={{ lat: reporte.lat, lng: reporte.lng }}
-              icon={iconMap[reporte.tipo] || undefined}
-              onClick={() => setSelectedReporte(reporte)}
-            />
-          ))}
-          {selectedReporte && (
-            <InfoWindow
-              position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
-              onCloseClick={() => setSelectedReporte(null)}
-            >
-              <div style={{ maxWidth: '280px' }}>
-                <h4 style={{ color: '#FF5722', marginBottom: '12px', fontSize: '18px', fontWeight: '600' }}>{selectedReporte.tipo}</h4>
-                <p style={{ margin: '0 0 18px 0', color: '#333', fontSize: '14px', lineHeight: '1.4' }}>{selectedReporte.descripcion}</p>
-                {(selectedReporte.imagenUrl || selectedReporte.imagenBase64) && (
-                  <img
-                    src={selectedReporte.imagenUrl || selectedReporte.imagenBase64}
-                    alt="Incidente"
-                    style={{ width: '100%', borderRadius: '5px', marginBottom: '18px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)' }}
+          {/* Mapa principal */}
+          <div className="map-section">
+            <div className="map-container">
+              <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={currentLocation || userLocation || defaultCenter}
+                zoom={isTraveling ? 15 : 13}
+                onLoad={handleMapLoad}
+                onClick={handleMapClick}
+                mapTypeId="hybrid"
+              >
+                <TrafficLayer />
+                {currentLocation && <Marker position={currentLocation} label="Yo" />}
+                {selectedLocation && !isTraveling && (
+                  <Marker
+                    position={selectedLocation}
+                    icon={{
+                      path: google.maps.SymbolPath.CIRCLE,
+                      scale: clickEnRuta ? 8 : 6,
+                      fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
+                      fillOpacity: 1,
+                      strokeWeight: 2,
+                      strokeColor: '#000000'
+                    }}
                   />
-        <div className="map-section">
-          <div className="map-container">
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={currentLocation || userLocation || defaultCenter}
-              zoom={isTraveling ? 15 : 13}
-              onLoad={handleMapLoad}
-              onClick={handleMapClick}
-              mapTypeId="hybrid"
-            >
-              <TrafficLayer />
-              {currentLocation && <Marker position={currentLocation} label="Yo" />}
-              {selectedLocation && !isTraveling && (
-                <Marker
-                  position={selectedLocation}
-                  icon={{
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: clickEnRuta ? 8 : 6,
-                    fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
-                    fillOpacity: 1,
-                    strokeWeight: 2,
-                    strokeColor: '#000000'
-                  }}
-                />
-              )}
-              {reportes.map((reporte) => (
-                <Marker
-                  key={reporte.id}
-                  position={{ lat: reporte.lat, lng: reporte.lng }}
-                  icon={iconMap[reporte.tipo] || undefined}
-                  onClick={() => setSelectedReporte(reporte)}
-                />
-              ))}
-              {selectedReporte && (
-                <InfoWindow
-                  position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
-                  onCloseClick={() => setSelectedReporte(null)}
-                >
-                  <div className="info-window-content">
-                    <h4 className="info-window-title">{selectedReporte.tipo}</h4>
-                    <p className="info-window-description">{selectedReporte.descripcion}</p>
-                    {selectedReporte.imagenBase64 && (
-                      <img
-                        src={selectedReporte.imagenBase64}
-                        alt="Incidente"
-                        className="info-window-image"
-                      />
-                    )}
-                    {selectedReporte.enRuta && (
-                      <p className="info-window-route-warning">⚠️ Este incidente está en tu ruta</p>
-                    )}
-                    <div className="info-window-buttons">
-                      <button
-                        className="info-window-button sigue"
-                        onClick={async () => {
-                          await addDoc(collection(db, 'confirmaciones'), {
-                            incidenteId: selectedReporte.id,
-                            confirmadoEn: serverTimestamp(),
-                          });
-                          Swal.fire({
-                            icon: 'success',
-                            title: 'Confirmado',
-                            text: 'Se ha confirmado que el incidente sigue ocurriendo.',
-                            confirmButtonText: 'Entendido'
-                          });
-                          setSelectedReporte(null);
-                        }}
-                      >
-                        Sigue ocurriendo
-                      </button>
-                      <button
-                        className="info-window-button eliminar"
-                        onClick={async () => {
-                          const result = await Swal.fire({
-                            title: '¿Eliminar reporte?',
-                            text: 'Esta acción no se puede deshacer',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#d33',
-                            cancelButtonColor: '#3085d6',
-                            confirmButtonText: 'Sí, eliminar',
-                            cancelButtonText: 'Cancelar'
-                          });
-
-                          if (result.isConfirmed) {
-                            await deleteDoc(doc(db, 'incidentes', selectedReporte.id));
-                            Swal.fire({
-                              icon: 'success',
-                              title: 'Eliminado',
-                              text: 'El reporte ha sido eliminado',
-                              confirmButtonText: 'Entendido'
-                            });
-                            setSelectedReporte(null);
-                          }
-                        }}
-                      >
-                        Eliminar
-                      </button>
+                )}
+                {reportes.map((reporte) => (
+                  <Marker
+                    key={reporte.id}
+                    position={{ lat: reporte.lat, lng: reporte.lng }}
+                    icon={iconMap[reporte.tipo] || undefined}
+                    onClick={() => setSelectedReporte(reporte)}
+                  />
+                ))}
+                {selectedReporte && (
+                  <InfoWindow
+                    position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
+                    onCloseClick={() => setSelectedReporte(null)}
+                  >
+                    <div className="info-window-content">
+                      <h4 className="info-window-title">{selectedReporte.tipo}</h4>
+                      <p className="info-window-description">{selectedReporte.descripcion}</p>
+                      {selectedReporte.imagenBase64 && (
+                        <img
+                          src={selectedReporte.imagenBase64}
+                          alt="Incidente"
+                          className="info-window-image"
+                        />
+                      )}
+                      {selectedReporte.enRuta && (
+                        <p className="info-window-route-warning">⚠️ Este incidente está en tu ruta</p>
+                      )}
                     </div>
-                  </div>
-                </InfoWindow>
-              )}
-
-              {directions && <DirectionsRenderer directions={directions} />}
-            </GoogleMap>
+                  </InfoWindow>
+                )}
+                {directions && <DirectionsRenderer directions={directions} />}
+              </GoogleMap>
+            </div>
           </div>
-        </div>
 
         {/* Alerta de Seguridad Interactiva */}
         {showSafetyAlert && (
@@ -1622,6 +1519,7 @@ const EstadoTrafico = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };
