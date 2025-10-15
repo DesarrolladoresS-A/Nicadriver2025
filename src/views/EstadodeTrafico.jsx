@@ -18,7 +18,8 @@ import {
   deleteDoc,
   doc,
 } from 'firebase/firestore';
-import { db } from '../database/firebaseconfig';
+import { db, storage } from '../database/firebaseconfig';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import '../styles/EstadodeTrafico.css';
@@ -135,7 +136,7 @@ const EstadoTrafico = () => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000, // Increased timeout to 10 seconds
+          timeout: 10000,
           maximumAge: 0
         }
       );
@@ -282,7 +283,7 @@ const EstadoTrafico = () => {
       const estaEnRuta = isPointOnPath(
         clickedLocation,
         rutaPath,
-        0.0002 // Radio de tolerancia en grados decimales (~20 metros)
+        0.0002
       );
 
       setClickEnRuta(estaEnRuta);
@@ -317,14 +318,25 @@ const EstadoTrafico = () => {
 
   const handleGuardarReporte = async () => {
     try {
+      // Subir imagen a Storage si existe
+      let imagenUrl = null;
+      if (imagen) {
+        try {
+          const safeName = imagen.name?.replace(/[^a-zA-Z0-9_.-]/g, '_') || `incidente_${Date.now()}.jpg`;
+          const path = `incidentes/${Date.now()}_${safeName}`;
+          const ref = storageRef(storage, path);
+          const snap = await uploadBytes(ref, imagen);
+          imagenUrl = await getDownloadURL(snap.ref);
+        } catch (e) {
+          console.warn('Fallo al subir imagen a Storage, se guarda sin imagen:', e);
+          imagenUrl = null;
+        }
+      }
+
       await addDoc(collection(db, 'incidentes'), {
         tipo: tipo || 'Tráfico',
         descripcion: descripcion || 'Reporte sin descripción',
-        imagenBase64: imagen ? await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(imagen);
-        }) : null,
+        imagenUrl: typeof imagenUrl === 'string' && /^https?:\/\//i.test(imagenUrl) ? imagenUrl : null,
         lat: selectedLocation?.lat || 0,
         lng: selectedLocation?.lng || 0,
         fecha: serverTimestamp(),
@@ -823,16 +835,31 @@ const EstadoTrafico = () => {
 
   return (
     <div className="trafico-page">
-      <div className="trafico-hero">
-        <div className="hero-content">
-          <h1 className="hero-title">Estado del Tráfico</h1>
-          <p className="hero-subtitle">Explora el tráfico en tiempo real y planifica tu ruta</p>
-          {isTraveling && (
-            <div className="travel-indicator">
-              <span className="travel-dot"></span>
-              <span>Viaje en progreso - Seguimiento activo</span>
-            </div>
-          )}
+      <div className="map-wrapper">
+        {/* Overlay superior compacto: búsqueda en esquina superior izquierda */}
+        <div className="trafico-overlay">
+          <div className="trafico-controls">
+            <input
+              type="text"
+              placeholder="Ingrese su destino..."
+              value={destino}
+              onChange={(e) => setDestino(e.target.value)}
+              className="search-input"
+            />
+            <button onClick={handleBuscarRuta} className="search-button">
+              Buscar Ruta
+            </button>
+            {rutaCalculada && (
+              <button onClick={handleListo} className="listo-button">
+                Listo
+              </button>
+            )}
+            {rutaSeleccionada && (
+              <button onClick={handleCancelarRuta} className="cancelar-ruta-button">
+                Cancelar
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -904,115 +931,75 @@ const EstadoTrafico = () => {
               )}
             </div>
           </div>
-        </div>
 
-        <div className="map-section">
-          <div className="map-container">
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={currentLocation || userLocation || defaultCenter}
-              zoom={isTraveling ? 15 : 13}
-              onLoad={handleMapLoad}
-              onClick={handleMapClick}
-              mapTypeId="hybrid"
-            >
-              <TrafficLayer />
-              {currentLocation && <Marker position={currentLocation} label="Yo" />}
-              {selectedLocation && !isTraveling && (
-                <Marker
-                  position={selectedLocation}
-                  icon={{
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: clickEnRuta ? 8 : 6,
-                    fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
-                    fillOpacity: 1,
-                    strokeWeight: 2,
-                    strokeColor: '#000000'
-                  }}
-                />
-              )}
-              {reportes.map((reporte) => (
-                <Marker
-                  key={reporte.id}
-                  position={{ lat: reporte.lat, lng: reporte.lng }}
-                  icon={iconMap[reporte.tipo] || undefined}
-                  onClick={() => setSelectedReporte(reporte)}
-                />
-              ))}
-              {selectedReporte && (
-                <InfoWindow
-                  position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
-                  onCloseClick={() => setSelectedReporte(null)}
-                >
-                  <div className="info-window-content">
-                    <h4 className="info-window-title">{selectedReporte.tipo}</h4>
-                    <p className="info-window-description">{selectedReporte.descripcion}</p>
-                    {selectedReporte.imagenBase64 && (
-                      <img
-                        src={selectedReporte.imagenBase64}
-                        alt="Incidente"
-                        className="info-window-image"
-                      />
-                    )}
-                    {selectedReporte.enRuta && (
-                      <p className="info-window-route-warning">⚠️ Este incidente está en tu ruta</p>
-                    )}
-                    <div className="info-window-buttons">
-                      <button
-                        className="info-window-button sigue"
-                        onClick={async () => {
-                          await addDoc(collection(db, 'confirmaciones'), {
-                            incidenteId: selectedReporte.id,
-                            confirmadoEn: serverTimestamp(),
-                          });
-                          Swal.fire({
-                            icon: 'success',
-                            title: 'Confirmado',
-                            text: 'Se ha confirmado que el incidente sigue ocurriendo.',
-                            confirmButtonText: 'Entendido'
-                          });
-                          setSelectedReporte(null);
-                        }}
-                      >
-                        Sigue ocurriendo
-                      </button>
-                      <button
-                        className="info-window-button eliminar"
-                        onClick={async () => {
-                          const result = await Swal.fire({
-                            title: '¿Eliminar reporte?',
-                            text: 'Esta acción no se puede deshacer',
-                            icon: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#d33',
-                            cancelButtonColor: '#3085d6',
-                            confirmButtonText: 'Sí, eliminar',
-                            cancelButtonText: 'Cancelar'
-                          });
+          {locationError && (
+            <div className="geo-alert">
+              <div className="alert-content">
+                <span className="alert-icon">⚠️</span>
+                <span>{locationError}</span>
+              </div>
+            </div>
+          )}
 
-                          if (result.isConfirmed) {
-                            await deleteDoc(doc(db, 'incidentes', selectedReporte.id));
-                            Swal.fire({
-                              icon: 'success',
-                              title: 'Eliminado',
-                              text: 'El reporte ha sido eliminado',
-                              confirmButtonText: 'Entendido'
-                            });
-                            setSelectedReporte(null);
-                          }
-                        }}
-                      >
-                        Eliminar
-                      </button>
+          {/* Mapa principal */}
+          <div className="map-section">
+            <div className="map-container">
+              <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={currentLocation || userLocation || defaultCenter}
+                zoom={isTraveling ? 15 : 13}
+                onLoad={handleMapLoad}
+                onClick={handleMapClick}
+                mapTypeId="hybrid"
+              >
+                <TrafficLayer />
+                {currentLocation && <Marker position={currentLocation} label="Yo" />}
+                {selectedLocation && !isTraveling && (
+                  <Marker
+                    position={selectedLocation}
+                    icon={{
+                      path: google.maps.SymbolPath.CIRCLE,
+                      scale: clickEnRuta ? 8 : 6,
+                      fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
+                      fillOpacity: 1,
+                      strokeWeight: 2,
+                      strokeColor: '#000000'
+                    }}
+                  />
+                )}
+                {reportes.map((reporte) => (
+                  <Marker
+                    key={reporte.id}
+                    position={{ lat: reporte.lat, lng: reporte.lng }}
+                    icon={iconMap[reporte.tipo] || undefined}
+                    onClick={() => setSelectedReporte(reporte)}
+                  />
+                ))}
+                {selectedReporte && (
+                  <InfoWindow
+                    position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
+                    onCloseClick={() => setSelectedReporte(null)}
+                  >
+                    <div className="info-window-content">
+                      <h4 className="info-window-title">{selectedReporte.tipo}</h4>
+                      <p className="info-window-description">{selectedReporte.descripcion}</p>
+                      {selectedReporte.imagenBase64 && (
+                        <img
+                          src={selectedReporte.imagenBase64}
+                          alt="Incidente"
+                          className="info-window-image"
+                        />
+                      )}
+                      {selectedReporte.enRuta && (
+                        <p className="info-window-route-warning">⚠️ Este incidente está en tu ruta</p>
+                      )}
                     </div>
-                  </div>
-                </InfoWindow>
-              )}
-
-              {directions && <DirectionsRenderer directions={directions} />}
-            </GoogleMap>
+                  </InfoWindow>
+                )}
+                {directions && <DirectionsRenderer directions={directions} />}
+              </GoogleMap>
+            </div>
           </div>
-        </div>
 
         {/* Alerta de Seguridad Interactiva */}
         {showSafetyAlert && (
@@ -1532,6 +1519,7 @@ const EstadoTrafico = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };
