@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icons/Logo.png', 'icons/Logo.png'],
+      includeAssets: ['favicon.ico', 'Logo.png', 'manifest.json'],
       manifest: {
         name: 'NicaDriver',
         short_name: 'NicaDriver',
@@ -17,12 +17,12 @@ export default defineConfig({
         theme_color: '#FF6F00',
         icons: [
           {
-            src: '/icons/Logo.png',
+            src: '/Logo.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/icons/Logo.png',
+            src: '/Logo.png',
             sizes: '512x512',
             type: 'image/png'
           }
