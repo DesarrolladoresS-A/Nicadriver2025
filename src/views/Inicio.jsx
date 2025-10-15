@@ -8,6 +8,7 @@ import jsPDF from 'jspdf';
 import Paginacion from '../components/ordenamiento/Paginacion';
 import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import AnuncioRotativo from "../components/anuncios/AnuncioRotativo";
 
 const { BaseLayer } = LayersControl;
 
@@ -129,6 +130,11 @@ const Inicio = () => {
           </div>
         </div>
       </section>
+
+        <div>
+          {/* Anuncios rotativos */}
+            <AnuncioRotativo intervalo={5000} />
+        </div>
 
       {/* Misión & Visión */}
       <section className="py-20 bg-muted">
@@ -340,6 +346,8 @@ const Inicio = () => {
           )}
         </div>
       </section>
+
+
 
       {/* Botón de tema flotante */}
       <div className="fixed bottom-6 right-6 z-40">
