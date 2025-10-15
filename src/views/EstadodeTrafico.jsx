@@ -18,16 +18,10 @@ import {
   deleteDoc,
   doc,
 } from 'firebase/firestore';
-import { db, storage } from '../database/firebaseconfig';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db } from '../database/firebaseconfig';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import '../styles/EstadodeTrafico.css';
-// Contenedor del mapa: ocupará el 100% del contenedor padre
-const containerStyle = {
-  width: '100%',
-  height: '100%',
-  borderRadius: '12px'
 import { GOOGLE_PLACES_CONFIG, getPlaceIcon, getPlaceTypeDescription, filterSuggestions } from '../config/googlePlacesConfig';
 
 const containerStyle = {
@@ -141,7 +135,7 @@ const EstadoTrafico = () => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
+          timeout: 10000, // Increased timeout to 10 seconds
           maximumAge: 0
         }
       );
@@ -288,7 +282,7 @@ const EstadoTrafico = () => {
       const estaEnRuta = isPointOnPath(
         clickedLocation,
         rutaPath,
-        0.0002
+        0.0002 // Radio de tolerancia en grados decimales (~20 metros)
       );
 
       setClickEnRuta(estaEnRuta);
@@ -323,25 +317,14 @@ const EstadoTrafico = () => {
 
   const handleGuardarReporte = async () => {
     try {
-      // Subir imagen a Storage si existe
-      let imagenUrl = null;
-      if (imagen) {
-        try {
-          const safeName = imagen.name?.replace(/[^a-zA-Z0-9_.-]/g, '_') || `incidente_${Date.now()}.jpg`;
-          const path = `incidentes/${Date.now()}_${safeName}`;
-          const ref = storageRef(storage, path);
-          const snap = await uploadBytes(ref, imagen);
-          imagenUrl = await getDownloadURL(snap.ref);
-        } catch (e) {
-          console.warn('Fallo al subir imagen a Storage, se guarda sin imagen:', e);
-          imagenUrl = null;
-        }
-      }
-
       await addDoc(collection(db, 'incidentes'), {
         tipo: tipo || 'Tráfico',
         descripcion: descripcion || 'Reporte sin descripción',
-        imagenUrl: typeof imagenUrl === 'string' && /^https?:\/\//i.test(imagenUrl) ? imagenUrl : null,
+        imagenBase64: imagen ? await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(imagen);
+        }) : null,
         lat: selectedLocation?.lat || 0,
         lng: selectedLocation?.lng || 0,
         fecha: serverTimestamp(),
@@ -840,30 +823,6 @@ const EstadoTrafico = () => {
 
   return (
     <div className="trafico-page">
-      <div className="map-wrapper">
-        {/* Overlay superior compacto: búsqueda en esquina superior izquierda */}
-        <div className="trafico-overlay">
-          <div className="trafico-controls">
-            <input
-              type="text"
-              placeholder="Ingrese su destino..."
-              value={destino}
-              onChange={(e) => setDestino(e.target.value)}
-              className="search-input"
-            />
-            <button onClick={handleBuscarRuta} className="search-button">
-              Buscar Ruta
-            </button>
-            {rutaCalculada && (
-              <button onClick={handleListo} className="listo-button">
-                Listo
-              </button>
-            )}
-            {rutaSeleccionada && (
-              <button onClick={handleCancelarRuta} className="cancelar-ruta-button">
-                Cancelar
-              </button>
-            )}
       <div className="trafico-hero">
         <div className="hero-content">
           <h1 className="hero-title">Estado del Tráfico</h1>
@@ -945,57 +904,8 @@ const EstadoTrafico = () => {
               )}
             </div>
           </div>
-
-          {locationError && (
-            <div className="geo-badge">{locationError}</div>
-          )}
         </div>
 
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={userLocation || defaultCenter}
-          zoom={13}
-          onLoad={handleMapLoad}
-          onClick={handleMapClick}
-          mapTypeId="hybrid"
-        >
-          <TrafficLayer />
-          {userLocation && <Marker position={userLocation} label="Yo" />}
-          {selectedLocation && (
-            <Marker 
-              position={selectedLocation} 
-              icon={{
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: clickEnRuta ? 8 : 6,
-                fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
-                fillOpacity: 1,
-                strokeWeight: 2,
-                strokeColor: '#000000'
-              }}
-            />
-          )}
-          {reportes.map((reporte) => (
-            <Marker
-              key={reporte.id}
-              position={{ lat: reporte.lat, lng: reporte.lng }}
-              icon={iconMap[reporte.tipo] || undefined}
-              onClick={() => setSelectedReporte(reporte)}
-            />
-          ))}
-          {selectedReporte && (
-            <InfoWindow
-              position={{ lat: selectedReporte.lat, lng: selectedReporte.lng }}
-              onCloseClick={() => setSelectedReporte(null)}
-            >
-              <div style={{ maxWidth: '280px' }}>
-                <h4 style={{ color: '#FF5722', marginBottom: '12px', fontSize: '18px', fontWeight: '600' }}>{selectedReporte.tipo}</h4>
-                <p style={{ margin: '0 0 18px 0', color: '#333', fontSize: '14px', lineHeight: '1.4' }}>{selectedReporte.descripcion}</p>
-                {(selectedReporte.imagenUrl || selectedReporte.imagenBase64) && (
-                  <img
-                    src={selectedReporte.imagenUrl || selectedReporte.imagenBase64}
-                    alt="Incidente"
-                    style={{ width: '100%', borderRadius: '5px', marginBottom: '18px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)' }}
-                  />
         <div className="map-section">
           <div className="map-container">
             <GoogleMap
