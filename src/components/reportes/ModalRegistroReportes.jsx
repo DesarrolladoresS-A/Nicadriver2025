@@ -1,7 +1,12 @@
 import React, { useState } from "react";
-import { db } from "../../database/firebaseconfig";
+import { db, storage } from "../../database/firebaseconfig";
 import { collection, addDoc } from "firebase/firestore";
 import { useAuth } from "../../database/authcontext";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
+ // Flag para deshabilitar subida de imagen temporalmente si hay problemas de CORS
+ const DISABLE_IMAGE_UPLOAD = import.meta.env?.VITE_DISABLE_IMAGE_UPLOAD === 'true';
+ const UPLOAD_TIMEOUT_MS = 15000; // 15s de tiempo límite para la subida
 
 const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [titulo, setTitulo] = useState("");
@@ -10,6 +15,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
   const [fechaHora, setFechaHora] = useState("");
   const [foto, setFoto] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [mensajeError, setMensajeError] = useState("");
 
   const { user } = useAuth();
 
@@ -17,14 +23,16 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
     titulo: false,
     descripcion: false,
     ubicacion: false,
-    fechaHora: false
+    fechaHora: false,
+    foto: false
   });
 
   const mensajesError = {
     titulo: "Por favor seleccione el tipo de incidente",
     descripcion: "Por favor describa el incidente",
     ubicacion: "Por favor indique la ubicación del incidente",
-    fechaHora: "Por favor seleccione la fecha y hora del incidente"
+    fechaHora: "Por favor seleccione la fecha y hora del incidente",
+    foto: "Por favor seleccione una imagen del incidente"
   };
 
   const validarCampos = () => {
@@ -32,52 +40,131 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       titulo: !titulo.trim(),
       descripcion: !descripcion.trim(),
       ubicacion: !ubicacion.trim(),
-      fechaHora: !fechaHora
+      fechaHora: !fechaHora,
+      // Foto ya NO es obligatoria para evitar bloqueos por CORS/Storage
+      foto: false
     };
     setErrores(nuevosErrores);
     return !Object.values(nuevosErrores).some((error) => error);
   };
 
-  const convertirImagenABase64 = (archivo) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(archivo);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
+  // Subir archivo a Storage y devolver URL de descarga con subida reanudable
+  const subirImagenYObtenerURL = async (archivo, uid) => {
+    if (!uid) throw new Error("No hay uid de usuario para subir a Storage. Asegúrate de estar autenticado.");
+    const nombreSeguro = archivo.name?.replace(/[^a-zA-Z0-9_.-]/g, "_") || `foto_${Date.now()}.jpg`;
+    const ruta = `reportes/${uid}/${Date.now()}_${nombreSeguro}`;
+    const storageRef = ref(storage, ruta);
+    const metadata = { contentType: archivo.type || 'application/octet-stream' };
+
+    const task = uploadBytesResumable(storageRef, archivo, metadata);
+    // Subida con tiempo límite para evitar quedarse colgado por CORS
+    await Promise.race([
+      new Promise((resolve, reject) => {
+        task.on(
+          'state_changed',
+          undefined,
+          (err) => reject(err),
+          () => resolve()
+        );
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout-upload')), UPLOAD_TIMEOUT_MS))
+    ]);
+    const url = await getDownloadURL(storageRef);
+    return url;
   };
 
   const guardarReporte = async () => {
     if (!validarCampos()) return;
-
+    if (!user) {
+      alert("Debes iniciar sesión para enviar un reporte.");
+      return;
+    }
+    // Si la subida está deshabilitada por config, seguimos guardando sin foto
     setCargando(true);
+    setMensajeError("");
 
     try {
-      let fotoBase64 = null;
-      if (foto) {
-        fotoBase64 = await convertirImagenABase64(foto);
+      let fotoURL = null;
+      if (foto && !DISABLE_IMAGE_UPLOAD) {
+        // Subir a Storage en lugar de Base64 en Firestore (evita límite de 1 MiB)
+        try {
+          console.log("[Reporte] Subiendo imagen a Storage...");
+          fotoURL = await subirImagenYObtenerURL(foto, user.uid);
+          console.log("[Reporte] Imagen subida. URL:", fotoURL);
+        } catch (errImg) {
+          console.warn("[Reporte] Falló/timeout la subida de imagen, se guardará sin foto:", errImg?.code || errImg?.message || errImg);
+          if (typeof errImg?.message === 'string' && errImg.message.toLowerCase().includes('cors')) {
+            console.warn('[Reporte] Sugerencia: Aplica cors.json al bucket y verifica orígenes permitidos.');
+          }
+          // Continuar sin imagen
+          fotoURL = null;
+        }
+      } else if (foto && DISABLE_IMAGE_UPLOAD) {
+        console.warn('[Reporte] Subida de imagen deshabilitada por VITE_DISABLE_IMAGE_UPLOAD. El reporte se guardará sin foto.');
       }
 
       const ahora = new Date();
+
+      // Salvaguardas: evitar almacenar Base64 u otros strings largos no-URL
+      if (typeof fotoURL === 'string') {
+        if (fotoURL.startsWith('data:')) {
+          console.warn('[Reporte] Detectado dataURL en fotoURL, se limpiará para cumplir límite de Firestore');
+          fotoURL = null;
+        } else if (!/^https?:\/\//i.test(fotoURL)) {
+          console.warn('[Reporte] fotoURL no parece una URL http(s), se limpiará');
+          fotoURL = null;
+        }
+      }
+
       const nuevoReporte = {
         titulo: titulo.trim(),
         descripcion: descripcion.trim(),
         ubicacion: ubicacion.trim(),
-        fechaHora,
-        foto: fotoBase64,
+        fechaHora, // string de input datetime-local
+        foto: fotoURL,
         fechaRegistro: ahora.toISOString(),
         estado: "pendiente", // Campo extra útil para gestión de reportes
         userEmail: user?.email || null
       };
 
+      const fotoInfo = typeof nuevoReporte.foto === 'string' ? `${nuevoReporte.foto.slice(0, 30)}... len=${nuevoReporte.foto.length}` : nuevoReporte.foto;
+      console.log("[Reporte] Guardando documento en Firestore... foto=", fotoInfo);
       await addDoc(collection(db, "reportes"), nuevoReporte);
-      console.log("Reporte guardado:", nuevoReporte);
+      console.log("[Reporte] Reporte guardado correctamente.")
 
       if (actualizar) actualizar();
       setModalRegistro(false);
     } catch (error) {
       console.error("Error al guardar el reporte:", error);
-      alert("Ocurrió un error al guardar el reporte.");
+      const msg = error?.code === 'permission-denied'
+        ? 'No tienes permisos para crear reportes. Inicia sesión o contacta al administrador.'
+        : error?.message || 'Ocurrió un error al guardar el reporte.';
+      // Si el error es por tamaño de la propiedad foto (>1MiB), reintentar sin foto
+      const isFotoMuyGrande = typeof error?.message === 'string' && error.message.includes('The value of property "foto" is longer than');
+      if (isFotoMuyGrande) {
+        try {
+          console.warn('[Reporte] Reintentando guardado sin imagen por límite de Firestore...');
+          const ahora = new Date();
+          const fallback = {
+            titulo: titulo.trim(),
+            descripcion: descripcion.trim(),
+            ubicacion: ubicacion.trim(),
+            fechaHora,
+            foto: null,
+            fechaRegistro: ahora.toISOString(),
+            estado: 'pendiente',
+            userEmail: user?.email || null
+          };
+          await addDoc(collection(db, 'reportes'), fallback);
+          console.log('[Reporte] Guardado exitoso sin imagen tras reintento.');
+          if (actualizar) actualizar();
+          setModalRegistro(false);
+          return;
+        } catch (e2) {
+          console.error('[Reporte] Falló el reintento sin imagen:', e2);
+        }
+      }
+      setMensajeError(msg);
     } finally {
       setCargando(false);
     }
@@ -162,6 +249,12 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             accept="image/*"
             onChange={(e) => setFoto(e.target.files[0])}
           />
+          {DISABLE_IMAGE_UPLOAD && (
+            <p style={{ marginTop: '8px', color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', padding: '6px 10px', borderRadius: '6px' }}>
+              La subida de imágenes está deshabilitada temporalmente. El reporte se guardará sin foto.
+            </p>
+          )}
+          {/* Foto ya no es obligatoria */}
           {foto && (
             <div className="imagen-previa">
               <img
@@ -184,6 +277,12 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             {cargando ? "Guardando..." : "Guardar reporte"}
           </button>
         </div>
+
+        {mensajeError && (
+          <div style={{ marginTop: '12px', color: '#b91c1c', background: '#fee2e2', border: '1px solid #fecaca', padding: '8px 12px', borderRadius: '8px' }}>
+            {mensajeError}
+          </div>
+        )}
       </div>
     </div>
   );

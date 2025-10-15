@@ -12,7 +12,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Fondo solo para la vista de Login */
 .login-page {
     background: linear-gradient(-45deg, #1e3d87, #2c5282, #4a5568, #2d3748);
     background-size: 400% 400%;
@@ -32,7 +31,7 @@ body {
     100% { background-position: 0% 50%; }
 }
 
-/* Partículas de fondo (solo en Login) */
+
 .login-page .particles {
     position: absolute;
     top: 0;

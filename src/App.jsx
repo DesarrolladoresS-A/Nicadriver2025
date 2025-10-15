@@ -10,38 +10,58 @@ import Reportes from "./views/Reportes";
 import Contacto from "./views/Contacto";
 import Administrador from "./views/Administrador";
 import Graficos from "./views/Graficos";
-import ReporteAdmin from './views/ReporteAdmin';
+import ReporteAdminCards from './views/ReporteAdminCards';
 import Register from './views/Register';
+import ReporteAdminDetalle from './views/ReporteAdminDetalle';
+import { useEffect, useState } from 'react';
+import LoaderTractor from './components/common/LoaderTractor';
 
 function Layout() {
   const location = useLocation();
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [minDelayTimer, setMinDelayTimer] = useState(null);
   const showFooter = location.pathname === '/inicio' || location.pathname === '/nosotros';
   const isNosotros = location.pathname === '/nosotros';
   const isInicio = location.pathname === '/inicio';
   const isEstado = location.pathname === '/estadodeTrafico' || location.pathname === '/estadodetrafico';
   const isReportes = location.pathname === '/reportes';
+  const isAdministrador = location.pathname === '/administrador';
+  const ytmusicUrl = import.meta.env.VITE_YTMUSIC_URL || '#';
+
+  // Pequeña superposición global en cada cambio de ruta
+  useEffect(() => {
+    // Mostrar el loader brevemente al cambiar de ruta
+    setRouteLoading(true);
+    const t = setTimeout(() => setRouteLoading(false), 800); // ~0.8s
+    setMinDelayTimer(t);
+    return () => {
+      if (t) clearTimeout(t);
+    };
+  }, [location.pathname]);
 
   return (
     <div className="app">
+      {routeLoading && (
+        <LoaderTractor overlay={true} mensaje="Cargando..." />
+      )}
       <Encabezado />
-      <div className={`main ${isNosotros || isInicio || isEstado || isReportes ? 'no-padding-top' : ''}`}>
-        <main className={`content flex-1 ${isNosotros || isInicio || isEstado || isReportes ? '' : 'margen-superior-main'}`}>
+      <div className={`main ${isNosotros || isInicio || isEstado || isReportes || isAdministrador ? 'no-padding-top' : ''}`}>
+        <main className={`content flex-1 ${isNosotros || isInicio || isEstado || isReportes || isAdministrador ? '' : 'margen-superior-main'}`}>
           <Routes>
             <Route path="/" element={<Navigate to="/inicio" replace />} />
             <Route path="/inicio" element={<Inicio />} />
             <Route path="/nosotros" element={<Nosotros />} />
             <Route path="/estadodeTrafico" element={<EstadodeTrafico />} />
-            <Route path="/reportes" element={<Reportes />} />
+            {/* Alias en minúsculas para compatibilidad con enlaces existentes */}
+            <Route path="/estadodetrafico" element={<EstadodeTrafico />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/graficos" element={<Graficos />} />
-            <Route path="/reporteAdmin" element={<ReporteAdmin />} />
-            <Route path="/administrador" element={
-              <div className="inicio-container">
-                <Administrador />
-              </div>
-            } />
+            <Route path="/reportes" element={<Reportes />} />
+            <Route path="/reporteAdmin" element={<ReporteAdminCards />} />
+            <Route path="/reporteAdmin/:id/detalle" element={<ReporteAdminDetalle />} />
+            <Route path="/administrador" element={<Administrador />} />
           </Routes>
         </main>
       </div>
@@ -95,6 +115,10 @@ function Layout() {
                   <a href="#" aria-label="Twitter" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-twitter text-2xl"></i></a>
                   <a href="#" aria-label="YouTube" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-youtube text-2xl"></i></a>
                   <a href="#" aria-label="LinkedIn" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-linkedin text-2xl"></i></a>
+                  {/* YouTube Music configurable por .env */}
+                  <a href={ytmusicUrl} aria-label="YouTube Music" className="hover:text-[#1e3d87] transition-colors" target="_blank" rel="noopener noreferrer" title="YouTube Music">
+                    <i className="bi bi-music-note-beamed text-2xl"></i>
+                  </a>
                 </div>
               </div>
             </div>

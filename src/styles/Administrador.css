@@ -1,6 +1,6 @@
 .administrador-container {
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background-color: #ffffff !important;
 }
 .text-center  {
  color:#1e3d87
@@ -149,8 +149,8 @@
 
 /* Encabezado */
 .table thead th {
-  background-color: #2c3e50; /* Azul oscuro grisáceo */
-  color: #ffffff;
+  background-color: #f3f4f6 !important; /* leve gris para diferenciar header */
+  color: #000 !important;
   text-align: center;
   vertical-align: middle;
   padding: 12px;
@@ -159,26 +159,378 @@
 
 /* Celdas */
 .table tbody td {
-  background-color: #f8f9fa; /* Gris claro */
-  color: #333;
-  padding: 10px;
-  vertical-align: middle;
+  background-color: #ffffff !important;
+  color: #000 !important;
   text-align: center;
 }
 
-/* Filas alternas */
-.table tbody tr:nth-child(even) {
-  background-color: #eaf0f6; /* Azul claro muy sutil */
+/* Override global table header background in Admin view */
+.administrador-container .div11 .table thead th {
+  background: #f3f4f6 !important;   /* consistente con el header global */
+  background-image: none !important;
+  color: #000 !important;
 }
 
-/* Hover sobre filas */
-.table tbody tr:hover {
-  background-color: #d0e6fa;
-  transition: background-color 0.2s ease-in-out;
+/* Centrar y ampliar la tabla de reportes */
+.administrador-container .div11 {
+  display: block;      /* evitar layout flex que empuja a la derecha */
+  width: 100%;
+  padding: 0;
+  margin: 0 auto;      /* centrar en el contenedor */
+  grid-column: 1 / -1; /* ocupar todo el ancho si el padre es grid */
 }
 
-/* Estado con estilos opcionales si deseas destacarlo */
-.table td.estado {
-  font-weight: bold;
-  color: #2c3e50;
+/* Asegurar que .div11 ocupe todas las columnas también fuera de media queries */
+.div11 {
+  grid-column: 1 / -1;
+}
+.administrador-container .div11 .table-responsive {
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;   /* centrar el contenedor */
+}
+/* Wrapper visual tipo tarjeta sin padding extra para alinear encabezado y bordes */
+.administrador-container .div11 .tabla-admin-wrapper.card {
+  padding: 0 !important;              /* elimina el espacio que descuadra el header */
+  margin: 0 auto;                     /* centrado */
+  width: 100%;
+  border-radius: 12px;                /* mantiene look de tarjeta */
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  border: 1px solid #e5e7eb;          /* borde sutil como tarjeta */
+}
+.administrador-container .div11 .tabla-admin-wrapper .table {
+  margin: 0 !important;               /* sin margen interno de tabla */
+  width: 100% !important;
+  border: 0 !important;               /* evita borde doble con el wrapper */
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+.administrador-container .div11 table,
+.administrador-container .div11 .table-responsive .table {
+  width: 100% !important; /* ocupar todo el ancho disponible */
+  min-width: 0 !important; /* anula el min-width global de index.css */
+  table-layout: fixed !important; /* distribuir columnas y forzar ocupación total */
+  margin-left: auto !important;
+  margin-right: auto !important; /* centrar la tabla si no llena el ancho */
+}
+
+/* Permitir que el contenido de celdas envuelva y no force ancho mínimo */
+.administrador-container .div11 .table th,
+.administrador-container .div11 .table td {
+  white-space: normal !important;
+  word-break: break-word; /* evitar desbordes y permitir que quepa el contenido */
+  overflow-wrap: anywhere;
+  padding: 12px 14px;                 /* padding uniforme y cómodo */
+}
+/* Redondear esquinas superiores del header para que coincidan con la tarjeta */
+.administrador-container .div11 .tabla-admin-wrapper .table thead th:first-child { border-top-left-radius: 12px; }
+.administrador-container .div11 .tabla-admin-wrapper .table thead th:last-child  { border-top-right-radius: 12px; }
+
+/* Borde de celdas y color más suave */
+.administrador-container .div11 .tabla-admin-wrapper .table.table-bordered > :not(caption) > * > * {
+  border-color: #e5e7eb !important; /* bordes suaves */
+}
+
+/* Proporciones de columnas: Título 25%, Descripción 55%, Estado 20% */
+.administrador-container .div11 .table th:nth-child(1),
+.administrador-container .div11 .table td:nth-child(1) { width: 25%; }
+.administrador-container .div11 .table th:nth-child(2),
+.administrador-container .div11 .table td:nth-child(2) { width: 55%; }
+.administrador-container .div11 .table th:nth-child(3),
+.administrador-container .div11 .table td:nth-child(3) { width: 20%; }
+
+  /* Filas alternas */
+  .table tbody tr:nth-child(even) {
+    background-color: #eaf0f6; /* Azul claro muy sutil */
+  }
+  
+  .table tbody tr:hover {
+    background-color: #d0e6fa;
+    transition: background-color 0.2s ease-in-out;
+  }
+
+.div9 {
+  /* Left box */
+  grid-column: 1 / 6 !important; /* columns 1-5 */
+  grid-row: 3 / span 1 !important;
+}
+.div10 {
+  /* Right box */
+  grid-column: 6 / 11 !important; /* columns 6-10 */
+  grid-row: 3 / span 1 !important;
+}
+
+/* Optional: keep same visual height */
+.div9 .card-tile, .div10 .card-tile { min-height: 220px; }
+
+.div12 {
+  grid-column: span 2 / span 2;
+  grid-column-start: 1;
+}
+
+.div13 {
+  grid-column-start: 5;
+  grid-row-start: 6;
+}
+
+.div14 {
+  grid-column-start: 6;
+  grid-row-start: 6;
+}
+
+.div15 {
+  grid-column-start: 7;
+  grid-row-start: 6;
+}
+
+.div16 {
+  grid-column-start: 8;
+  grid-row-start: 6;
+}
+
+.div17 {
+  grid-column: span 3 / span 3;
+  grid-column-start: 1;
+  grid-row-start: 6;
+}
+
+/* Utilidad visual para los cuadros 9 y 10 mientras definimos contenido */
+.box-placeholder {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* Encabezado estilizado (7) */
+.div7 h1 {
+  font-size: 1.4rem;
+  color: #0f172a;
+}
+
+.div7 {
+  background: #ffffff !important;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+
+/* Título central (8) */
+.div8 {
+  background: #ffffff !important;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+.div8 h2 { margin: 0; color: #0f172a; font-weight: 700; }
+
+/* Sección título (12) */
+.div12 {
+  background: #ffffff !important;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+}
+.div12 h3 { margin: 0; color: #0f172a; font-weight: 700; }
+
+/* Tarjetas estilo (9 y 10) */
+.card-tile {
+  background: #ffffff !important;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 16px;
+}
+.kpi-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.kpi-title { font-weight:700; color:#000; }
+.kpi-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display:flex; align-items:center; justify-content:center;
+  background: transparent; color: #000; border: 1px solid #d1d5db;
+}
+.kpi-value { font-size: 2rem; font-weight:800; color: #000; }
+.kpi-list { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+.kpi-item { text-align:center; }
+.kpi-label { font-weight:600; color:#000; }
+.kpi-badge { display:inline-block; padding:6px 10px; border-radius: 999px; font-weight:700; border: 1px solid #d1d5db; background: transparent; color: #000; }
+.kpi-badge.secondary,
+.kpi-badge.info,
+.kpi-badge.success,
+.kpi-badge.danger { background: transparent; color:#000; border: 1px solid #d1d5db; }
+
+/* Botones de acciones (13–16) */
+.action-btn.btn {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: #0f172a;
+  box-shadow: var(--shadow);
+  transition: background-color .2s ease, color .2s ease, transform .15s ease, border-color .2s ease;
+}
+.action-btn.btn:hover { transform: translateY(-1px); }
+
+/* Colores específicos para botones de acciones */
+.btn-excel {
+  background: transparent;
+  border-color: #16a34a;
+  color: #166534;
+}
+.btn-excel i { color: inherit; }
+.btn-excel:hover { background: #dcfce7; border-color: #16a34a; color: #14532d; }
+
+.btn-nuevos {
+  background: transparent;
+  border-color: #93c5fd;
+  color: #1e3a8a;
+}
+.btn-nuevos i { color: inherit; }
+.btn-nuevos:hover { background: #e0ecff; border-color: #60a5fa; color: #1d4ed8; }
+.btn-nuevos.active { background: #e0ecff; border-color: #60a5fa; color: #1d4ed8; }
+
+.btn-proceso {
+  background: transparent;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+.btn-proceso i { color: inherit; }
+.btn-proceso:hover { background: #fef3c7; border-color: #d97706; color: #b45309; }
+.btn-proceso.active { background: #fef3c7; border-color: #d97706; color: #b45309; }
+
+.btn-aceptado {
+  background: transparent;
+  border-color: #34d399;
+  color: #166534;
+}
+.btn-aceptado i { color: inherit; }
+.btn-aceptado:hover { background: #dcfce7; border-color: #10b981; color: #14532d; }
+.btn-aceptado.active { background: #dcfce7; border-color: #10b981; color: #14532d; }
+
+.btn-rechazado {
+  background: transparent;
+  border-color: #f87171;
+  color: #7f1d1d;
+}
+.btn-rechazado i { color: inherit; }
+.btn-rechazado:hover { background: #fee2e2; border-color: #ef4444; color: #7f1d1d; }
+.btn-rechazado.active { background: #fee2e2; border-color: #ef4444; color: #7f1d1d; }
+
+/* Asegurar texto negro dentro de los cuadros 9 y 10 */
+.div9, .div10 { color: #000; }
+
+/* Fila exclusiva para los cuadros 9 y 10 */
+.div9_10_row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+.div9_10_row .div9,
+.div9_10_row .div10 {
+  flex: 1 1 0;
+  min-width: 0; /* evita overflow del contenido */
+}
+
+/* Fila de acciones: Excel + filtros */
+.acciones_row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.acciones_row > div { flex: 0 0 auto; }
+.acciones_row .action-btn.btn { white-space: nowrap; }
+
+/* Responsivo */
+@media (max-width: 992px) {
+  /* En pantallas pequeñas, apilar 9 y 10 */
+  .div9_10_row { flex-direction: column; }
+  .div9_10_row .div9,
+  .div9_10_row .div10 { width: 100%; }
+  .parent {
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto;
+  }
+  .div7 { grid-column: 1 / -1; }
+  .div8 { grid-column: 1 / -1; }
+  .div9, .div10 { grid-column: 1 / -1; }
+  .div12 { grid-column: 1 / 4; }
+  .div17 { grid-column: 4 / -1; }
+  .div13, .div14, .div15, .div16 { grid-row-start: auto; }
+  .div11 { grid-column: 1 / -1; grid-row: auto; }
+}
+
+/* KPI 2x2 grid inside box 9 */
+.kpi4-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.kpi4-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.kpi4-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.kpi4-icon.secondary,
+.kpi4-icon.info,
+.kpi4-icon.success,
+.kpi4-icon.danger { background: transparent; color: #000; border: 1px solid #d1d5db; }
+
+.kpi4-meta { display:flex; flex-direction:column; }
+.kpi4-label { font-size: .9rem; color: #000; font-weight: 600; }
+.kpi4-value { font-size: 1.25rem; font-weight: 800; color: #000; }
+
+@media (max-width: 576px) {
+  .kpi4-grid { grid-template-columns: 1fr; }
+}
+
+/* KPI variants inside box 9 */
+.kpi4-card.nuevos {
+  background: #e0ecff; /* soft blue */
+  border-color: #bfdbfe;
+}
+.kpi4-card.nuevos .kpi4-icon { background: #c7d2fe; color: #1e3a8a; border: 1px solid #93c5fd; }
+.kpi4-card.nuevos .kpi4-label { color: #1d4ed8; }
+
+.kpi4-card.proceso {
+  background: #fef3c7; /* soft amber */
+  border-color: #fde68a;
+}
+.kpi4-card.proceso .kpi4-icon { background: #fde68a; color: #92400e; border: 1px solid #f59e0b; }
+.kpi4-card.proceso .kpi4-label { color: #b45309; }
+
+.kpi4-card.aceptado {
+  background: #dcfce7; /* soft green */
+  border-color: #bbf7d0;
+}
+.kpi4-card.aceptado .kpi4-icon { background: #bbf7d0; color: #14532d; border: 1px solid #34d399; }
+.kpi4-card.aceptado .kpi4-label { color: #166534; }
+
+.kpi4-card.rechazado {
+  background: #fee2e2; /* soft red */
+  border-color: #fecaca;
+}
+.kpi4-card.rechazado .kpi4-icon { background: #fecaca; color: #7f1d1d; border: 1px solid #f87171; }
+.kpi4-card.rechazado .kpi4-label { color: #991b1b; }
+
+/* Override: icons in KPI cards should be black; keep state backgrounds/borders */
+.kpi4-card .kpi4-icon {
+  color: #000 !important;
 }

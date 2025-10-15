@@ -102,8 +102,55 @@ const Nosotros = () => {
         <div className="section-title" id="equipo">
           <span>Equipo</span><span className="line"></span>
         </div>
+        
         <section className="team" aria-label="Nuestro equipo">
           <div className="team-grid">
+
+          <article className="member">
+              <div className="avatar-wrap">
+                <div className="avatar">MR</div>
+              </div>
+              <div className="member-body">
+                <h5>Mauricio Rubio</h5>
+                <div className="role">Programador</div>
+                <div className="tags">
+                  <span className="tag">Cyber Seguridad</span>
+                  <span className="tag">Programador</span>
+                  <span className="tag">Programa CSS</span>
+                  <span className="tag">Programa de HTML</span>
+                </div>
+              </div>
+            </article>
+
+            <article className="member">
+              <div className="avatar-wrap">
+                <div className="avatar">BG</div>
+              </div>
+              <div className="member-body">
+                <h5>Byron García</h5>
+                <div className="role">Programador</div>
+                <div className="tags">
+                  <span className="tag">Diseñador</span>
+                  <span className="tag">Programador</span>
+                  <span className="tag">Programa CSS</span>
+                  <span className="tag">Programa de HTML</span>
+                </div>
+              </div>
+            </article>
+
+            <article className="member">
+              <div className="avatar-wrap">
+                <div className="avatar">ID</div>
+              </div>
+              <div className="member-body">
+                <h5>Iza Duartez</h5>
+                <div className="role">Diseñadora</div>
+                <div className="tags">
+                  <span className="tag">Trabajo colaborativo</span>
+                </div>
+              </div>
+            </article>
+
             <article className="member">
               <div className="avatar-wrap">
                 <div className="avatar">AM</div>
@@ -117,6 +164,7 @@ const Nosotros = () => {
                 </div>
               </div>
             </article>
+
             <article className="member">
               <div className="avatar-wrap">
                 <div className="avatar">JL</div>
@@ -127,44 +175,13 @@ const Nosotros = () => {
                 <div className="tags">
                   <span className="tag">Analista</span>
                   <span className="tag">Seguridad</span>
+                  <span className="tag">Programa CSS</span>
+                  <span className="tag">Programa de HTML</span>
                 </div>
               </div>
             </article>
-            <article className="member">
-              <div className="avatar-wrap">
-                <div className="avatar">ID</div>
-              </div>
-              <div className="member-body">
-                <h5>Iza Duartez</h5>
-                <div className="role">Deseñadora</div>
-                <div className="tags">
-                </div>
-              </div>
-            </article>
-            <article className="member">
-              <div className="avatar-wrap">
-                <div className="avatar">BG</div>
-              </div>
-              <div className="member-body">
-                <h5>Byron García</h5>
-                <div className="role">Programador</div>
-                <div className="tags">
-                  <span className="tag">Diseñador</span>
-                </div>
-              </div>
-            </article>
-            <article className="member">
-              <div className="avatar-wrap">
-                <div className="avatar">MR</div>
-              </div>
-              <div className="member-body">
-                <h5>Mauricio Rubio</h5>
-                <div className="role">Programador</div>
-                <div className="tags">
-                  <span className="tag">Cyber Seguridad</span>
-                </div>
-              </div>
-            </article>
+            
+            
           </div>
         </section>
 

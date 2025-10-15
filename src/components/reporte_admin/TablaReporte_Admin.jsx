@@ -3,6 +3,7 @@ import { Table, Modal } from 'react-bootstrap';
 import '../../styles/ReporteAdmin.css';
 import { FaFilePdf, FaEye } from 'react-icons/fa';
 import jsPDF from 'jspdf';
+import LoaderTractor from '../common/LoaderTractor';
 
 const TablaReporteAdmin = ({
   reportes = [],
@@ -72,10 +73,7 @@ const TablaReporteAdmin = ({
   if (loading) {
     return (
       <div className="text-center py-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
-        </div>
-        <p className="mt-3">Cargando reportes...</p>
+        <LoaderTractor mensaje="Cargando reportes..." height={160} />
       </div>
     );
   }
