@@ -463,14 +463,12 @@ body {
   display: none;
 }
 
-/* Estilos generales para la ventana de información */
+/* Estilos para la ventana de información */
 .info-window-container {
   max-width: 280px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  box-sizing: border-box;
 }
 
-/* Títulos y descripciones */
 .info-window-title {
   color: #FF5722;
   margin-bottom: 12px;
@@ -485,7 +483,6 @@ body {
   line-height: 1.4;
 }
 
-/* Imagen */
 .info-window-image {
   width: 100%;
   border-radius: 5px;
@@ -493,7 +490,6 @@ body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Alerta */
 .info-window-alert {
   background-color: #fff8e1;
   color: #ff6f00;
@@ -504,12 +500,10 @@ body {
   border-left: 3px solid #ffc107;
 }
 
-/* Botones */
 .info-window-actions {
   display: flex;
   gap: 8px;
   justify-content: center;
-  flex-wrap: wrap; /* Permite que los botones bajen de línea en móviles */
   margin-top: 18px;
   padding-top: 12px;
   border-top: 2px solid rgba(0, 0, 0, 0.1);
@@ -523,8 +517,6 @@ body {
   font-size: 13px;
   font-weight: 500;
   transition: all 0.3s;
-  flex: 1 1 auto; /* Ajusta ancho automáticamente */
-  min-width: 100px; /* No demasiado pequeño */
 }
 
 .info-window-btn-confirm {
@@ -543,37 +535,6 @@ body {
 
 .info-window-btn-delete:hover {
   background-color: #d32f2f;
-}
-
-/* Media queries para pantallas pequeñas */
-@media (max-width: 480px) {
-  .info-window-container {
-    max-width: 95vw; /* Ocupa casi toda la pantalla del móvil */
-    padding: 12px;
-  }
-
-  .info-window-title {
-    font-size: 16px;
-  }
-
-  .info-window-description {
-    font-size: 13px;
-  }
-
-  .info-window-actions {
-    flex-direction: column; /* Botones en columna */
-    gap: 8px;
-  }
-
-  .info-window-btn {
-    width: 100%; /* Botones ocupan todo el ancho disponible */
-    text-align: center;
-  }
-
-  .info-window-image {
-    max-height: 180px; /* Ajusta altura de imagen */
-    object-fit: cover;
-  }
 }
 
 /* Estilos para los modales personalizados */
@@ -1416,61 +1377,31 @@ body {
   border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
 
-/* Contenedor principal del reporte de tráfico */
-.reporte-trafico {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;      /* Ocupa todo el ancho disponible */
-  max-width: 100%;  /* Sin límite */
-  box-sizing: border-box;
-  padding: 12px;
-  margin: 0 auto;
-}
-
-/* Botones dentro del reporte */
-.reporte-trafico .btn-accion {
-  width: 100%;        /* Ocupan todo el ancho */
-  text-align: center;
-  margin-bottom: 8px;
-  flex: none;
-  min-width: 0;       /* Evita que queden demasiado grandes */
-}
-
-/* Ventana de contenido dentro del reporte */
-.reporte-trafico .reporte-contenido {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
-/* Imágenes dentro del reporte */
-.reporte-trafico img {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-/* Media query para móviles */
+/* Responsive */
 @media (max-width: 768px) {
-  .reportes-container {
-    grid-template-columns: 1fr; /* Una columna */
-    gap: 12px;
-  }
+    .trafico-container {
+        padding: 0.75rem;
+    }
 
-  .reporte-trafico {
-    width: 95vw;   /* Casi todo el ancho de la pantalla */
-    padding: 10px;
-  }
+    .map-container {
+        height: 400px;
+    }
 
-  .reporte-trafico .btn-accion {
-    width: 100%; /* Botones ocupan todo el ancho del contenedor */
-    margin-bottom: 10px;
-  }
+    .filtros-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filtro-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .reportes-container {
+        grid-template-columns: 1fr;
+    }
 }
-
 
 /* Animaciones */
 .fade-in {
@@ -1728,7 +1659,7 @@ body {
     }
 }
 
-/* Contenedor general */
+/* Estilos para la barra de búsqueda y botones */
 .search-container {
   width: 100%;
   max-width: 600px;
@@ -1736,7 +1667,6 @@ body {
   padding: 0 20px;
 }
 
-/* Barra de búsqueda en escritorio */
 .search-bar {
   display: flex;
   gap: 10px;
@@ -1747,7 +1677,6 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Input */
 .search-input {
   flex: 1;
   padding: 12px;
@@ -1763,9 +1692,7 @@ body {
   box-shadow: 0 0 0 2px rgba(255, 126, 0, 0.2);
 }
 
-/* Botones */
-.search-button, 
-.listo-button {
+.search-button, .listo-button {
   padding: 12px 24px;
   border: none;
   border-radius: 8px;
@@ -1777,8 +1704,8 @@ body {
   color: white;
 }
 
-.search-button:hover, 
-.listo-button:hover {
+.search-button:hover, .listo-button:hover {
+  background: #e66a00;
   transform: translateY(-2px);
 }
 
@@ -1788,28 +1715,6 @@ body {
 
 .listo-button:hover {
   background: #218838;
-}
-
-/* 📱 Estilos móviles */
-@media (max-width: 600px) {
-  .search-bar {
-    flex-direction: column;  /* ✅ cambia a vertical */
-    gap: 8px;
-    padding: 12px;
-  }
-
-  .search-input {
-    width: 100%;
-    font-size: 14px;  /* ✅ texto más compacto */
-    padding: 10px;
-  }
-
-  .search-button, 
-  .listo-button {
-    width: 100%;      /* ✅ botones ocupan todo el ancho */
-    font-size: 14px;
-    padding: 10px;
-  }
 }
 
 /* Estilos para el botón de cancelar ruta */
