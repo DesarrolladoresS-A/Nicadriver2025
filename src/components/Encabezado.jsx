@@ -6,23 +6,20 @@ import Navbar from "react-bootstrap/Navbar";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { useAuth } from "../database/authcontext";
 import { db } from "../database/firebaseconfig";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import "../App.css";
-import { RecentReportNotification, ReportStatusNotification } from "./notifications";
 
 const Encabezado = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { isLoggedIn, logout, user } = useAuth();
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const [latestReports, setLatestReports] = useState([]); // lista base de reportes del usuario
   const prevEstadosRef = useRef({}); // rastrear estados previos por reporte id
   const initializedRef = useRef(false); // evitar notificaciones masivas en la primera carga
   const [notifHistory, setNotifHistory] = useState([]); // historial persistente
   const [unreadCount, setUnreadCount] = useState(0);
   const panelRef = useRef(null);
-  const [activeTab, setActiveTab] = useState('recent'); // recent | status
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -78,11 +75,10 @@ const Encabezado = () => {
   // Suscripción a los reportes del usuario para notificaciones
   useEffect(() => {
     if (!user || user?.email === "desarrolladoressa2000@gmail.com") return; // No para admin
-    // Suscribe SOLO a documentos del usuario autenticado para evitar recibir cambios de otros usuarios
     const colRef = collection(db, "reportes");
-    const q = query(colRef, where("userEmail", "==", user.email));
-    const unsub = onSnapshot(q, (snap) => {
-      const items = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const unsub = onSnapshot(colRef, (snap) => {
+      const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const items = all.filter((r) => r.userEmail === user.email);
       console.log("Notificaciones: encontrados", items.length, "reportes del usuario");
       // Ordenar por fechaRegistro (ISO) descendente y limitar a 20
       items.sort((a, b) => {
@@ -91,7 +87,6 @@ const Encabezado = () => {
         return fb - fa;
       });
       const latest = items.slice(0, 20);
-      setLatestReports(latest);
 
       // En la primera carga no crear eventos de "creado" para todo el historial
       if (!initializedRef.current) {
@@ -241,6 +236,10 @@ const Encabezado = () => {
                       <i className="bi-box-arrow-in-right me-2"></i>
                       <strong>Entrar</strong>
                     </Nav.Link>
+                    <Nav.Link onClick={() => handleNavigate("/login?register=1")} className="nav-link">
+                      <i className="bi-person-plus me-2"></i>
+                      <strong>Registrar</strong>
+                    </Nav.Link>
                   </>
                 )}
 
@@ -259,8 +258,8 @@ const Encabezado = () => {
                           <strong>Inicio Administrador</strong>
                         </Nav.Link>
                         <Nav.Link
-                          onClick={() => handleNavigate("/estadodeTrafico")}
-                          className={`nav-link ${location.pathname === "/estadodeTrafico" ? "active" : ""}`}
+                          onClick={() => handleNavigate("/estadodetrafico")}
+                          className={`nav-link ${location.pathname === "/estadodetrafico" ? "active" : ""}`}
                         >
                           <i className="bi-cone-striped me-2"></i>
                           <strong>Estado del Tráfico</strong>
@@ -305,8 +304,8 @@ const Encabezado = () => {
                           <strong>Nosotros</strong>
                         </Nav.Link>
                         <Nav.Link
-                          onClick={() => handleNavigate("/estadodeTrafico")}
-                          className={`nav-link ${location.pathname === "/estadodeTrafico" ? "active" : ""}`}
+                          onClick={() => handleNavigate("/estadodetrafico")}
+                          className={`nav-link ${location.pathname === "/estadodetrafico" ? "active" : ""}`}
                         >
                           <i className="bi-cone-striped me-2"></i>
                           <strong>Estado del Trafico</strong>
@@ -325,63 +324,17 @@ const Encabezado = () => {
                               <i className="bi bi-bell-fill" style={{ color: 'black' }}></i>
                               {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
                               {bellOpen && (
-                                <div className="notif-panel" style={{ width: 360, maxHeight: 420, overflow: 'hidden' }}>
-                                  <div style={{ position: 'sticky', top: 0, background: '#ffffff', zIndex: 1, display: 'flex', gap: 8, padding: '8px 8px 6px', borderBottom: '1px solid #f3f4f6' }}>
-                                    <button
-                                      className="btn btn-light"
-                                      style={{ borderRadius: 16, padding: '4px 10px', background: activeTab === 'recent' ? '#e9ecef' : '#fff', color: '#111827', border: '1px solid #e5e7eb' }}
-                                      onClick={(e) => { e.stopPropagation(); setActiveTab('recent'); }}
-                                    >
-                                      Reportes Recientes
-                                    </button>
-                                    <button
-                                      className="btn btn-light"
-                                      style={{ borderRadius: 16, padding: '4px 10px', background: activeTab === 'status' ? '#e9ecef' : '#fff', color: '#111827', border: '1px solid #e5e7eb' }}
-                                      onClick={(e) => { e.stopPropagation(); setActiveTab('status'); }}
-                                    >
-                                      Estado de Reportes
-                                    </button>
-                                  </div>
-                                  <div key={activeTab} className="fade-slide" style={{ padding: 8, height: 360, overflowY: 'auto' }}>
-                                    {activeTab === 'recent' && (
-                                      latestReports.length === 0 ? (
-                                        <div className="notif-empty">Sin notificaciones</div>
-                                      ) : (
-                                        latestReports.map((r) => (
-                                          <RecentReportNotification
-                                            key={r.id}
-                                            report={{
-                                              tipoReporte: r.titulo || r.tipoReporte,
-                                              userEmail: r.userEmail || (user && user.email),
-                                              descripcion: r.descripcion,
-                                              fechaRegistro: r.fechaRegistro || r.fechaHora,
-                                              imagenUrl: r.foto || r.imagenUrl
-                                            }}
-                                          />
-                                        ))
-                                      )
-                                    )}
-                                    {activeTab === 'status' && (
-                                      latestReports.filter((r) => (r.estado || 'pendiente').toLowerCase() !== 'pendiente').length === 0 ? (
-                                        <div className="notif-empty">Sin actualizaciones</div>
-                                      ) : (
-                                        latestReports.filter((r) => (r.estado || 'pendiente').toLowerCase() !== 'pendiente').map((r) => (
-                                          <ReportStatusNotification
-                                            key={`${r.id}-status`}
-                                            report={{
-                                              tipoReporte: r.titulo || r.tipoReporte,
-                                              userEmail: r.userEmail || (user && user.email),
-                                              descripcion: r.descripcion,
-                                              fechaActualizacion: r.fechaActualizacion || r.fechaRegistro || r.fechaHora,
-                                              estado: r.estado || 'pendiente',
-                                              comentarioAdmin: r.comentarioAdmin,
-                                              imagenUrl: r.foto || r.imagenUrl
-                                            }}
-                                          />
-                                        ))
-                                      )
-                                    )}
-                                  </div>
+                                <div className="notif-panel">
+                                  {notifications.length === 0 ? (
+                                    <div className="notif-empty">Sin notificaciones</div>
+                                  ) : (
+                                    notifications.map((n) => (
+                                      <div key={n.id} className={`notif-item notif-${n.estado}`}>
+                                        <div className="notif-title">{n.titulo}</div>
+                                        <div className="notif-text">{n.mensaje}</div>
+                                      </div>
+                                    ))
+                                  )}
                                 </div>
                               )}
                             </div>
