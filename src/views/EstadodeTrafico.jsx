@@ -54,6 +54,9 @@ const ciudadesNicaragua = [
   { nombre: 'Estelí', lat: 13.091, lng: -86.3538 },
 ];
 
+
+// Moved outside the component to prevent recreation on each render
+
 // Moved outside the component to prevent recreation on each render
 const libraries = ['places', 'geometry'];
 
