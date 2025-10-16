@@ -930,16 +930,31 @@ const EstadoTrafico = () => {
 
   return (
     <div className="trafico-page">
-      <div className="trafico-hero">
-        <div className="hero-content">
-          <h1 className="hero-title">Estado del Tráfico</h1>
-          <p className="hero-subtitle">Explora el tráfico en tiempo real y planifica tu ruta</p>
-          {isTraveling && (
-            <div className="travel-indicator">
-              <span className="travel-dot"></span>
-              <span>Viaje en progreso - Seguimiento activo</span>
-            </div>
-          )}
+      <div className="map-wrapper">
+        {/* Overlay superior compacto: búsqueda en esquina superior izquierda */}
+        <div className="trafico-overlay">
+          <div className="trafico-controls">
+            <input
+              type="text"
+              placeholder="Ingrese su destino..."
+              value={destino}
+              onChange={(e) => setDestino(e.target.value)}
+              className="search-input"
+            />
+            <button onClick={handleBuscarRuta} className="search-button">
+              Buscar Ruta
+            </button>
+            {rutaCalculada && (
+              <button onClick={handleListo} className="listo-button">
+                Listo
+              </button>
+            )}
+            {rutaSeleccionada && (
+              <button onClick={handleCancelarRuta} className="cancelar-ruta-button">
+                Cancelar
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1056,7 +1071,7 @@ const EstadoTrafico = () => {
                   <Marker
                     position={selectedLocation}
                     icon={{
-                      path: google.maps.SymbolPath.CIRCLE,
+                      path: window.google.maps.SymbolPath.CIRCLE,
                       scale: clickEnRuta ? 8 : 6,
                       fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
                       fillOpacity: 1,
@@ -1081,9 +1096,9 @@ const EstadoTrafico = () => {
                     <div className="info-window-content">
                       <h4 className="info-window-title">{selectedReporte.tipo}</h4>
                       <p className="info-window-description">{selectedReporte.descripcion}</p>
-                      {selectedReporte.imagenUrl && (
+                      {selectedReporte.imagenBase64 && (
                         <img
-                          src={selectedReporte.imagenUrl}
+                          src={selectedReporte.imagenBase64}
                           alt="Incidente"
                           className="info-window-image"
                         />
@@ -1091,54 +1106,6 @@ const EstadoTrafico = () => {
                       {selectedReporte.enRuta && (
                         <p className="info-window-route-warning">⚠️ Este incidente está en tu ruta</p>
                       )}
-                      <div className="info-window-buttons">
-                        <button
-                          className="info-window-button sigue"
-                          onClick={async () => {
-                            await addDoc(collection(db, 'confirmaciones'), {
-                              incidenteId: selectedReporte.id,
-                              confirmadoEn: serverTimestamp(),
-                            });
-                            Swal.fire({
-                              icon: 'success',
-                              title: 'Confirmado',
-                              text: 'Se ha confirmado que el incidente sigue ocurriendo.',
-                              confirmButtonText: 'Entendido'
-                            });
-                            setSelectedReporte(null);
-                          }}
-                        >
-                          Sigue ocurriendo
-                        </button>
-                        <button
-                          className="info-window-button eliminar"
-                          onClick={async () => {
-                            const result = await Swal.fire({
-                              title: '¿Eliminar reporte?',
-                              text: 'Esta acción no se puede deshacer',
-                              icon: 'warning',
-                              showCancelButton: true,
-                              confirmButtonColor: '#d33',
-                              cancelButtonColor: '#3085d6',
-                              confirmButtonText: 'Sí, eliminar',
-                              cancelButtonText: 'Cancelar'
-                            });
-
-                            if (result.isConfirmed) {
-                              await deleteDoc(doc(db, 'incidentes', selectedReporte.id));
-                              Swal.fire({
-                                icon: 'success',
-                                title: 'Eliminado',
-                                text: 'El reporte ha sido eliminado',
-                                confirmButtonText: 'Entendido'
-                              });
-                              setSelectedReporte(null);
-                            }
-                          }}
-                        >
-                          Eliminar
-                        </button>
-                      </div>
                     </div>
                   </InfoWindow>
                 )}
@@ -1146,7 +1113,6 @@ const EstadoTrafico = () => {
               </GoogleMap>
             </div>
           </div>
-        </div>
 
         {/* Alerta de Seguridad Interactiva */}
         {showSafetyAlert && (
@@ -1728,6 +1694,7 @@ const EstadoTrafico = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };
