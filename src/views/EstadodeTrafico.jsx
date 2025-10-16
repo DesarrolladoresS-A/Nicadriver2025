@@ -59,9 +59,13 @@ const ciudadesNicaragua = [
 const libraries = ['places', 'geometry'];
 
 const EstadoTrafico = () => {
-  const { isLoaded } = useJsApiLoader({
+  const [mapError, setMapError] = useState(null);
+  const [isMapLoading, setIsMapLoading] = useState(true);
+
+  const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries,
+    id: 'google-map-script',
   });
 
   const mapRef = useRef(null);
@@ -115,6 +119,28 @@ const EstadoTrafico = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showSafetyAlert, setShowSafetyAlert] = useState(false);
   const [safetyAlertStep, setSafetyAlertStep] = useState(0);
+  const [searchTimeout, setSearchTimeout] = useState(null);
+
+  // Manejar errores del mapa
+  useEffect(() => {
+    if (loadError) {
+      console.error('Error cargando Google Maps:', loadError);
+      setMapError('Error cargando el mapa. Verifica tu conexión a internet y la configuración de la API.');
+      setIsMapLoading(false);
+    } else if (isLoaded) {
+      setMapError(null);
+      setIsMapLoading(false);
+    }
+  }, [isLoaded, loadError]);
+
+  // Verificar si la API key está configurada
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey || apiKey === 'tu_google_maps_api_key_aqui') {
+      setMapError('Google Maps API Key no configurada. Por favor, configura VITE_GOOGLE_MAPS_API_KEY en las variables de entorno.');
+      setIsMapLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -551,27 +577,56 @@ const EstadoTrafico = () => {
     }
   };
 
-  // Función para manejar cambios en el input de búsqueda
+  // Función mejorada para manejar cambios en el input de búsqueda
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setDestino(value);
 
     if (value.length >= GOOGLE_PLACES_CONFIG.filters.minInputLength) {
-      const service = new window.google.maps.places.AutocompleteService();
-      service.getPlacePredictions({
-        input: value,
-        ...GOOGLE_PLACES_CONFIG.autocompleteOptions
-      }, (predictions, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-          // Usar la función de filtrado de la configuración
-          const filteredSuggestions = filterSuggestions(predictions);
-          setSearchSuggestions(filteredSuggestions);
-          setShowSuggestions(true);
-        } else {
-          setSearchSuggestions([]);
-          setShowSuggestions(false);
-        }
-      });
+      // Debounce para evitar demasiadas llamadas a la API
+      clearTimeout(searchTimeout);
+      const timeout = setTimeout(() => {
+        const service = new window.google.maps.places.AutocompleteService();
+
+        // Configuración expandida para obtener más resultados
+        const searchOptions = {
+          input: value,
+          componentRestrictions: { country: 'ni' },
+          types: ['(regions)', 'establishment', 'geocode'],
+          ...GOOGLE_PLACES_CONFIG.autocompleteOptions
+        };
+
+        service.getPlacePredictions(searchOptions, (predictions, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+            // Usar la función de filtrado de la configuración
+            const filteredSuggestions = filterSuggestions(predictions);
+            setSearchSuggestions(filteredSuggestions);
+            setShowSuggestions(true);
+          } else if (status === window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+            // Si no hay resultados, intentar con una búsqueda más amplia
+            const broadSearchOptions = {
+              input: value,
+              componentRestrictions: { country: 'ni' },
+              types: ['geocode']
+            };
+
+            service.getPlacePredictions(broadSearchOptions, (broadPredictions, broadStatus) => {
+              if (broadStatus === window.google.maps.places.PlacesServiceStatus.OK && broadPredictions) {
+                setSearchSuggestions(broadPredictions.slice(0, 5));
+                setShowSuggestions(true);
+              } else {
+                setSearchSuggestions([]);
+                setShowSuggestions(false);
+              }
+            });
+          } else {
+            setSearchSuggestions([]);
+            setShowSuggestions(false);
+          }
+        });
+      }, 300); // Debounce de 300ms
+
+      setSearchTimeout(timeout);
     } else {
       setSearchSuggestions([]);
       setShowSuggestions(false);
@@ -831,35 +886,60 @@ const EstadoTrafico = () => {
     setEstimatedArrival(arrivalTime);
   };
 
+  // Mostrar estados de carga y error
+  if (isMapLoading) {
+    return (
+      <div className="trafico-page">
+        <div className="map-loading-container">
+          <div className="loading-spinner"></div>
+          <h3>Cargando mapa...</h3>
+          <p>Por favor espera mientras se carga el mapa de tráfico</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (mapError) {
+    return (
+      <div className="trafico-page">
+        <div className="map-error-container">
+          <div className="error-icon">⚠️</div>
+          <h3>Error del Mapa</h3>
+          <p>{mapError}</p>
+          <div className="error-solutions">
+            <h4>Soluciones:</h4>
+            <ul>
+              <li>Verifica tu conexión a internet</li>
+              <li>Configura la variable VITE_GOOGLE_MAPS_API_KEY</li>
+              <li>Verifica que la API key tenga permisos para Maps JavaScript API</li>
+              <li>Revisa la consola del navegador para más detalles</li>
+            </ul>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="retry-button"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
   return (
     <div className="trafico-page">
-      <div className="map-wrapper">
-        {/* Overlay superior compacto: búsqueda en esquina superior izquierda */}
-        <div className="trafico-overlay">
-          <div className="trafico-controls">
-            <input
-              type="text"
-              placeholder="Ingrese su destino..."
-              value={destino}
-              onChange={(e) => setDestino(e.target.value)}
-              className="search-input"
-            />
-            <button onClick={handleBuscarRuta} className="search-button">
-              Buscar Ruta
-            </button>
-            {rutaCalculada && (
-              <button onClick={handleListo} className="listo-button">
-                Listo
-              </button>
-            )}
-            {rutaSeleccionada && (
-              <button onClick={handleCancelarRuta} className="cancelar-ruta-button">
-                Cancelar
-              </button>
-            )}
-          </div>
+      <div className="trafico-hero">
+        <div className="hero-content">
+          <h1 className="hero-title">Estado del Tráfico</h1>
+          <p className="hero-subtitle">Explora el tráfico en tiempo real y planifica tu ruta</p>
+          {isTraveling && (
+            <div className="travel-indicator">
+              <span className="travel-dot"></span>
+              <span>Viaje en progreso - Seguimiento activo</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -878,17 +958,22 @@ const EstadoTrafico = () => {
             <div className="search-input-container">
               <input
                 type="text"
-                placeholder="¿A dónde quieres ir?"
+                placeholder="¿A dónde quieres ir? Busca lugares, direcciones, ciudades..."
                 value={destino}
                 onChange={handleSearchChange}
                 className="search-input"
                 onFocus={() => setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                autoComplete="off"
               />
               <div className="search-icon">🔍</div>
 
               {showSuggestions && searchSuggestions.length > 0 && (
                 <div className="suggestions-dropdown">
+                  <div className="suggestions-header">
+                    <span className="suggestions-title">Sugerencias</span>
+                    <span className="suggestions-count">{searchSuggestions.length} resultados</span>
+                  </div>
                   {searchSuggestions.map((suggestion, index) => (
                     <div
                       key={index}
@@ -906,8 +991,21 @@ const EstadoTrafico = () => {
                           {suggestion.structured_formatting?.secondary_text || getPlaceTypeDescription(suggestion.types)}
                         </div>
                       </div>
+                      <div className="suggestion-arrow">→</div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {showSuggestions && searchSuggestions.length === 0 && destino.length >= 2 && (
+                <div className="suggestions-dropdown no-results">
+                  <div className="no-results-message">
+                    <div className="no-results-icon">🔍</div>
+                    <div className="no-results-text">
+                      <div className="no-results-title">No se encontraron resultados</div>
+                      <div className="no-results-subtitle">Intenta con otros términos de búsqueda</div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -915,18 +1013,18 @@ const EstadoTrafico = () => {
             <div className="search-buttons">
               <button onClick={handleBuscarRuta} className="search-button primary">
                 <span className="button-icon">🗺️</span>
-                Buscar Ruta
+                <span className="button-text">Buscar Ruta</span>
               </button>
               {rutaCalculada && (
                 <button onClick={handleListo} className="search-button success">
                   <span className="button-icon">✅</span>
-                  Listo
+                  <span className="button-text">Listo</span>
                 </button>
               )}
               {rutaSeleccionada && (
                 <button onClick={handleCancelarRuta} className="search-button danger">
                   <span className="button-icon">❌</span>
-                  Cancelar Ruta
+                  <span className="button-text">Cancelar</span>
                 </button>
               )}
             </div>
@@ -958,7 +1056,7 @@ const EstadoTrafico = () => {
                   <Marker
                     position={selectedLocation}
                     icon={{
-                      path: window.google.maps.SymbolPath.CIRCLE,
+                      path: google.maps.SymbolPath.CIRCLE,
                       scale: clickEnRuta ? 8 : 6,
                       fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
                       fillOpacity: 1,
@@ -983,9 +1081,9 @@ const EstadoTrafico = () => {
                     <div className="info-window-content">
                       <h4 className="info-window-title">{selectedReporte.tipo}</h4>
                       <p className="info-window-description">{selectedReporte.descripcion}</p>
-                      {selectedReporte.imagenBase64 && (
+                      {selectedReporte.imagenUrl && (
                         <img
-                          src={selectedReporte.imagenBase64}
+                          src={selectedReporte.imagenUrl}
                           alt="Incidente"
                           className="info-window-image"
                         />
@@ -993,6 +1091,54 @@ const EstadoTrafico = () => {
                       {selectedReporte.enRuta && (
                         <p className="info-window-route-warning">⚠️ Este incidente está en tu ruta</p>
                       )}
+                      <div className="info-window-buttons">
+                        <button
+                          className="info-window-button sigue"
+                          onClick={async () => {
+                            await addDoc(collection(db, 'confirmaciones'), {
+                              incidenteId: selectedReporte.id,
+                              confirmadoEn: serverTimestamp(),
+                            });
+                            Swal.fire({
+                              icon: 'success',
+                              title: 'Confirmado',
+                              text: 'Se ha confirmado que el incidente sigue ocurriendo.',
+                              confirmButtonText: 'Entendido'
+                            });
+                            setSelectedReporte(null);
+                          }}
+                        >
+                          Sigue ocurriendo
+                        </button>
+                        <button
+                          className="info-window-button eliminar"
+                          onClick={async () => {
+                            const result = await Swal.fire({
+                              title: '¿Eliminar reporte?',
+                              text: 'Esta acción no se puede deshacer',
+                              icon: 'warning',
+                              showCancelButton: true,
+                              confirmButtonColor: '#d33',
+                              cancelButtonColor: '#3085d6',
+                              confirmButtonText: 'Sí, eliminar',
+                              cancelButtonText: 'Cancelar'
+                            });
+
+                            if (result.isConfirmed) {
+                              await deleteDoc(doc(db, 'incidentes', selectedReporte.id));
+                              Swal.fire({
+                                icon: 'success',
+                                title: 'Eliminado',
+                                text: 'El reporte ha sido eliminado',
+                                confirmButtonText: 'Entendido'
+                              });
+                              setSelectedReporte(null);
+                            }
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
                     </div>
                   </InfoWindow>
                 )}
@@ -1000,6 +1146,7 @@ const EstadoTrafico = () => {
               </GoogleMap>
             </div>
           </div>
+        </div>
 
         {/* Alerta de Seguridad Interactiva */}
         {showSafetyAlert && (
@@ -1184,26 +1331,34 @@ const EstadoTrafico = () => {
                 <button
                   className="quick-report-btn traffic"
                   onClick={() => reportQuickIncident('Tráfico', 'Reporte rápido')}
+                  title="Reportar tráfico"
                 >
-                  🚗 Tráfico
+                  <span className="btn-icon">🚗</span>
+                  <span className="btn-text">Tráfico</span>
                 </button>
                 <button
                   className="quick-report-btn accident"
                   onClick={() => reportQuickIncident('Accidente', 'Reporte rápido')}
+                  title="Reportar accidente"
                 >
-                  💥 Accidente
+                  <span className="btn-icon">💥</span>
+                  <span className="btn-text">Accidente</span>
                 </button>
                 <button
                   className="quick-report-btn police"
                   onClick={() => reportQuickIncident('Policía', 'Reporte rápido')}
+                  title="Reportar policía"
                 >
-                  👮 Policía
+                  <span className="btn-icon">👮</span>
+                  <span className="btn-text">Policía</span>
                 </button>
                 <button
                   className="quick-report-btn danger"
                   onClick={() => reportQuickIncident('Peligro', 'Reporte rápido')}
+                  title="Reportar peligro"
                 >
-                  ⚠️ Peligro
+                  <span className="btn-icon">⚠️</span>
+                  <span className="btn-text">Peligro</span>
                 </button>
               </div>
 
@@ -1212,8 +1367,12 @@ const EstadoTrafico = () => {
                 className={`voice-recognition-btn ${voiceRecognitionActive ? 'active' : ''}`}
                 onClick={startVoiceRecognition}
                 disabled={voiceRecognitionActive}
+                title="Reportar por voz"
               >
-                {voiceRecognitionActive ? '🎤 Escuchando...' : '🎤 Reporte por Voz'}
+                <span className="voice-icon">🎤</span>
+                <span className="voice-text">
+                  {voiceRecognitionActive ? 'Escuchando...' : 'Reporte por Voz'}
+                </span>
               </button>
             </div>
           </div>
@@ -1265,39 +1424,89 @@ const EstadoTrafico = () => {
         {showRutaModal && (
           <div className="modal-overlay">
             <div className="modal-content">
-              <h3>Seleccionar Ruta</h3>
+              <div className="modal-header">
+                <h3>🗺️ Seleccionar Ruta</h3>
+                <button
+                  className="modal-close"
+                  onClick={() => setShowRutaModal(false)}
+                >
+                  ✕
+                </button>
+              </div>
 
-              <label>
-                <input
-                  type="checkbox"
-                  checked={usarUbicacionActual}
-                  onChange={() => setUsarUbicacionActual(!usarUbicacionActual)}
-                /> Usar ubicación actual como origen
-              </label>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={usarUbicacionActual}
+                      onChange={() => setUsarUbicacionActual(!usarUbicacionActual)}
+                    />
+                    <span className="checkbox-text">Usar ubicación actual como origen</span>
+                  </label>
+                </div>
 
-              {!usarUbicacionActual && (
-                <>
-                  <label>Ciudad de origen</label>
-                  <select className="form-select" value={ciudadOrigenSeleccionada} onChange={(e) => setCiudadOrigenSeleccionada(e.target.value)}>
+                {!usarUbicacionActual && (
+                  <div className="form-group">
+                    <label>Ciudad de origen</label>
+                    <select
+                      className="form-select"
+                      value={ciudadOrigenSeleccionada}
+                      onChange={(e) => setCiudadOrigenSeleccionada(e.target.value)}
+                    >
+                      <option value="">Selecciona una ciudad</option>
+                      {ciudadesNicaragua.map((ciudad) => (
+                        <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="form-group">
+                  <label>Ciudad de destino</label>
+                  <select
+                    className="form-select"
+                    value={ciudadDestino}
+                    onChange={(e) => setCiudadDestino(e.target.value)}
+                  >
                     <option value="">Selecciona una ciudad</option>
                     {ciudadesNicaragua.map((ciudad) => (
                       <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
                     ))}
                   </select>
-                </>
-              )}
+                </div>
 
-              <label>Ciudad de destino</label>
-              <select className="form-select" value={ciudadDestino} onChange={(e) => setCiudadDestino(e.target.value)}>
-                <option value="">Selecciona una ciudad</option>
-                {ciudadesNicaragua.map((ciudad) => (
-                  <option key={ciudad.nombre} value={ciudad.nombre}>{ciudad.nombre}</option>
-                ))}
-              </select>
+                <div className="location-info">
+                  <div className="info-item">
+                    <span className="info-icon">📍</span>
+                    <span className="info-text">
+                      {usarUbicacionActual ? 'Ubicación actual' : ciudadOrigenSeleccionada || 'Selecciona origen'}
+                    </span>
+                  </div>
+                  <div className="info-arrow">→</div>
+                  <div className="info-item">
+                    <span className="info-icon">🎯</span>
+                    <span className="info-text">
+                      {ciudadDestino || 'Selecciona destino'}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-              <div className="button-group">
-                <button className="btn btn-primary" onClick={iniciarViaje}>Buscar ruta</button>
-                <button className="btn btn-secondary" onClick={() => setShowRutaModal(false)}>Cancelar</button>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowRutaModal(false)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={iniciarViaje}
+                  disabled={!ciudadDestino || (!usarUbicacionActual && !ciudadOrigenSeleccionada)}
+                >
+                  Buscar Ruta
+                </button>
               </div>
             </div>
           </div>
@@ -1519,7 +1728,6 @@ const EstadoTrafico = () => {
           </div>
         )}
       </div>
-    </div>
     </div>
   );
 };
