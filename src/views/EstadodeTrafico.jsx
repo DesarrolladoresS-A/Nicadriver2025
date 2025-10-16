@@ -59,9 +59,13 @@ const ciudadesNicaragua = [
 const libraries = ['places', 'geometry'];
 
 const EstadoTrafico = () => {
-  const { isLoaded } = useJsApiLoader({
+  const [mapError, setMapError] = useState(null);
+  const [isMapLoading, setIsMapLoading] = useState(true);
+
+  const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries,
+    id: 'google-map-script',
   });
 
   const mapRef = useRef(null);
@@ -115,6 +119,27 @@ const EstadoTrafico = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showSafetyAlert, setShowSafetyAlert] = useState(false);
   const [safetyAlertStep, setSafetyAlertStep] = useState(0);
+
+  // Manejar errores del mapa
+  useEffect(() => {
+    if (loadError) {
+      console.error('Error cargando Google Maps:', loadError);
+      setMapError('Error cargando el mapa. Verifica tu conexión a internet y la configuración de la API.');
+      setIsMapLoading(false);
+    } else if (isLoaded) {
+      setMapError(null);
+      setIsMapLoading(false);
+    }
+  }, [isLoaded, loadError]);
+
+  // Verificar si la API key está configurada
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey || apiKey === 'tu_google_maps_api_key_aqui') {
+      setMapError('Google Maps API Key no configurada. Por favor, configura VITE_GOOGLE_MAPS_API_KEY en las variables de entorno.');
+      setIsMapLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -830,6 +855,46 @@ const EstadoTrafico = () => {
     const arrivalTime = new Date(Date.now() + durationInSeconds * 1000);
     setEstimatedArrival(arrivalTime);
   };
+
+  // Mostrar estados de carga y error
+  if (isMapLoading) {
+    return (
+      <div className="trafico-page">
+        <div className="map-loading-container">
+          <div className="loading-spinner"></div>
+          <h3>Cargando mapa...</h3>
+          <p>Por favor espera mientras se carga el mapa de tráfico</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (mapError) {
+    return (
+      <div className="trafico-page">
+        <div className="map-error-container">
+          <div className="error-icon">⚠️</div>
+          <h3>Error del Mapa</h3>
+          <p>{mapError}</p>
+          <div className="error-solutions">
+            <h4>Soluciones:</h4>
+            <ul>
+              <li>Verifica tu conexión a internet</li>
+              <li>Configura la variable VITE_GOOGLE_MAPS_API_KEY</li>
+              <li>Verifica que la API key tenga permisos para Maps JavaScript API</li>
+              <li>Revisa la consola del navegador para más detalles</li>
+            </ul>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="retry-button"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
