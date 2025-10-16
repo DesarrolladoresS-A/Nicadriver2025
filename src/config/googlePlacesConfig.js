@@ -13,7 +13,30 @@ export const GOOGLE_PLACES_CONFIG = {
       'administrative_area_level_2',  // Municipios
       'route',               // Calles y carreteras
       'street_address',      // Direcciones específicas
-      'point_of_interest'    // Puntos de interés
+      'point_of_interest',   // Puntos de interés
+      'hospital',            // Hospitales
+      'school',              // Escuelas
+      'university',          // Universidades
+      'bank',                // Bancos
+      'gas_station',         // Gasolineras
+      'restaurant',          // Restaurantes
+      'shopping_mall',       // Centros comerciales
+      'airport',             // Aeropuertos
+      'bus_station',         // Terminales de buses
+      'park',                // Parques
+      'church',              // Iglesias
+      'pharmacy',            // Farmacias
+      'supermarket',         // Supermercados
+      'atm',                 // Cajeros automáticos
+      'police',              // Policía
+      'fire_station',        // Bomberos
+      'post_office',         // Correos
+      'library',             // Bibliotecas
+      'museum',              // Museos
+      'city_hall',           // Alcaldías
+      'courthouse',          // Tribunales
+      'embassy',             // Embajadas
+      'local_government_office' // Oficinas gubernamentales
     ],
     fields: [
       'place_id',
@@ -101,7 +124,7 @@ export const GOOGLE_PLACES_CONFIG = {
 
   // Configuración de filtros
   filters: {
-    maxSuggestions: 8,
+    maxSuggestions: 10,
     minInputLength: 2,
     includeTypes: [
       'establishment',
@@ -111,7 +134,30 @@ export const GOOGLE_PLACES_CONFIG = {
       'administrative_area_level_2',
       'route',
       'street_address',
-      'point_of_interest'
+      'point_of_interest',
+      'hospital',
+      'school',
+      'university',
+      'bank',
+      'gas_station',
+      'restaurant',
+      'shopping_mall',
+      'airport',
+      'bus_station',
+      'park',
+      'church',
+      'pharmacy',
+      'supermarket',
+      'atm',
+      'police',
+      'fire_station',
+      'post_office',
+      'library',
+      'museum',
+      'city_hall',
+      'courthouse',
+      'embassy',
+      'local_government_office'
     ]
   }
 };
