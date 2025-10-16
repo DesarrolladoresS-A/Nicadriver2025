@@ -330,8 +330,8 @@ body {
   width: 280px;
   max-height: 300px;
   overflow-y: auto;
-  background: #ffffff;
-  color: #111827;
+  background: var(--card);
+  color: var(--card-foreground);
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
   border: 1px solid rgba(0,0,0,0.06);
@@ -372,6 +372,14 @@ body {
 /* Ajustes de responsividad para contener bien el layout */
 @media (max-width: 576px) {
   .notif-panel { width: 90vw; right: -10vw; }
+}
+
+/* Perfil: ancla y apariencia personalizada */
+.profile-anchor { position: relative; display: inline-block; }
+.profile-panel {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--border);
 }
 
 /* ===================== */

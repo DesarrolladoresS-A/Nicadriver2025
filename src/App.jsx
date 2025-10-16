@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from "react-router-dom";
 import { AuthProvider } from "./database/authcontext";
+import { ThemeProvider } from "./theme/ThemeContext";
+import { LanguageProvider } from "./i18n/LanguageContext";
+
 import Login from "./views/Login";
 import Encabezado from "./components/Encabezado";
 import Inicio from "./views/Inicio";
@@ -15,6 +18,13 @@ import Register from './views/Register';
 import ReporteAdminDetalle from './views/ReporteAdminDetalle';
 import { useEffect, useState } from 'react';
 import LoaderTractor from './components/common/LoaderTractor';
+import Perfil from "./views/Perfil";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Configuracion from "./views/Configuracion";
+import ControlDatos from "./views/ControlDatos";
+import Idiomas from "./views/Idiomas";
+import Apariencia from "./views/Apariencia";
+import AcuerdoServicio from "./views/AcuerdoServicio";
 
 function Layout() {
   const location = useLocation();
@@ -62,6 +72,12 @@ function Layout() {
             <Route path="/reporteAdmin" element={<ReporteAdminCards />} />
             <Route path="/reporteAdmin/:id/detalle" element={<ReporteAdminDetalle />} />
             <Route path="/administrador" element={<Administrador />} />
+            <Route path="/perfil" element={<ProtectedRoute element={<Perfil />} />} />
+            <Route path="/perfil/configuracion" element={<ProtectedRoute element={<Configuracion />} />} />
+            <Route path="/perfil/configuracion/datos" element={<ProtectedRoute element={<ControlDatos />} />} />
+            <Route path="/perfil/configuracion/idiomas" element={<ProtectedRoute element={<Idiomas />} />} />
+            <Route path="/perfil/configuracion/apariencia" element={<ProtectedRoute element={<Apariencia />} />} />
+            <Route path="/perfil/configuracion/terminos" element={<ProtectedRoute element={<AcuerdoServicio />} />} />
           </Routes>
         </main>
       </div>
@@ -137,11 +153,15 @@ function Layout() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Layout />
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <Router>
+            <Layout />
+          </Router>
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 
