@@ -35,12 +35,57 @@ body {
 /* Reducir espacio superior bajo el encabezado en la vista de Tráfico */
 /* Altura del header fija utilizada para calcular el alto disponible */
 :root { --trafico-header-h: 72px; }
+/* Scroll suave y mejoras adicionales */
 .trafico-page {
-    position: fixed;
-    top: var(--trafico-header-h);
-    left: 0; right: 0; bottom: 0;
+    min-height: 100vh;
     padding-top: 0.5rem !important;
-    overflow: hidden; /* evitar scroll vertical de la página en esta vista */
+    overflow-y: auto; /* permitir scroll vertical */
+    overflow-x: hidden; /* evitar scroll horizontal */
+    scroll-behavior: smooth; /* scroll suave */
+    -webkit-overflow-scrolling: touch; /* scroll suave en iOS */
+}
+
+/* Mejorar el scroll en el contenedor principal */
+.main-container {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: calc(100vh - 200px);
+    scroll-behavior: smooth;
+}
+
+/* Espaciado mejorado entre secciones */
+.search-section {
+    margin-bottom: 1.5rem;
+}
+
+.map-section {
+    margin-bottom: 2rem;
+}
+
+/* Asegurar que los paneles flotantes no interfieran con el scroll */
+.navigation-panel,
+.travel-panel,
+.floating-report-buttons {
+    position: fixed;
+    z-index: 1000;
+}
+
+/* Mejorar el scroll en móviles */
+@media (max-width: 768px) {
+    .trafico-page {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+    
+    /* Reducir el espacio entre elementos en móviles */
+    .search-section {
+        margin-bottom: 1rem;
+    }
+    
+    .map-section {
+        margin-bottom: 1.5rem;
+    }
 }
 .trafico-page > *:first-child { margin-top: 0 !important; }
 .trafico-hero { margin-top: 0 !important; padding-top: 0.1rem; }
@@ -56,6 +101,14 @@ body {
     background: white;
     border-radius: 15px;
     box-shadow: 0 10px 30px var(--shadow-color);
+}
+
+/* Contenedor principal mejorado para scroll */
+.main-container {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: calc(100vh - 200px);
 }
 
 /* El contenedor del mapa ocupa toda la altura disponible */
@@ -107,16 +160,20 @@ body {
     max-width: 360px;
 }
 
-/* Mapa interactivo */
-.trafico-container .map-container {
+/* Mapa interactivo mejorado para scroll */
+.map-section {
+    margin-bottom: 2rem;
+}
+
+.map-container {
     width: 100%;
-    height: 600px;
-    border-radius: 12px;
+    height: 70vh;
+    min-height: 500px;
+    max-height: 800px;
+    border-radius: 16px;
     overflow: hidden;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 8px 25px var(--shadow-color);
-    padding: 0;
-    margin: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Ventana de reporte */
@@ -2782,6 +2839,68 @@ body {
   .btn-report-incident {
     padding: 0.625rem;
     font-size: 0.75rem;
+  }
+}
+
+/* Responsive para scroll mejorado */
+@media (max-width: 1024px) {
+  .trafico-page {
+    padding-top: 0.25rem !important;
+  }
+  
+  .main-container {
+    padding: 0.75rem;
+    min-height: calc(100vh - 150px);
+  }
+  
+  .map-container {
+    height: 60vh;
+    min-height: 400px;
+    max-height: 600px;
+  }
+}
+
+@media (max-width: 768px) {
+  .trafico-page {
+    padding-top: 0.1rem !important;
+  }
+  
+  .main-container {
+    padding: 0.5rem;
+    min-height: calc(100vh - 120px);
+  }
+  
+  .map-container {
+    height: 50vh;
+    min-height: 350px;
+    max-height: 500px;
+    border-radius: 12px;
+  }
+  
+  .map-section {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .trafico-page {
+    padding-top: 0.05rem !important;
+  }
+  
+  .main-container {
+    padding: 0.25rem;
+    min-height: calc(100vh - 100px);
+  }
+  
+  .map-container {
+    height: 45vh;
+    min-height: 300px;
+    max-height: 400px;
+    border-radius: 8px;
+  }
+  
+  .map-section {
+    margin-bottom: 1rem;
   }
 }
 
