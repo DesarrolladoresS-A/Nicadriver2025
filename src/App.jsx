@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from "react-router-dom";
 import { AuthProvider } from "./database/authcontext";
+import { ThemeProvider } from "./theme/ThemeContext";
+import { LanguageProvider } from "./i18n/LanguageContext";
+
 import Login from "./views/Login";
 import Encabezado from "./components/Encabezado";
 import Inicio from "./views/Inicio";
@@ -15,6 +18,12 @@ import Register from './views/Register';
 import ReporteAdminDetalle from './views/ReporteAdminDetalle';
 import { useEffect, useState } from 'react';
 import LoaderTractor from './components/common/LoaderTractor';
+import Perfil from "./views/Perfil";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Configuracion from "./views/Configuracion";
+import ControlDatos from "./views/ControlDatos";
+import Idiomas from "./views/Idiomas";
+import Apariencia from "./views/Apariencia";
 
 function Layout() {
   const location = useLocation();
@@ -26,6 +35,7 @@ function Layout() {
   const isEstado = location.pathname === '/estadodeTrafico' || location.pathname === '/estadodetrafico';
   const isReportes = location.pathname === '/reportes';
   const isAdministrador = location.pathname === '/administrador';
+  const ytmusicUrl = import.meta.env.VITE_YTMUSIC_URL || '#';
 
   // Pequeña superposición global en cada cambio de ruta
   useEffect(() => {
@@ -61,6 +71,11 @@ function Layout() {
             <Route path="/reporteAdmin" element={<ReporteAdminCards />} />
             <Route path="/reporteAdmin/:id/detalle" element={<ReporteAdminDetalle />} />
             <Route path="/administrador" element={<Administrador />} />
+            <Route path="/perfil" element={<ProtectedRoute element={<Perfil />} />} />
+            <Route path="/perfil/configuracion" element={<ProtectedRoute element={<Configuracion />} />} />
+            <Route path="/perfil/configuracion/datos" element={<ProtectedRoute element={<ControlDatos />} />} />
+            <Route path="/perfil/configuracion/idiomas" element={<ProtectedRoute element={<Idiomas />} />} />
+            <Route path="/perfil/configuracion/apariencia" element={<ProtectedRoute element={<Apariencia />} />} />
           </Routes>
         </main>
       </div>
@@ -114,6 +129,10 @@ function Layout() {
                   <a href="#" aria-label="Twitter" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-twitter text-2xl"></i></a>
                   <a href="#" aria-label="YouTube" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-youtube text-2xl"></i></a>
                   <a href="#" aria-label="LinkedIn" className="hover:text-[#1e3d87] transition-colors"><i className="bi bi-linkedin text-2xl"></i></a>
+                  {/* YouTube Music configurable por .env */}
+                  <a href={ytmusicUrl} aria-label="YouTube Music" className="hover:text-[#1e3d87] transition-colors" target="_blank" rel="noopener noreferrer" title="YouTube Music">
+                    <i className="bi bi-music-note-beamed text-2xl"></i>
+                  </a>
                 </div>
               </div>
             </div>
@@ -132,11 +151,15 @@ function Layout() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Layout />
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <Router>
+            <Layout />
+          </Router>
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

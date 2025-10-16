@@ -10,8 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@heroicons/react": "^2.2.0",
-    "@react-google-maps/api": "^2.20.6",
+    "@react-google-maps/api": "^2.20.7",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "chart.js": "^4.4.9",
@@ -22,6 +23,7 @@
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "leaflet": "^1.9.4",
+    "lucide-react": "^0.545.0",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",
     "react-chartjs-2": "^5.3.0",
