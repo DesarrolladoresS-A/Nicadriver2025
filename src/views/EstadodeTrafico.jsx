@@ -958,7 +958,7 @@ const EstadoTrafico = () => {
                   <Marker
                     position={selectedLocation}
                     icon={{
-                      path: google.maps.SymbolPath.CIRCLE,
+                      path: window.google.maps.SymbolPath.CIRCLE,
                       scale: clickEnRuta ? 8 : 6,
                       fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
                       fillOpacity: 1,

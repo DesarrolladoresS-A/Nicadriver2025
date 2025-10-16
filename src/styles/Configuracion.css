@@ -1,0 +1,49 @@
+/* Estilos compartidos para Configuración, Idiomas, Apariencia y Control de Datos */
+
+.cfg-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:2002; padding:20px; }
+
+.cfg-container { display:flex; justify-content:center; padding:24px 12px; }
+.cfg-card {
+  width:100%; max-width:860px; max-height:90vh; overflow:auto; background:#f3f4f6; border:1px solid #e5e7eb; border-radius:12px; padding:22px; box-shadow:0 8px 28px rgba(0,0,0,.18);
+}
+
+.cfg-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.cfg-header h2 { margin:0 auto; font-weight:800; color:#111827; }
+.cfg-back { background:#e5e7eb; border:1px solid #d1d5db; border-radius:8px; padding:4px 10px; cursor:pointer; }
+
+.cfg-section { margin-top:12px; }
+.cfg-section h3 { margin:0 0 10px; font-size:20px; font-weight:800; color:#111827; }
+
+.cfg-box { background:#d1d5db; border:1px solid #c5c9d0; border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px; }
+
+.cfg-line { display:flex; align-items:center; justify-content:space-between; font-size:14px; color:#111827; }
+.muted { color:#374151; font-weight:600; }
+
+.cfg-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; border-radius:10px; border:1px solid #c5c9d0; background:#e5e7eb; cursor:pointer; }
+.cfg-row:hover { filter:brightness(1.02); }
+.cfg-row.active { outline:2px solid #2563eb; }
+.cfg-row-title { font-weight:700; color:#111827; }
+.cfg-row-sub { color:#374151; font-size:12px; }
+.cfg-row-arrow { color:#111827; font-size:20px; }
+
+.cfg-badge { background:#1e3a8a; color:#fff; font-weight:700; padding:2px 8px; border-radius:12px; font-size:12px; }
+
+.cfg-actions { margin-top:16px; display:flex; justify-content:center; }
+.cfg-alert { background:#fff7ed; color:#7c2d12; border:1px solid #fdba74; border-radius:8px; padding:10px; }
+
+/* Legibilidad de textos largos (Acuerdo de Servicio) */
+.cfg-text p { margin: 8px 0 12px; color:#111827; line-height:1.65; font-size:15px; }
+.cfg-text ul { margin: 8px 0 12px 20px; color:#111827; font-size:15px; }
+.cfg-text li { margin: 4px 0; }
+
+/* Temas básicos: mapeamos clases en <html> desde ThemeContext */
+:root.theme-light { --background: #f8fafc; --foreground: #111827; }
+:root.theme-normal { --background: #ffffff; --foreground: #111827; }
+:root.theme-dark { --background: #0f172a; --foreground: #e5e7eb; }
+
+/* Ajuste de fondo general según tema */
+body { background: var(--background); color: var(--foreground); }
+
+@media (max-width: 520px) {
+  .cfg-card { padding:14px; max-width:95vw; }
+}

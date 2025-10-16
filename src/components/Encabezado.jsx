@@ -15,6 +15,9 @@ const Encabezado = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { isLoggedIn, logout, user } = useAuth();
   const [bellOpen, setBellOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [configOpen, setConfigOpen] = useState(false);
+
   const [notifications, setNotifications] = useState([]);
   const [latestReports, setLatestReports] = useState([]); // lista base de reportes del usuario
   const prevEstadosRef = useRef({}); // rastrear estados previos por reporte id
@@ -22,7 +25,12 @@ const Encabezado = () => {
   const [notifHistory, setNotifHistory] = useState([]); // historial persistente
   const [unreadCount, setUnreadCount] = useState(0);
   const panelRef = useRef(null);
+  const profilePanelRef = useRef(null);
+  const configPanelRef = useRef(null);
+
   const [activeTab, setActiveTab] = useState('recent'); // recent | status
+  const [perfilData, setPerfilData] = useState(null);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -63,17 +71,39 @@ const Encabezado = () => {
     }
   }, [user]);
 
-  // Cerrar panel al hacer click fuera
+  // Cerrar paneles al hacer click fuera
   useEffect(() => {
-    if (!bellOpen) return;
+    if (!bellOpen && !profileOpen && !configOpen) return;
     const handleClickOutside = (e) => {
-      if (panelRef.current && !panelRef.current.contains(e.target)) {
-        setBellOpen(false);
-      }
+      const outsideBell = panelRef.current ? !panelRef.current.contains(e.target) : false;
+      const outsideProfile = profilePanelRef.current ? !profilePanelRef.current.contains(e.target) : false;
+      const outsideConfig = configPanelRef.current ? !configPanelRef.current.contains(e.target) : false;
+      if (bellOpen && outsideBell) setBellOpen(false);
+      if (profileOpen && outsideProfile) setProfileOpen(false);
+      if (configOpen && outsideConfig) setConfigOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [bellOpen]);
+  }, [bellOpen, profileOpen, configOpen]);
+
+  // Cargar datos de perfil del usuario
+  useEffect(() => {
+    let unsub = null;
+    (async () => {
+      if (!user) { setPerfilData(null); return; }
+      try {
+        // carga puntual del doc
+        const { doc, getDoc } = await import('firebase/firestore');
+        const ref = doc(db, 'users', user.uid);
+        const snap = await getDoc(ref);
+        if (snap.exists()) setPerfilData(snap.data());
+        else setPerfilData({ email: user.email, nombre: user.displayName || '', apellido: '' });
+      } catch {
+        setPerfilData({ email: user?.email });
+      }
+    })();
+    return () => { if (unsub) unsub(); };
+  }, [user]);
 
   // Suscripción a los reportes del usuario para notificaciones
   useEffect(() => {
@@ -193,6 +223,7 @@ const Encabezado = () => {
   const toggleBell = () => {
     const next = !bellOpen;
     setBellOpen(next);
+    if (next) setProfileOpen(false);
     if (next) {
       if (!user) return;
       const key = `notif_history_${user.uid || user.email}`;
@@ -201,6 +232,17 @@ const Encabezado = () => {
       setUnreadCount(0);
       localStorage.setItem(key, JSON.stringify(updated));
     }
+  };
+
+  const toggleProfile = (e) => {
+    e.preventDefault();
+    setProfileOpen((v) => { const nv = !v; if (nv) { setBellOpen(false); setConfigOpen(false);} return nv; });
+  };
+
+  const openConfigPanel = () => {
+    setConfigOpen(true);
+    setProfileOpen(false);
+    setBellOpen(false);
   };
 
   return (
@@ -279,13 +321,92 @@ const Encabezado = () => {
                           <i className="bi-graph-up me-2"></i>
                           <strong>Gráficos</strong>
                         </Nav.Link>
-                        <Nav.Link
-                          onClick={handleLogout}
-                          className="nav-link"
-                        >
-                          <i className="bi-box-arrow-right me-2"></i>
-                          <strong>Salir</strong>
-                        </Nav.Link>
+                        <div className="profile-anchor">
+                          <Nav.Link
+                            onClick={toggleProfile}
+                            className={`nav-link ${location.pathname === "/perfil" ? "active" : ""}`}
+                          >
+                            <i className="bi-person-circle me-2"></i>
+                            <strong>Perfil</strong>
+                          </Nav.Link>
+                          {profileOpen && (
+                          <div ref={profilePanelRef} className="notif-panel profile-panel" style={{ width: 380, maxHeight: 480, overflow: 'hidden' }}>
+                            <div style={{ padding: 12 }}>
+                              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
+                                <div style={{ width: 132, height: 132, borderRadius: '9999px', overflow:'hidden', border:'4px solid #e5e7eb', background:'#f3f4f6' }}>
+                                  {perfilData?.profileImage ? (
+                                    <img src={`data:image/jpeg;base64,${perfilData.profileImage}`} alt="Perfil" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                                  ) : (
+                                    <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:'#fbbf24',color:'#111827',fontWeight:800,fontSize:44}}>
+                                      {(perfilData?.nombre?.[0]||'').toUpperCase()}{(perfilData?.apellido?.[0]||'').toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="perfil-section" style={{marginTop:12}}>
+                                <h3 style={{margin:'8px 0'}}>Datos:</h3>
+                                <div className="perfil-box">
+                                  <p><strong>Usuario:</strong> {`${perfilData?.nombre||''} ${perfilData?.apellido||''}`.trim() || (user?.displayName||'Usuario')}</p>
+                                  <p><strong>Cédula:</strong> {perfilData?.cedula || '—'}</p>
+                                </div>
+                              </div>
+                              <div className="perfil-section" style={{marginTop:8}}>
+                                <h3 style={{margin:'8px 0'}}>Contacto:</h3>
+                                <div className="perfil-box">
+                                  <p><strong>Teléfono:</strong> {perfilData?.celular || '—'}</p>
+                                  <p><strong>Correo Electrónico:</strong> {perfilData?.email || user?.email || '—'}</p>
+                                </div>
+                              </div>
+                              <div className="perfil-actions" style={{marginTop:12}}>
+                                <button className="btn-config" onClick={openConfigPanel}>Configuración</button>
+                                <button className="btn-logout" onClick={handleLogout}>Cerrar Sesión</button>
+                              </div>
+                            </div>
+                          </div>
+                          )}
+                          {configOpen && (
+                          <div ref={configPanelRef} className="notif-panel profile-panel" style={{ width: 380, maxHeight: 520, overflow: 'auto' }}>
+                            <div style={{ padding: 12 }}>
+                              <div className="cfg-section" style={{marginTop:4}}>
+                                <h3 style={{margin:'6px 0'}}>Datos</h3>
+                                <div className="cfg-box">
+                                  <div className="cfg-line">
+                                    <span>Correo Electrónico</span>
+                                    <span className="muted">{user?.email || '—'}</span>
+                                  </div>
+                                  <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/datos'); }}>
+                                    <div className="cfg-row-title">Controles de Datos</div>
+                                    <span className="cfg-row-arrow">›</span>
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="cfg-section" style={{marginTop:10}}>
+                                <h3 style={{margin:'6px 0'}}>App</h3>
+                                <div className="cfg-box">
+                                  <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/idiomas'); }}>
+                                    <div className="cfg-row-title">Idioma</div>
+                                    <span className="cfg-row-sub">Español / Inglés / Chino</span>
+                                  </button>
+                                  <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/apariencia'); }}>
+                                    <div className="cfg-row-title">Apariencia</div>
+                                    <span className="cfg-row-sub">Claro / Normal / Oscuro</span>
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="cfg-section" style={{marginTop:10}}>
+                                <h3 style={{margin:'6px 0'}}>Acerca de</h3>
+                                <div className="cfg-box">
+                                  <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/terminos'); }}>
+                                    <div className="cfg-row-title">Acuerdo de Servicio</div>
+                                    <span className="cfg-row-arrow">›</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {/* Cierre del ancla de perfil (admin) */}
+                        </div>
                       </>
                     ) : (
                       // Menú de Usuario Normal
@@ -386,14 +507,93 @@ const Encabezado = () => {
                               )}
                             </div>
                           )}
+                          {/* Perfil anclado: igual que en bloque admin */}
+                          <div className="profile-anchor">
+                            <Nav.Link
+                              onClick={toggleProfile}
+                              className={`nav-link ${location.pathname === "/perfil" ? "active" : ""}`}
+                            >
+                              <i className="bi-person-circle me-2"></i>
+                              <strong>Perfil</strong>
+                            </Nav.Link>
+                            {profileOpen && (
+                              <div ref={profilePanelRef} className="notif-panel profile-panel" style={{ width: 380, maxHeight: 480, overflow: 'hidden' }}>
+                                <div style={{ padding: 12 }}>
+                                  <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10 }}>
+                                    <div style={{ width: 132, height: 132, borderRadius: '9999px', overflow:'hidden', border:'4px solid #e5e7eb', background:'#f3f4f6' }}>
+                                      {perfilData?.profileImage ? (
+                                        <img src={`data:image/jpeg;base64,${perfilData.profileImage}`} alt="Perfil" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                                      ) : (
+                                        <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',background:'#fbbf24',color:'#111827',fontWeight:800,fontSize:44}}>
+                                          {(perfilData?.nombre?.[0]||'').toUpperCase()}{(perfilData?.apellido?.[0]||'').toUpperCase()}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="perfil-section" style={{marginTop:12}}>
+                                    <h3 style={{margin:'8px 0'}}>Datos:</h3>
+                                    <div className="perfil-box">
+                                      <p><strong>Usuario:</strong> {`${perfilData?.nombre||''} ${perfilData?.apellido||''}`.trim() || (user?.displayName||'Usuario')}</p>
+                                      <p><strong>Cédula:</strong> {perfilData?.cedula || '—'}</p>
+                                    </div>
+                                  </div>
+                                  <div className="perfil-section" style={{marginTop:8}}>
+                                    <h3 style={{margin:'8px 0'}}>Contacto:</h3>
+                                    <div className="perfil-box">
+                                      <p><strong>Teléfono:</strong> {perfilData?.celular || '—'}</p>
+                                      <p><strong>Correo Electrónico:</strong> {perfilData?.email || user?.email || '—'}</p>
+                                    </div>
+                                  </div>
+                                  <div className="perfil-actions" style={{marginTop:12}}>
+                                    <button className="btn-config" onClick={openConfigPanel}>Configuración</button>
+                                    <button className="btn-logout" onClick={handleLogout}>Cerrar Sesión</button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            {configOpen && (
+                              <div ref={configPanelRef} className="notif-panel profile-panel" style={{ width: 380, maxHeight: 520, overflow: 'auto' }}>
+                                <div style={{ padding: 12 }}>
+                                  <div className="cfg-section" style={{marginTop:4}}>
+                                    <h3 style={{margin:'6px 0'}}>Datos</h3>
+                                    <div className="cfg-box">
+                                      <div className="cfg-line">
+                                        <span>Correo Electrónico</span>
+                                        <span className="muted">{user?.email || '—'}</span>
+                                      </div>
+                                      <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/datos'); }}>
+                                        <div className="cfg-row-title">Controles de Datos</div>
+                                        <span className="cfg-row-arrow">›</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div className="cfg-section" style={{marginTop:10}}>
+                                    <h3 style={{margin:'6px 0'}}>App</h3>
+                                    <div className="cfg-box">
+                                      <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/idiomas'); }}>
+                                        <div className="cfg-row-title">Idioma</div>
+                                        <span className="cfg-row-sub">Español / Inglés / Chino</span>
+                                      </button>
+                                      <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/apariencia'); }}>
+                                        <div className="cfg-row-title">Apariencia</div>
+                                        <span className="cfg-row-sub">Claro / Normal / Oscuro</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div className="cfg-section" style={{marginTop:10}}>
+                                    <h3 style={{margin:'6px 0'}}>Acerca de</h3>
+                                    <div className="cfg-box">
+                                      <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/terminos'); }}>
+                                        <div className="cfg-row-title">Acuerdo de Servicio</div>
+                                        <span className="cfg-row-arrow">›</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <Nav.Link
-                          onClick={handleLogout}
-                          className="nav-link"
-                        >
-                          <i className="bi-box-arrow-right me-2"></i>
-                          <strong>Salir</strong>
-                        </Nav.Link>
                       </>
                     )}
                   </>
