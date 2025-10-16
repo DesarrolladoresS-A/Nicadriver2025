@@ -5,7 +5,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } f
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { useAuth } from "../database/authcontext";
 import { appfirebase } from "../database/firebaseconfig";
-import "../styles/Auth.css";
+import "../styles/Login.css";
 
 const Register = () => {
   const [registerData, setRegisterData] = useState({
@@ -13,8 +13,6 @@ const Register = () => {
     apellido: "",
     celular: "",
     cedula: "",
-    direccion: "",
-    fechaNacimiento: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -91,36 +89,31 @@ const Register = () => {
   };
 
   const handleCedulaChange = (e) => {
-    // Permite dígitos y opcionalmente una letra A-Z al final
-    let raw = e.target.value.toUpperCase().replace(/[^0-9A-Z-]/g, "");
-    // Extraer solo dígitos y una única letra final si existe
-    const alnum = raw.replace(/-/g, "");
-    const digitsOnly = alnum.replace(/[A-Z]/g, "").slice(0, 13); // 13 dígitos
-    const letter = (alnum.match(/[A-Z]/) || [""])[0]; // primera letra si la hay
-
-    // Formatear 3-6-4
+    let value = e.target.value.replace(/[^0-9-]/g, "");
+    const digits = value.replace(/-/g, "").slice(0, 13);
     let formatted = "";
-    if (digitsOnly.length > 0) {
-      formatted = digitsOnly.slice(0, 3);
-      if (digitsOnly.length >= 4) {
-        formatted += "-" + digitsOnly.slice(3, 9);
+    if (digits.length > 0) {
+      formatted = digits.slice(0, 3);
+      if (digits.length >= 4) {
+        formatted += "-" + digits.slice(3, 9);
       }
-      if (digitsOnly.length >= 10) {
-        formatted += "-" + digitsOnly.slice(9, 13);
+      if (digits.length >= 10) {
+        formatted += "-" + digits.slice(9, 13);
       }
-    }
-    // Añadir la letra solo cuando ya hay 13 dígitos
-    if (digitsOnly.length === 13 && letter) {
-      formatted += letter;
     }
     setRegisterData({ ...registerData, cedula: formatted });
   };
 
   const handleCelularChange = (e) => {
-    // Solo dígitos, formatear como xxxx-xxxx
-    const digits = e.target.value.replace(/\D/g, '').slice(0, 8);
-    const formatted = digits.length > 4 ? `${digits.slice(0,4)}-${digits.slice(4)}` : digits;
-    setRegisterData({ ...registerData, celular: formatted });
+    let value = e.target.value.replace(/[^0-9-]/g, "");
+
+    if (value.length > 4 && !value.includes("-")) {
+      value = `${value.slice(0, 4)}-${value.slice(4)}`;
+    }
+
+    if (value.length > 9) value = value.slice(0, 9);
+
+    setRegisterData({ ...registerData, celular: value });
   };
 
   const handleRegisterChange = (e) => {
@@ -133,8 +126,8 @@ const Register = () => {
     setLoading(true);
     setError(null);
 
-    if (!/^\d{3}-\d{6}-\d{4}[A-Z]$/.test(registerData.cedula)) {
-      setError("Formato de cédula inválido. Debe ser: 123-123456-1234X (X letra A-Z)");
+    if (!/^\d{3}-\d{6}-\d{4}$/.test(registerData.cedula)) {
+      setError("Formato de cédula inválido. Debe ser: 123-123456-1234");
       setLoading(false);
       return;
     }
@@ -151,7 +144,6 @@ const Register = () => {
       return;
     }
 
-
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -164,8 +156,6 @@ const Register = () => {
         apellido: registerData.apellido,
         celular: registerData.celular,
         cedula: registerData.cedula,
-        direccion: registerData.direccion,
-        fechaNacimiento: registerData.fechaNacimiento,
         email: registerData.email,
         profileImage: registerData.profileImage,
         createdAt: new Date(),
@@ -190,179 +180,151 @@ const Register = () => {
   }
 
   return (
-    <div className="auth-page register-page">
-      <div className="auth-blobs">
-        <div className="auth-blob a" />
-        <div className="auth-blob b" />
-        <div className="auth-blob c" />
-      </div>
-
-      <div className="auth-content">
-        {/* Left - Info */}
-        <div className="auth-right">
-          <div className="right-pattern">
-            <div className="shape s1" />
-            <div className="shape s2" />
-            <div className="shape s3" />
+    <div className="bg-background text-foreground">
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-10">
+        <div className="card w-full max-w-3xl p-6 rounded-2xl">
+          <div className="mb-2 text-center">
+            <h2 className="panel-title">Registro de Usuario</h2>
           </div>
-          <div className="right-content">
-            <div className="icon-badge">🎉</div>
-            <h2>Gracias por confiar en nosotros</h2>
-            <p>Tu apoyo nos impulsa a mejorar cada día. ¡Bienvenido a la comunidad!</p>
+
+          {error && <Alert variant="danger" className="alert-danger">{error}</Alert>}
+
+          <form onSubmit={handleRegister}>
+            <div className="row g-3">
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label className="form-label">Nombre</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="nombre"
+                    value={registerData.nombre}
+                    onChange={handleRegisterChange}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label className="form-label">Apellido</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="apellido"
+                    value={registerData.apellido}
+                    onChange={handleRegisterChange}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Imagen de perfil</label>
+              <input type="file" className="form-control" accept="image/*" onChange={handleImageChange} />
+              {previewImage && (
+                <div className="mt-2 text-center">
+                  <img
+                    src={previewImage}
+                    alt="Vista previa"
+                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "50%", border: "2px solid #ddd" }}
+                  />
+                  <p className="text-muted small mt-1">Vista previa (imagen comprimida)</p>
+                </div>
+              )}
+            </div>
+
+            <div className="row g-3">
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label className="form-label">Cédula (123-123456-1234)</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="cedula"
+                    value={registerData.cedula}
+                    onChange={handleCedulaChange}
+                    placeholder="001-123456-7890"
+                    required
+                    maxLength={15}
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label className="form-label">Celular (xxxx-xxxx)</label>
+                  <input
+                    type="tel"
+                    className="form-control"
+                    name="celular"
+                    value={registerData.celular}
+                    onChange={handleCelularChange}
+                    placeholder="1234-5678"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Correo electrónico</label>
+              <input
+                type="email"
+                className="form-control"
+                name="email"
+                value={registerData.email}
+                onChange={handleRegisterChange}
+                required
+              />
+            </div>
+
+            <div className="row g-3">
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label className="form-label">Contraseña</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    name="password"
+                    value={registerData.password}
+                    onChange={handleRegisterChange}
+                    required
+                    minLength="6"
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label className="form-label">Confirmar</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    name="confirmPassword"
+                    value={registerData.confirmPassword}
+                    onChange={handleRegisterChange}
+                    required
+                    minLength="6"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-default btn-md w-full mt-2" disabled={loading}>
+              {loading ? "Registrando..." : "Completar Registro"}
+            </button>
+          </form>
+
+          <div className="info-box mt-4">
+            <h4>¡Gracias por apoyar nuestro programa!</h4>
+            <p>
+              Tu registro nos ayuda a seguir mejorando Nicadriver 2025. Con tu apoyo, podemos ofrecer mejores funcionalidades, seguridad y una
+              experiencia de conducción más informada para todos.
+            </p>
           </div>
-        </div>
 
-        {/* Right - Form (in layout terms it's the left column on mobile) */}
-        <div className="auth-left">
-          <div className="auth-card register" id="auth-card">
-            <div className="auth-title">
-              <h1>Registro de Usuario</h1>
-            </div>
-
-            {error && <Alert variant="danger" className="alert alert-danger">{error}</Alert>}
-
-            <form onSubmit={handleRegister} className="grid-form">
-              <div className="form-group div1">
-                <label className="label">Nombre</label>
-                <input
-                  type="text"
-                  className="input"
-                  name="nombre"
-                  value={registerData.nombre}
-                  onChange={handleRegisterChange}
-                  required
-                />
-              </div>
-
-              <div className="form-group div2">
-                <label className="label">Apellido</label>
-                <input
-                  type="text"
-                  className="input"
-                  name="apellido"
-                  value={registerData.apellido}
-                  onChange={handleRegisterChange}
-                  required
-                />
-              </div>
-
-              <div className="form-group div4">
-                <label className="label">Imagen de perfil</label>
-                <input type="file" className="input" accept="image/*" onChange={handleImageChange} />
-                {previewImage && (
-                  <div style={{ marginTop: "0.5rem", textAlign: "center" }}>
-                    <img
-                      src={previewImage}
-                      alt="Vista previa"
-                      style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "50%", border: "2px solid #ddd" }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className="form-group div6">
-                <label className="label">Cédula (123-123456-1234X)</label>
-                <input
-                  type="text"
-                  className="input"
-                  name="cedula"
-                  value={registerData.cedula}
-                  onChange={handleCedulaChange}
-                  placeholder="001-123456-7890X"
-                  required
-                  maxLength={16}
-                />
-              </div>
-
-              <div className="form-group div7">
-                <label className="label">Celular (xxxx-xxxx)</label>
-                <input
-                  type="tel"
-                  className="input"
-                  name="celular"
-                  value={registerData.celular}
-                  onChange={handleCelularChange}
-                  placeholder="1234-5678"
-                  required
-                />
-              </div>
-
-              <div className="form-group div9">
-                <label className="label">Contraseña</label>
-                <input
-                  type="password"
-                  className="input"
-                  name="password"
-                  value={registerData.password}
-                  onChange={handleRegisterChange}
-                  required
-                  minLength={6}
-                />
-              </div>
-
-              <div className="form-group div10">
-                <label className="label">Confirmar</label>
-                <input
-                  type="password"
-                  className="input"
-                  name="confirmPassword"
-                  value={registerData.confirmPassword}
-                  onChange={handleRegisterChange}
-                  required
-                  minLength={6}
-                />
-              </div>
-
-              <div className="form-group div3">
-                <label className="label">Fecha de nacimiento</label>
-                <input
-                  type="date"
-                  className="input"
-                  name="fechaNacimiento"
-                  value={registerData.fechaNacimiento}
-                  onChange={handleRegisterChange}
-                />
-              </div>
-
-              <div className="form-group div5">
-                <label className="label">Dirección</label>
-                <input
-                  type="text"
-                  className="input"
-                  name="direccion"
-                  value={registerData.direccion}
-                  onChange={handleRegisterChange}
-                  placeholder="Barrio, calle, referencia"
-                />
-              </div>
-
-              <div className="form-group div8">
-                <label className="label">Correo electrónico</label>
-                <input
-                  type="email"
-                  className="input"
-                  name="email"
-                  value={registerData.email}
-                  onChange={handleRegisterChange}
-                  required
-                />
-              </div>
-
-              <button type="submit" className="btn-primary grid-submit" disabled={loading}>
-                {loading ? "Registrando..." : "Completar Registro"}
-              </button>
-            </form>
-
-            <div className="register-note">
-              <p>¡Gracias por apoyar nuestro programa!</p>
-              <p>Tu registro nos ayuda a seguir mejorando Nicadriver 2025.</p>
-              <p>Con tu apoyo, podemos ofrecer mejores funcionalidades, seguridad y una experiencia de conducción más informada para todos.</p>
-            </div>
-
-            <div className="auth-footer">
-              <span>¿Ya tienes cuenta? </span>
-              <button type="button" className="link" onClick={() => navigate('/login')}>Iniciar sesión</button>
-            </div>
+          <div className="register-link" style={{ marginTop: "1rem" }}>
+            <p>¿Ya tienes cuenta?</p>
+            <button type="button" className="register-btn" onClick={() => navigate("/login")}>Iniciar sesión</button>
           </div>
         </div>
       </div>
