@@ -8,9 +8,7 @@ import jsPDF from 'jspdf';
 import Paginacion from '../components/ordenamiento/Paginacion';
 import '../styles/Inicio.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { MessageCircle } from "lucide-react"; //
-import '../styles/ChatButton.css';
-import ChatButton from '../components/chatbot/ChatButton';
+import AnuncioRotativo from "../components/anuncios/AnuncioRotativo";
 
 const { BaseLayer, Overlay } = LayersControl;
 
@@ -578,6 +576,11 @@ const Inicio = () => {
         </div>
       </section>
 
+        <div>
+          {/* Anuncios rotativos */}
+            <AnuncioRotativo intervalo={5000} />
+        </div>
+
       {/* Misión & Visión */}
       <section className="py-20 bg-muted">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1099,7 +1102,9 @@ const Inicio = () => {
         </div>
       </section>
 
-      {/* Botón de chatbot */}
+
+
+      {/* Botón de tema flotante */}
       <div className="fixed bottom-6 right-6 z-40">
         <ChatButton />
       </div>
