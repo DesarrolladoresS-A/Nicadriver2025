@@ -24,6 +24,7 @@ import Configuracion from "./views/Configuracion";
 import ControlDatos from "./views/ControlDatos";
 import Idiomas from "./views/Idiomas";
 import Apariencia from "./views/Apariencia";
+import AcuerdoServicio from "./views/AcuerdoServicio";
 
 function Layout() {
   const location = useLocation();
@@ -76,6 +77,7 @@ function Layout() {
             <Route path="/perfil/configuracion/datos" element={<ProtectedRoute element={<ControlDatos />} />} />
             <Route path="/perfil/configuracion/idiomas" element={<ProtectedRoute element={<Idiomas />} />} />
             <Route path="/perfil/configuracion/apariencia" element={<ProtectedRoute element={<Apariencia />} />} />
+            <Route path="/perfil/configuracion/terminos" element={<ProtectedRoute element={<AcuerdoServicio />} />} />
           </Routes>
         </main>
       </div>
