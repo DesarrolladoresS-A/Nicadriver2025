@@ -393,15 +393,6 @@ const Encabezado = () => {
                                   </button>
                                 </div>
                               </div>
-                              <div className="cfg-section" style={{marginTop:10}}>
-                                <h3 style={{margin:'6px 0'}}>Acerca de</h3>
-                                <div className="cfg-box">
-                                  <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/terminos'); }}>
-                                    <div className="cfg-row-title">Acuerdo de Servicio</div>
-                                    <span className="cfg-row-arrow">›</span>
-                                  </button>
-                                </div>
-                              </div>
                             </div>
                           </div>
                         )}
@@ -577,15 +568,6 @@ const Encabezado = () => {
                                       <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/apariencia'); }}>
                                         <div className="cfg-row-title">Apariencia</div>
                                         <span className="cfg-row-sub">Claro / Normal / Oscuro</span>
-                                      </button>
-                                    </div>
-                                  </div>
-                                  <div className="cfg-section" style={{marginTop:10}}>
-                                    <h3 style={{margin:'6px 0'}}>Acerca de</h3>
-                                    <div className="cfg-box">
-                                      <button className="cfg-row" onClick={() => { setConfigOpen(false); handleNavigate('/perfil/configuracion/terminos'); }}>
-                                        <div className="cfg-row-title">Acuerdo de Servicio</div>
-                                        <span className="cfg-row-arrow">›</span>
                                       </button>
                                     </div>
                                   </div>
