@@ -467,11 +467,11 @@ const Encabezado = () => {
                                               userEmail: r.userEmail || (user && user.email),
                                               descripcion: r.descripcion,
                                               fechaRegistro: r.fechaRegistro || r.fechaHora,
-                                              imagenUrl: r.foto || r.imagenUrl || r.imagen || r.image || r.photoURL || r.imagenBase64
+                                              imagenUrl: r.foto || r.imagenUrl
                                             }}
                                           />
                                         ))
-                                      )}
+                                      )
                                     )}
                                     {activeTab === 'status' && (
                                       latestReports.filter((r) => (r.estado || 'pendiente').toLowerCase() !== 'pendiente').length === 0 ? (
@@ -487,7 +487,7 @@ const Encabezado = () => {
                                               fechaActualizacion: r.fechaActualizacion || r.fechaRegistro || r.fechaHora,
                                               estado: r.estado || 'pendiente',
                                               comentarioAdmin: r.comentarioAdmin,
-                                              imagenUrl: r.foto || r.imagenUrl || r.imagen || r.image || r.photoURL || r.imagenBase64
+                                              imagenUrl: r.foto || r.imagenUrl
                                             }}
                                           />
                                         ))

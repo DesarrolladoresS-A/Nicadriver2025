@@ -35,7 +35,6 @@ function Layout() {
   const isEstado = location.pathname === '/estadodeTrafico' || location.pathname === '/estadodetrafico';
   const isReportes = location.pathname === '/reportes';
   const isAdministrador = location.pathname === '/administrador';
-  const isAuth = location.pathname === '/login' || location.pathname === '/regisuser';
   const ytmusicUrl = import.meta.env.VITE_YTMUSIC_URL || '#';
 
   // Pequeña superposición global en cada cambio de ruta
@@ -55,8 +54,8 @@ function Layout() {
         <LoaderTractor overlay={true} mensaje="Cargando..." />
       )}
       <Encabezado />
-      <div className={`main ${isNosotros || isInicio || isEstado || isReportes || isAdministrador || isAuth ? 'no-padding-top' : ''}`}>
-        <main className={`content flex-1 ${isNosotros || isInicio || isEstado || isReportes || isAdministrador || isAuth ? '' : 'margen-superior-main'}`}>
+      <div className={`main ${isNosotros || isInicio || isEstado || isReportes || isAdministrador ? 'no-padding-top' : ''}`}>
+        <main className={`content flex-1 ${isNosotros || isInicio || isEstado || isReportes || isAdministrador ? '' : 'margen-superior-main'}`}>
           <Routes>
             <Route path="/" element={<Navigate to="/inicio" replace />} />
             <Route path="/inicio" element={<Inicio />} />
