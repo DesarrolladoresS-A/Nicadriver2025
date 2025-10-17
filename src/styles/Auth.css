@@ -194,6 +194,7 @@ body { margin: 0; }
   border: 1px solid var(--border);
   background: var(--card);
   transition: box-shadow .2s, border-color .2s;
+  color: #111827;
 }
 .auth-card .input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(90, 99, 255, .15); }
 
@@ -298,6 +299,12 @@ body { margin: 0; }
 /* Inputs normalization */
 .auth-card .input { min-height: 44px; }
 .auth-card .input[type="file"] { padding: 0.5rem; height: auto; }
+/* Ensure form controls text appears in black and placeholders readable */
+.auth-card select,
+.auth-card textarea { color: #111827; }
+.auth-card .input::placeholder,
+.auth-card textarea::placeholder { color: #6b7280; opacity: 1; }
+.auth-card select option { color: #111827; background: #ffffff; }
 
 /* Submit button spans full width at the end */
 .grid-form .grid-submit { grid-column: 1 / span 4; margin-top: 8px; }
