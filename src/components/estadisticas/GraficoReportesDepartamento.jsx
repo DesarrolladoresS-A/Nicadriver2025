@@ -54,8 +54,8 @@ const GraficoReportesDepartamento = () => {
   }, []);
 
   return (
-    <div style={{ width: '100%', height: 200 }}>
-      <h6 className="mb-2 text-center">Reportes por dep.</h6>
+    <div style={{ width: '100%', height: 220 }}>
+      <h6 className="mb-2 text-center">Reportes por departamento (Estado del Tráfico)</h6>
       <ResponsiveContainer width="100%" height="88%">
         <BarChart data={data} margin={{ top: 0, left: 6, right: 6, bottom: 0 }} barCategoryGap="20%">
           <CartesianGrid strokeDasharray="3 3" vertical={false} />

@@ -43,43 +43,14 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
     return !Object.values(nuevosErrores).some((error) => error);
   };
 
-  // Fallback: comprimir imagen a base64 (máx 1024px lado mayor, calidad 0.7)
-  const archivoABase64Comprimido = (archivo, maxSide = 1024, quality = 0.7) => {
+  // Convertir archivo a base64
+  const convertirImagenABase64 = (archivo) => {
     return new Promise((resolve, reject) => {
-      try {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let { width, height } = img;
-            const scale = Math.min(1, maxSide / Math.max(width, height));
-            width = Math.round(width * scale);
-            height = Math.round(height * scale);
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/jpeg', quality);
-            resolve(dataUrl);
-          };
-          img.onerror = reject;
-          img.src = reader.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(archivo);
-      } catch (e) {
-        reject(e);
-      }
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(archivo);
     });
-  };
-
-  // Helper: aplica timeout a promesas
-  const withTimeout = async (fn, ms, label = 'Operación') => {
-    return await Promise.race([
-      (async () => await fn())(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} excedió ${ms}ms`)), ms))
-    ]);
   };
 
   const guardarReporte = async () => {
@@ -93,16 +64,18 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
     setMensajeError("");
 
     try {
-      let fotoURL = null;
-      // Subir imagen a Storage si existe
+      let fotoBase64 = null;
+
+      // Convertir imagen a base64 si existe
       if (foto) {
         try {
-          console.log("[Reporte] Generando base64 comprimido de la imagen...");
-          fotoURL = await archivoABase64Comprimido(foto, 1024, 0.7);
-          console.log("[Reporte] Base64 generado (longitud):", typeof fotoURL === 'string' ? fotoURL.length : 0);
-        } catch (e2) {
-          console.warn("[Reporte] Falló compresión a base64, se guardará sin imagen:", e2);
-          fotoURL = null;
+          console.log("[Reporte] Convirtiendo imagen a base64...");
+          fotoBase64 = await convertirImagenABase64(foto);
+          console.log("[Reporte] Imagen convertida a base64 exitosamente");
+        } catch (errImg) {
+          console.warn("[Reporte] Error al convertir imagen a base64:", errImg);
+          // Continuar sin imagen
+          fotoBase64 = null;
         }
       }
 
@@ -129,7 +102,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         descripcion: descripcion.trim(),
         ubicacion: ubicacion.trim(),
         fechaHora,
-        foto: typeof fotoURL === 'string' ? fotoURL : null,
+        foto: fotoBase64,
         fechaRegistro: ahora.toISOString(),
         estado: "pendiente",
         userEmail: user?.email || null,
@@ -137,8 +110,9 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         ...perfil,
       };
 
-      console.log("[Reporte] Guardando documento en Firestore... foto=", fotoURL ? 'base64' : 'no image');
-      await withTimeout(() => addDoc(collection(db, "reportes"), nuevoReporte), 10000, 'Guardar reporte');
+      const fotoInfo = fotoBase64 ? `base64 image (${fotoBase64.length} chars)` : 'no image';
+      console.log("[Reporte] Guardando documento en Firestore... foto=", fotoInfo);
+      await addDoc(collection(db, "reportes"), nuevoReporte);
       console.log("[Reporte] Reporte guardado correctamente.")
 
       if (actualizar) actualizar();
@@ -147,11 +121,9 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
       console.error("Error al guardar el reporte:", error);
       const msg = error?.code === 'permission-denied'
         ? 'No tienes permisos para crear reportes. Inicia sesión o contacta al administrador.'
-        : (typeof error?.message === 'string' && error.message.includes('excedió'))
-          ? `Tiempo de espera agotado: ${error.message}. Verifica tu conexión e inténtalo de nuevo.`
-          : error?.message || 'Ocurrió un error al guardar el reporte.';
+        : error?.message || 'Ocurrió un error al guardar el reporte.';
 
-      // Si por alguna razón Firestore falla por tamaño (no debería ocurrir ya con downloadURL), reintentar sin foto
+      // Si el error es por tamaño de la propiedad foto (>1MiB), reintentar sin foto
       const isFotoMuyGrande = typeof error?.message === 'string' && error.message.includes('The value of property "foto" is longer than');
       if (isFotoMuyGrande) {
         try {
@@ -279,7 +251,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             onChange={(e) => setFoto(e.target.files[0])}
           />
           <p style={{ marginTop: '8px', color: '#6b7280', fontSize: '12px' }}>
-            La imagen se guardará como una URL base64 comprimida directamente en la base de datos.
+            La imagen se guardará en formato base64 directamente en la base de datos.
           </p>
           {/* Vista previa de la imagen */}
           {foto && (

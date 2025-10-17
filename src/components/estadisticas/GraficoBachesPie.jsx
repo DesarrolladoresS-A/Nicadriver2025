@@ -35,8 +35,8 @@ const GraficoBachesPie = () => {
   const colors = ['#ff6b6b', '#4dabf7'];
 
   return (
-    <div style={{ width: '100%', height: 200 }}>
-      <h6 className="mb-2 text-center">Baches/Otros</h6>
+    <div style={{ width: '100%', height: 250 }}>
+      <h6 className="mb-2 text-center">Baches vs Otros</h6>
       <ResponsiveContainer width="100%" height="88%">
         <PieChart>
           <Pie
@@ -53,7 +53,7 @@ const GraficoBachesPie = () => {
             ))}
           </Pie>
           <Tooltip />
-          <Legend wrapperStyle={{ fontSize: 10 }} iconSize={10} />
+          <Legend wrapperStyle={{ fontSize: 12 }} iconSize={10} />
         </PieChart>
       </ResponsiveContainer>
     </div>

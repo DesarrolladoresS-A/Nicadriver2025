@@ -22,17 +22,13 @@ const GraficoReportesTendencia = () => {
         const conteo = {};
         snap.forEach((docu) => {
           const { fechaHora, fechaRegistro } = docu.data() || {};
-          const d = formatDate(fechaHora || fechaRegistro);
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          const h = String(d.getHours()).padStart(2, '0');
-          const key = `${y}-${m}-${day} ${h}:00`;
+          const date = formatDate(fechaHora || fechaRegistro);
+          const key = date.toISOString().slice(0,10);
           conteo[key] = (conteo[key] || 0) + 1;
         });
         const arr = Object.entries(conteo)
           .sort((a,b) => a[0].localeCompare(b[0]))
-          .map(([hora, cantidad]) => ({ hora, cantidad }));
+          .map(([fecha, cantidad]) => ({ fecha, cantidad }));
         setData(arr);
       } catch (e) {}
     };
@@ -40,8 +36,8 @@ const GraficoReportesTendencia = () => {
   }, []);
 
   return (
-    <div style={{ width: '100%', height: 200 }}>
-      <h6 className="mb-2 text-center">Reportes por hora</h6>
+    <div style={{ width: '100%', height: 250 }}>
+      <h6 className="mb-2 text-center">Reportes por día</h6>
       <ResponsiveContainer width="100%" height="88%">
         <AreaChart data={data} margin={{ top: 0, left: 6, right: 6, bottom: 0 }}>
           <defs>
@@ -51,7 +47,7 @@ const GraficoReportesTendencia = () => {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="hora" tick={{ fontSize: 10 }} interval={0} height={10} />
+          <XAxis dataKey="fecha" tick={{ fontSize: 10 }} />
           <YAxis allowDecimals={false} tick={{ fontSize: 10 }} width={28} />
           <Tooltip />
           <Area type="monotone" dataKey="cantidad" stroke="#1e3d87" fillOpacity={1} fill="url(#colorA)" />
