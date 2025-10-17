@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { db } from "../../database/firebaseconfig";
-import { collection, addDoc, doc, getDoc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 import { useAuth } from "../../database/authcontext";
 
 const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
@@ -81,33 +81,15 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
 
       const ahora = new Date();
 
-      let perfil = {};
-      try {
-        if (user?.uid) {
-          const ref = doc(db, "users", user.uid);
-          const snap = await getDoc(ref);
-          if (snap.exists()) {
-            const d = snap.data();
-            perfil = {
-              userNombre: d.nombres || d.nombre || null,
-              userApellido: d.apellidos || d.apellido || null,
-              userCedula: d.cedula || d.cédula || null,
-            };
-          }
-        }
-      } catch (_) {}
-
       const nuevoReporte = {
         titulo: titulo.trim(),
         descripcion: descripcion.trim(),
         ubicacion: ubicacion.trim(),
-        fechaHora,
-        foto: fotoBase64,
+        fechaHora, // string de input datetime-local
+        foto: fotoBase64, // Ahora guardamos directamente el base64
         fechaRegistro: ahora.toISOString(),
-        estado: "pendiente",
-        userEmail: user?.email || null,
-        userUid: user?.uid || null,
-        ...perfil,
+        estado: "pendiente", // Campo extra útil para gestión de reportes
+        userEmail: user?.email || null
       };
 
       const fotoInfo = fotoBase64 ? `base64 image (${fotoBase64.length} chars)` : 'no image';
@@ -129,21 +111,6 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
         try {
           console.warn('[Reporte] Reintentando guardado sin imagen por límite de Firestore...');
           const ahora = new Date();
-          let perfil = {};
-          try {
-            if (user?.uid) {
-              const ref = doc(db, 'users', user.uid);
-              const snap = await getDoc(ref);
-              if (snap.exists()) {
-                const d = snap.data();
-                perfil = {
-                  userNombre: d.nombres || d.nombre || null,
-                  userApellido: d.apellidos || d.apellido || null,
-                  userCedula: d.cedula || d.cédula || null,
-                };
-              }
-            }
-          } catch (_) {}
           const fallback = {
             titulo: titulo.trim(),
             descripcion: descripcion.trim(),
@@ -152,9 +119,7 @@ const ModalRegistroReportes = ({ setModalRegistro, actualizar }) => {
             foto: null,
             fechaRegistro: ahora.toISOString(),
             estado: 'pendiente',
-            userEmail: user?.email || null,
-            userUid: user?.uid || null,
-            ...perfil,
+            userEmail: user?.email || null
           };
           await addDoc(collection(db, 'reportes'), fallback);
           console.log('[Reporte] Guardado exitoso sin imagen tras reintento.');
