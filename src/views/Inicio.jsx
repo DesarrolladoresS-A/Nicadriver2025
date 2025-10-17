@@ -387,6 +387,9 @@ const Inicio = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = ['/imagen/Carretera1.jpeg', '/imagen/Calle-1.jpg', '/imagen/calle-2.jpeg', '/imagen/calle-3.webp'];
 
+      const [showModal, setShowModal] = React.useState(false); // controla si el modal se ve
+      const [userOS, setUserOS] = React.useState(null); // detecta el sistema operativo
+
   useEffect(() => {
     const fetchReportes = async () => {
       try {
@@ -586,31 +589,20 @@ const Inicio = () => {
   };
 
   // Funcionalidad para descarga de app
-  const descargarApp = () => {
-    // Detectar el sistema operativo del usuario
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const descargarApp = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
-    if (/android/i.test(userAgent)) {
-      // Redirigir a Google Play Store
-      window.open('https://play.google.com/store/apps/details?id=com.nicadriver.app', '_blank');
-    } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-      // Redirigir a App Store
-      window.open('https://apps.apple.com/app/nicadriver/id123456789', '_blank');
-    } else {
-      // Mostrar modal con opciones para ambos sistemas
-      const opcion = confirm(
-        '¿Desde qué dispositivo quieres descargar la app?\n\n' +
-        'Aceptar: Android (Google Play)\n' +
-        'Cancelar: iOS (App Store)'
-      );
-
-      if (opcion) {
+      if (/android/i.test(userAgent)) {
+        // Android: abrir Play Store directamente
         window.open('https://play.google.com/store/apps/details?id=com.nicadriver.app', '_blank');
-      } else {
+      } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        // iOS: abrir App Store directamente
         window.open('https://apps.apple.com/app/nicadriver/id123456789', '_blank');
+      } else {
+        // Otro: mostrar modal con opciones
+        setShowModal(true);
       }
-    }
-  };
+    };
 
   const filtrarParadas = (termino) => {
     if (!rutaSeleccionada) return [];
@@ -666,6 +658,8 @@ const Inicio = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Descarga NicaDriver</h2>
 
           {/* Botón único de descarga */}
+
+          {/* Botón de descarga */}
           <button
             onClick={descargarApp}
             className="btn btn-primary btn-lg px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
@@ -673,6 +667,35 @@ const Inicio = () => {
             <i data-lucide="download" className="w-6 h-6 mr-3"></i>
             Descargar App Gratis
           </button>
+
+          {/* Modal de selección de sistema */}
+          {showModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+                <h2 className="text-xl font-bold mb-4 text-center">¿Desde qué dispositivo quieres descargar la app?</h2>
+                <div className="flex justify-around">
+                  <button
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                    onClick={() => window.open('https://play.google.com/store/apps/details?id=com.nicadriver.app', '_blank')}
+                  >
+                    Android
+                  </button>
+                  <button
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                    onClick={() => window.open('https://apps.apple.com/app/nicadriver/id123456789', '_blank')}
+                  >
+                    iOS
+                  </button>
+                </div>
+                <button
+                  className="mt-4 text-gray-500 hover:text-gray-700 block mx-auto"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cerrar
+                </button>
+                </div>
+              </div>
+            )}
 
           {/* Características destacadas */}
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
