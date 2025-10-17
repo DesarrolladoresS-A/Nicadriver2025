@@ -55,6 +55,20 @@ const ciudadesNicaragua = [
   { nombre: 'Estelí', lat: 13.091, lng: -86.3538 },
 ];
 
+// Lugares populares en Nicaragua para sugerencias rápidas
+const lugaresPopularesNicaragua = [
+  { nombre: 'Aeropuerto Internacional Augusto C. Sandino', tipo: 'airport', lat: 12.1415, lng: -86.1682 },
+  { nombre: 'Centro Comercial Galerías Santo Domingo', tipo: 'shopping_mall', lat: 12.1594, lng: -86.2734 },
+  { nombre: 'Hospital Metropolitano Vivian Pellas', tipo: 'hospital', lat: 12.1208, lng: -86.2514 },
+  { nombre: 'Universidad Nacional de Ingeniería', tipo: 'university', lat: 12.1364, lng: -86.2514 },
+  { nombre: 'Terminal de Buses Mayoreo', tipo: 'bus_station', lat: 12.1364, lng: -86.2514 },
+  { nombre: 'Parque Central de Granada', tipo: 'park', lat: 11.9344, lng: -85.956 },
+  { nombre: 'Catedral de León', tipo: 'church', lat: 12.4345, lng: -86.8794 },
+  { nombre: 'Mercado Oriental', tipo: 'supermarket', lat: 12.1364, lng: -86.2514 },
+  { nombre: 'Plaza Inter', tipo: 'shopping_mall', lat: 12.1364, lng: -86.2514 },
+  { nombre: 'Banco Central de Nicaragua', tipo: 'bank', lat: 12.1364, lng: -86.2514 },
+];
+
 // Moved outside the component to prevent recreation on each render
 const libraries = ['places', 'geometry'];
 
@@ -120,6 +134,13 @@ const EstadoTrafico = () => {
   const [showSafetyAlert, setShowSafetyAlert] = useState(false);
   const [safetyAlertStep, setSafetyAlertStep] = useState(0);
   const [searchTimeout, setSearchTimeout] = useState(null);
+  const [isNavigationCollapsed, setIsNavigationCollapsed] = useState(false);
+  const [isTravelCollapsed, setIsTravelCollapsed] = useState(false);
+  const [isNavigationExpanded, setIsNavigationExpanded] = useState(false);
+  const [isTravelExpanded, setIsTravelExpanded] = useState(false);
+  const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+  const [showPopularPlaces, setShowPopularPlaces] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Manejar errores del mapa
   useEffect(() => {
@@ -130,10 +151,25 @@ const EstadoTrafico = () => {
     } else if (isLoaded) {
       setMapError(null);
       setIsMapLoading(false);
+
+      // Verificar que Google Places API esté disponible
+      if (window.google?.maps?.places?.AutocompleteService) {
+        console.log('✅ Google Places API está disponible');
+
+        // Prueba rápida de la API
+        const testService = new window.google.maps.places.AutocompleteService();
+        testService.getPlacePredictions({
+          input: 'Managua',
+          componentRestrictions: { country: 'ni' }
+        }, (predictions, status) => {
+          console.log('🧪 Prueba de Google Places API:', { predictions: predictions?.length || 0, status });
+        });
+      } else {
+        console.warn('⚠️ Google Places API no está disponible');
+      }
     }
   }, [isLoaded, loadError]);
 
-  // Verificar si la API key está configurada
   useEffect(() => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (!apiKey || apiKey === 'tu_google_maps_api_key_aqui') {
@@ -512,6 +548,11 @@ const EstadoTrafico = () => {
     setShowNavigationPanel(true);
     setShowQuickReportButtons(true);
 
+    // Activar mapa fullscreen en móviles
+    if (window.innerWidth <= 768) {
+      setIsMapFullscreen(true);
+    }
+
     // Iniciar seguimiento del viaje
     startTravelTracking();
   };
@@ -533,6 +574,9 @@ const EstadoTrafico = () => {
     setDistanceToNextTurn(null);
     setEstimatedArrival(null);
 
+    // Desactivar mapa fullscreen
+    setIsMapFullscreen(false);
+
     // Detener seguimiento del viaje
     stopTravelTracking();
   };
@@ -551,30 +595,159 @@ const EstadoTrafico = () => {
     setShowRutaModal(false);
   };
 
-  // Función para manejar la selección de sugerencias
+  // Función mejorada para manejar la selección de sugerencias
   const handleSuggestionSelect = async (suggestion) => {
     setDestino(suggestion.description);
     setShowSuggestions(false);
 
+    // Mostrar indicador de carga
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.innerHTML = '📍 Obteniendo detalles del lugar...';
+    loadingIndicator.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      z-index: 10000;
+      font-size: 14px;
+    `;
+    document.body.appendChild(loadingIndicator);
+
     // Obtener detalles del lugar seleccionado
     try {
+      if (!window.google?.maps?.places?.PlacesService) {
+        throw new Error('Google Places API no está disponible');
+      }
+
       const service = new window.google.maps.places.PlacesService(document.createElement('div'));
+
       service.getDetails({
         placeId: suggestion.place_id,
-        ...GOOGLE_PLACES_CONFIG.placeDetailsOptions
+        fields: ['place_id', 'formatted_address', 'geometry', 'name', 'types']
       }, (place, status) => {
+        // Remover indicador de carga
+        if (loadingIndicator.parentNode) {
+          loadingIndicator.parentNode.removeChild(loadingIndicator);
+        }
+
         if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
           // Si el lugar tiene coordenadas, las usamos para el destino
           if (place.geometry && place.geometry.location) {
             const lat = place.geometry.location.lat();
             const lng = place.geometry.location.lng();
             setDestino(`${lat}, ${lng}`);
+
+            // Mostrar confirmación visual
+            showPlaceConfirmation(place.name || suggestion.description, lat, lng);
+          } else {
+            // Si no hay coordenadas, usar la descripción como está
+            console.log('Lugar seleccionado sin coordenadas:', place);
           }
+        } else {
+          console.warn('Error obteniendo detalles del lugar:', status);
+          // Mantener la descripción original si hay error
         }
       });
     } catch (error) {
-      console.log('Error obteniendo detalles del lugar:', error);
+      console.error('Error obteniendo detalles del lugar:', error);
+      // Remover indicador de carga en caso de error
+      if (loadingIndicator.parentNode) {
+        loadingIndicator.parentNode.removeChild(loadingIndicator);
+      }
     }
+  };
+
+  // Función para manejar la selección de lugares populares
+  const handlePopularPlaceSelect = (lugar) => {
+    setDestino(`${lugar.lat}, ${lugar.lng}`);
+    setShowPopularPlaces(false);
+    showPlaceConfirmation(lugar.nombre, lugar.lat, lugar.lng);
+  };
+
+  // Función para mostrar confirmación visual de lugar seleccionado
+  const showPlaceConfirmation = (placeName, lat, lng) => {
+    const confirmation = document.createElement('div');
+    confirmation.className = 'place-confirmation';
+    confirmation.innerHTML = `
+      <div class="confirmation-content">
+        <div class="confirmation-icon">📍</div>
+        <div class="confirmation-text">
+          <div class="confirmation-title">Lugar seleccionado</div>
+          <div class="confirmation-name">${placeName}</div>
+          <div class="confirmation-coords">${lat.toFixed(4)}, ${lng.toFixed(4)}</div>
+        </div>
+      </div>
+    `;
+
+    confirmation.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      font-size: 14px;
+      max-width: 300px;
+      animation: slideInRight 0.3s ease-out;
+    `;
+
+    // Agregar estilos de animación
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      .confirmation-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .confirmation-icon {
+        font-size: 20px;
+      }
+      .confirmation-text {
+        flex: 1;
+      }
+      .confirmation-title {
+        font-weight: bold;
+        margin-bottom: 2px;
+      }
+      .confirmation-name {
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+      .confirmation-coords {
+        font-size: 11px;
+        opacity: 0.8;
+      }
+    `;
+    document.head.appendChild(style);
+
+    document.body.appendChild(confirmation);
+
+    // Remover después de 3 segundos
+    setTimeout(() => {
+      if (confirmation.parentNode) {
+        confirmation.style.animation = 'slideInRight 0.3s ease-out reverse';
+        setTimeout(() => {
+          if (confirmation.parentNode) {
+            confirmation.parentNode.removeChild(confirmation);
+          }
+          if (style.parentNode) {
+            style.parentNode.removeChild(style);
+          }
+        }, 300);
+      }
+    }, 3000);
   };
 
   // Función mejorada para manejar cambios en el input de búsqueda
@@ -582,52 +755,67 @@ const EstadoTrafico = () => {
     const value = e.target.value;
     setDestino(value);
 
-    if (value.length >= GOOGLE_PLACES_CONFIG.filters.minInputLength) {
+    // Ocultar lugares populares cuando se empiece a escribir
+    if (value.length > 0) {
+      setShowPopularPlaces(false);
+    }
+
+    if (value.length >= 2) { // Reducir a 2 caracteres mínimo
+      // Mostrar sugerencias inmediatamente
+      setShowSuggestions(true);
+      setIsSearching(true);
+
       // Debounce para evitar demasiadas llamadas a la API
       clearTimeout(searchTimeout);
       const timeout = setTimeout(() => {
+        console.log('Buscando sugerencias para:', value);
+
+        if (!window.google?.maps?.places?.AutocompleteService) {
+          console.warn('Google Places API no está disponible');
+          setSearchSuggestions([]);
+          setIsSearching(false);
+          return;
+        }
+
         const service = new window.google.maps.places.AutocompleteService();
 
-        // Configuración expandida para obtener más resultados
+        // Configuración simplificada para Nicaragua
         const searchOptions = {
           input: value,
           componentRestrictions: { country: 'ni' },
-          types: ['(regions)', 'establishment', 'geocode'],
-          ...GOOGLE_PLACES_CONFIG.autocompleteOptions
+          types: ['geocode', 'establishment']
         };
 
+        console.log('Opciones de búsqueda:', searchOptions);
+
         service.getPlacePredictions(searchOptions, (predictions, status) => {
+          console.log('Respuesta de Google Places:', { predictions, status });
+          setIsSearching(false);
+
           if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-            // Usar la función de filtrado de la configuración
-            const filteredSuggestions = filterSuggestions(predictions);
-            setSearchSuggestions(filteredSuggestions);
+            console.log('Sugerencias encontradas:', predictions.length);
+            setSearchSuggestions(predictions.slice(0, 8)); // Limitar a 8 resultados
             setShowSuggestions(true);
           } else if (status === window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-            // Si no hay resultados, intentar con una búsqueda más amplia
-            const broadSearchOptions = {
-              input: value,
-              componentRestrictions: { country: 'ni' },
-              types: ['geocode']
-            };
-
-            service.getPlacePredictions(broadSearchOptions, (broadPredictions, broadStatus) => {
-              if (broadStatus === window.google.maps.places.PlacesServiceStatus.OK && broadPredictions) {
-                setSearchSuggestions(broadPredictions.slice(0, 5));
-                setShowSuggestions(true);
-              } else {
-                setSearchSuggestions([]);
-                setShowSuggestions(false);
-              }
-            });
-          } else {
+            console.log('No se encontraron resultados');
             setSearchSuggestions([]);
-            setShowSuggestions(false);
+            setShowSuggestions(true); // Mantener visible para mostrar mensaje de "no resultados"
+          } else {
+            console.warn('Error en Google Places API:', status);
+            setSearchSuggestions([]);
+            setShowSuggestions(true); // Mantener visible para mostrar mensaje de error
           }
         });
-      }, 300); // Debounce de 300ms
+      }, 200); // Reducir debounce a 200ms
 
       setSearchTimeout(timeout);
+    } else if (value.length === 0) {
+      // Si el campo está vacío, mostrar lugares populares
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+      setShowPopularPlaces(true);
     } else {
+      // Si tiene menos de 2 caracteres pero no está vacío
       setSearchSuggestions([]);
       setShowSuggestions(false);
     }
@@ -952,6 +1140,25 @@ const EstadoTrafico = () => {
         </div>
       )}
 
+      {/* Debug info para Google Places API */}
+      {isLoaded && (
+        <div className="debug-info" style={{
+          position: 'fixed',
+          top: '10px',
+          right: '10px',
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '8px',
+          fontSize: '12px',
+          zIndex: 9999
+        }}>
+          <div>🔍 Google Places: {window.google?.maps?.places?.AutocompleteService ? '✅ Disponible' : '❌ No disponible'}</div>
+          <div>🗺️ Google Maps: {isLoaded ? '✅ Cargado' : '⏳ Cargando'}</div>
+          <div>🔑 API Key: {import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? '✅ Configurada' : '❌ No configurada'}</div>
+        </div>
+      )}
+
       <div className="main-container">
         <div className="search-section">
           <div className="search-container">
@@ -962,48 +1169,139 @@ const EstadoTrafico = () => {
                 value={destino}
                 onChange={handleSearchChange}
                 className="search-input"
-                onFocus={() => setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                onFocus={() => {
+                  if (destino.length < 2) {
+                    setShowPopularPlaces(true);
+                  }
+                }}
+                onBlur={() => setTimeout(() => {
+                  setShowPopularPlaces(false);
+                }, 200)}
                 autoComplete="off"
               />
               <div className="search-icon">🔍</div>
 
+              {/* Botón para mostrar lugares populares */}
+              <button
+                className="popular-places-btn"
+                onClick={() => setShowPopularPlaces(!showPopularPlaces)}
+                title="Ver lugares populares"
+              >
+                ⭐
+              </button>
+
               {showSuggestions && searchSuggestions.length > 0 && (
                 <div className="suggestions-dropdown">
                   <div className="suggestions-header">
-                    <span className="suggestions-title">Sugerencias</span>
+                    <span className="suggestions-title">📍 Lugares encontrados</span>
                     <span className="suggestions-count">{searchSuggestions.length} resultados</span>
                   </div>
-                  {searchSuggestions.map((suggestion, index) => (
-                    <div
-                      key={index}
-                      className="suggestion-item"
-                      onClick={() => handleSuggestionSelect(suggestion)}
-                    >
-                      <div className="suggestion-icon">
-                        {getPlaceIcon(suggestion.types)}
-                      </div>
-                      <div className="suggestion-text">
-                        <div className="suggestion-main">
-                          {suggestion.structured_formatting?.main_text || suggestion.description}
+                  <div className="suggestions-list">
+                    {searchSuggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        className="suggestion-item"
+                        onClick={() => handleSuggestionSelect(suggestion)}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#f0f8ff';
+                          e.target.style.transform = 'translateX(5px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '';
+                          e.target.style.transform = '';
+                        }}
+                      >
+                        <div className="suggestion-icon">
+                          {getPlaceIcon(suggestion.types)}
                         </div>
-                        <div className="suggestion-secondary">
-                          {suggestion.structured_formatting?.secondary_text || getPlaceTypeDescription(suggestion.types)}
+                        <div className="suggestion-text">
+                          <div className="suggestion-main">
+                            {suggestion.structured_formatting?.main_text || suggestion.description}
+                          </div>
+                          <div className="suggestion-secondary">
+                            {suggestion.structured_formatting?.secondary_text || getPlaceTypeDescription(suggestion.types)}
+                          </div>
+                        </div>
+                        <div className="suggestion-arrow">
+                          <span className="arrow-icon">→</span>
                         </div>
                       </div>
-                      <div className="suggestion-arrow">→</div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  <div className="suggestions-footer">
+                    <span className="footer-text">💡 Selecciona un lugar para obtener coordenadas precisas</span>
+                  </div>
                 </div>
               )}
 
-              {showSuggestions && searchSuggestions.length === 0 && destino.length >= 2 && (
+              {/* Indicador de carga mientras se buscan sugerencias */}
+              {showSuggestions && isSearching && (
+                <div className="suggestions-dropdown loading">
+                  <div className="loading-suggestions">
+                    <div className="loading-spinner-small"></div>
+                    <span className="loading-text">🔍 Buscando lugares...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Dropdown de lugares populares */}
+              {showPopularPlaces && (
+                <div className="suggestions-dropdown popular-places">
+                  <div className="suggestions-header">
+                    <span className="suggestions-title">⭐ Lugares Populares</span>
+                    <span className="suggestions-count">{lugaresPopularesNicaragua.length} lugares</span>
+                  </div>
+                  <div className="suggestions-list">
+                    {lugaresPopularesNicaragua.map((lugar, index) => (
+                      <div
+                        key={index}
+                        className="suggestion-item popular-place"
+                        onClick={() => handlePopularPlaceSelect(lugar)}
+                        onMouseEnter={(e) => {
+                          e.target.style.backgroundColor = '#fff3cd';
+                          e.target.style.transform = 'translateX(5px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.backgroundColor = '';
+                          e.target.style.transform = '';
+                        }}
+                      >
+                        <div className="suggestion-icon">
+                          {getPlaceIcon([lugar.tipo])}
+                        </div>
+                        <div className="suggestion-text">
+                          <div className="suggestion-main">
+                            {lugar.nombre}
+                          </div>
+                          <div className="suggestion-secondary">
+                            {getPlaceTypeDescription([lugar.tipo])} • Nicaragua
+                          </div>
+                        </div>
+                        <div className="suggestion-arrow">
+                          <span className="arrow-icon">→</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="suggestions-footer">
+                    <span className="footer-text">💡 Selecciona un lugar popular para navegación rápida</span>
+                  </div>
+                </div>
+              )}
+
+              {showSuggestions && searchSuggestions.length === 0 && destino.length >= 2 && !isSearching && (
                 <div className="suggestions-dropdown no-results">
                   <div className="no-results-message">
                     <div className="no-results-icon">🔍</div>
                     <div className="no-results-text">
-                      <div className="no-results-title">No se encontraron resultados</div>
-                      <div className="no-results-subtitle">Intenta con otros términos de búsqueda</div>
+                      <div className="no-results-title">No se encontraron lugares</div>
+                      <div className="no-results-subtitle">Intenta con:</div>
+                      <div className="no-results-suggestions">
+                        <span className="suggestion-tag">📍 Direcciones específicas</span>
+                        <span className="suggestion-tag">🏢 Lugares de negocio</span>
+                        <span className="suggestion-tag">🏙️ Ciudades</span>
+                        <span className="suggestion-tag">🛣️ Carreteras</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1041,7 +1339,7 @@ const EstadoTrafico = () => {
 
           {/* Mapa principal */}
           <div className="map-section">
-            <div className="map-container">
+            <div className={`map-container ${isMapFullscreen ? 'fullscreen-mobile' : ''}`}>
               <GoogleMap
                 mapContainerStyle={containerStyle}
                 center={currentLocation || userLocation || defaultCenter}
@@ -1217,164 +1515,210 @@ const EstadoTrafico = () => {
 
         {/* Panel de información del viaje */}
         {showTravelPanel && (
-          <div className="travel-panel">
+          <div
+            className={`travel-panel ${isTravelCollapsed ? 'collapsed' : ''} ${isTravelExpanded ? 'expanded' : ''}`}
+            onClick={() => {
+              if (isTravelCollapsed) {
+                setIsTravelCollapsed(false);
+                setIsTravelExpanded(true);
+              } else {
+                setIsTravelExpanded(!isTravelExpanded);
+              }
+            }}
+          >
             <div className="travel-header">
               <h3>🚗 Viaje en Progreso</h3>
-              <button
-                className="close-travel-panel"
-                onClick={stopTravelTracking}
-                title="Finalizar viaje"
-              >
-                ✕
-              </button>
+              <div className="panel-controls">
+                <button
+                  className="collapse-button"
+                  onClick={() => setIsTravelCollapsed(!isTravelCollapsed)}
+                  title={isTravelCollapsed ? "Expandir" : "Colapsar"}
+                >
+                  {isTravelCollapsed ? "⬆️" : "⬇️"}
+                </button>
+                <button
+                  className="close-travel-panel"
+                  onClick={stopTravelTracking}
+                  title="Finalizar viaje"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
-            <div className="travel-stats">
-              <div className="stat-item">
-                <div className="stat-icon">⚡</div>
-                <div className="stat-content">
-                  <div className="stat-value">{travelData.speed.toFixed(1)}</div>
-                  <div className="stat-label">km/h</div>
-                </div>
-              </div>
-
-              <div className="stat-item">
-                <div className="stat-icon">📏</div>
-                <div className="stat-content">
-                  <div className="stat-value">{(travelData.distance / 1000).toFixed(2)}</div>
-                  <div className="stat-label">km recorridos</div>
-                </div>
-              </div>
-
-              <div className="stat-item">
-                <div className="stat-icon">⏱️</div>
-                <div className="stat-content">
-                  <div className="stat-value">
-                    {travelData.startTime ?
-                      Math.floor((travelData.currentTime - travelData.startTime) / 1000 / 60) : 0
-                    }
+            {!isTravelCollapsed && (
+              <>
+                <div className="travel-stats">
+                  <div className="stat-item">
+                    <div className="stat-icon">⚡</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{travelData.speed.toFixed(1)}</div>
+                      <div className="stat-label">km/h</div>
+                    </div>
                   </div>
-                  <div className="stat-label">minutos</div>
+
+                  <div className="stat-item">
+                    <div className="stat-icon">📏</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{(travelData.distance / 1000).toFixed(2)}</div>
+                      <div className="stat-label">km recorridos</div>
+                    </div>
+                  </div>
+
+                  <div className="stat-item">
+                    <div className="stat-icon">⏱️</div>
+                    <div className="stat-content">
+                      <div className="stat-value">
+                        {travelData.startTime ?
+                          Math.floor((travelData.currentTime - travelData.startTime) / 1000 / 60) : 0
+                        }
+                      </div>
+                      <div className="stat-label">minutos</div>
+                    </div>
+                  </div>
+
+                  <div className="stat-item">
+                    <div className="stat-icon">📊</div>
+                    <div className="stat-content">
+                      <div className="stat-value">{travelData.averageSpeed.toFixed(1)}</div>
+                      <div className="stat-label">km/h promedio</div>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="stat-item">
-                <div className="stat-icon">📊</div>
-                <div className="stat-content">
-                  <div className="stat-value">{travelData.averageSpeed.toFixed(1)}</div>
-                  <div className="stat-label">km/h promedio</div>
+                <div className="travel-time">
+                  <div className="current-time">
+                    {travelData.currentTime.toLocaleTimeString()}
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="travel-time">
-              <div className="current-time">
-                {travelData.currentTime.toLocaleTimeString()}
-              </div>
-            </div>
-
-            <div className="travel-actions">
-              <button
-                className="btn-report-incident"
-                onClick={() => setShowIncidentModal(true)}
-              >
-                🚨 Reportar Incidente
-              </button>
-            </div>
+                <div className="travel-actions">
+                  <button
+                    className="btn-report-incident"
+                    onClick={() => setShowIncidentModal(true)}
+                  >
+                    🚨 Reportar Incidente
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
         {/* Panel de Navegación Avanzada */}
         {showNavigationPanel && (
-          <div className="navigation-panel">
+          <div
+            className={`navigation-panel ${isNavigationCollapsed ? 'collapsed' : ''} ${isNavigationExpanded ? 'expanded' : ''}`}
+            onClick={() => {
+              if (isNavigationCollapsed) {
+                setIsNavigationCollapsed(false);
+                setIsNavigationExpanded(true);
+              } else {
+                setIsNavigationExpanded(!isNavigationExpanded);
+              }
+            }}
+          >
             <div className="navigation-header">
               <h3>🧭 Navegación Activa</h3>
-              <button
-                className="close-navigation-panel"
-                onClick={() => {
-                  setIsNavigating(false);
-                  setShowNavigationPanel(false);
-                  setShowQuickReportButtons(false);
-                }}
-                title="Finalizar navegación"
-              >
-                ✕
-              </button>
+              <div className="panel-controls">
+                <button
+                  className="collapse-button"
+                  onClick={() => setIsNavigationCollapsed(!isNavigationCollapsed)}
+                  title={isNavigationCollapsed ? "Expandir" : "Colapsar"}
+                >
+                  {isNavigationCollapsed ? "⬆️" : "⬇️"}
+                </button>
+                <button
+                  className="close-navigation-panel"
+                  onClick={() => {
+                    setIsNavigating(false);
+                    setShowNavigationPanel(false);
+                    setShowQuickReportButtons(false);
+                  }}
+                  title="Finalizar navegación"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
-            {/* Próxima instrucción */}
-            {nextTurn && (
-              <div className="next-turn-info">
-                <div className="turn-icon">🔄</div>
-                <div className="turn-content">
-                  <div className="turn-instruction">{nextTurn}</div>
-                  <div className="turn-distance">{distanceToNextTurn}</div>
+            {!isNavigationCollapsed && (
+              <>
+                {/* Próxima instrucción */}
+                {nextTurn && (
+                  <div className="next-turn-info">
+                    <div className="turn-icon">🔄</div>
+                    <div className="turn-content">
+                      <div className="turn-instruction">{nextTurn}</div>
+                      <div className="turn-distance">{distanceToNextTurn}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tiempo estimado de llegada */}
+                {estimatedArrival && (
+                  <div className="arrival-info">
+                    <div className="arrival-icon">⏰</div>
+                    <div className="arrival-content">
+                      <div className="arrival-label">Llegada estimada</div>
+                      <div className="arrival-time">{estimatedArrival.toLocaleTimeString()}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Botones de reporte rápido */}
+                <div className="quick-report-section">
+                  <h4>🚨 Reporte Rápido</h4>
+                  <div className="quick-report-buttons">
+                    <button
+                      className="quick-report-btn traffic"
+                      onClick={() => reportQuickIncident('Tráfico', 'Reporte rápido')}
+                      title="Reportar tráfico"
+                    >
+                      <span className="btn-icon">🚗</span>
+                      <span className="btn-text">Tráfico</span>
+                    </button>
+                    <button
+                      className="quick-report-btn accident"
+                      onClick={() => reportQuickIncident('Accidente', 'Reporte rápido')}
+                      title="Reportar accidente"
+                    >
+                      <span className="btn-icon">💥</span>
+                      <span className="btn-text">Accidente</span>
+                    </button>
+                    <button
+                      className="quick-report-btn police"
+                      onClick={() => reportQuickIncident('Policía', 'Reporte rápido')}
+                      title="Reportar policía"
+                    >
+                      <span className="btn-icon">👮</span>
+                      <span className="btn-text">Policía</span>
+                    </button>
+                    <button
+                      className="quick-report-btn danger"
+                      onClick={() => reportQuickIncident('Peligro', 'Reporte rápido')}
+                      title="Reportar peligro"
+                    >
+                      <span className="btn-icon">⚠️</span>
+                      <span className="btn-text">Peligro</span>
+                    </button>
+                  </div>
+
+                  {/* Botón de reconocimiento de voz */}
+                  <button
+                    className={`voice-recognition-btn ${voiceRecognitionActive ? 'active' : ''}`}
+                    onClick={startVoiceRecognition}
+                    disabled={voiceRecognitionActive}
+                    title="Reportar por voz"
+                  >
+                    <span className="voice-icon">🎤</span>
+                    <span className="voice-text">
+                      {voiceRecognitionActive ? 'Escuchando...' : 'Reporte por Voz'}
+                    </span>
+                  </button>
                 </div>
-              </div>
+              </>
             )}
-
-            {/* Tiempo estimado de llegada */}
-            {estimatedArrival && (
-              <div className="arrival-info">
-                <div className="arrival-icon">⏰</div>
-                <div className="arrival-content">
-                  <div className="arrival-label">Llegada estimada</div>
-                  <div className="arrival-time">{estimatedArrival.toLocaleTimeString()}</div>
-                </div>
-              </div>
-            )}
-
-            {/* Botones de reporte rápido */}
-            <div className="quick-report-section">
-              <h4>🚨 Reporte Rápido</h4>
-              <div className="quick-report-buttons">
-                <button
-                  className="quick-report-btn traffic"
-                  onClick={() => reportQuickIncident('Tráfico', 'Reporte rápido')}
-                  title="Reportar tráfico"
-                >
-                  <span className="btn-icon">🚗</span>
-                  <span className="btn-text">Tráfico</span>
-                </button>
-                <button
-                  className="quick-report-btn accident"
-                  onClick={() => reportQuickIncident('Accidente', 'Reporte rápido')}
-                  title="Reportar accidente"
-                >
-                  <span className="btn-icon">💥</span>
-                  <span className="btn-text">Accidente</span>
-                </button>
-                <button
-                  className="quick-report-btn police"
-                  onClick={() => reportQuickIncident('Policía', 'Reporte rápido')}
-                  title="Reportar policía"
-                >
-                  <span className="btn-icon">👮</span>
-                  <span className="btn-text">Policía</span>
-                </button>
-                <button
-                  className="quick-report-btn danger"
-                  onClick={() => reportQuickIncident('Peligro', 'Reporte rápido')}
-                  title="Reportar peligro"
-                >
-                  <span className="btn-icon">⚠️</span>
-                  <span className="btn-text">Peligro</span>
-                </button>
-              </div>
-
-              {/* Botón de reconocimiento de voz */}
-              <button
-                className={`voice-recognition-btn ${voiceRecognitionActive ? 'active' : ''}`}
-                onClick={startVoiceRecognition}
-                disabled={voiceRecognitionActive}
-                title="Reportar por voz"
-              >
-                <span className="voice-icon">🎤</span>
-                <span className="voice-text">
-                  {voiceRecognitionActive ? 'Escuchando...' : 'Reporte por Voz'}
-                </span>
-              </button>
-            </div>
           </div>
         )}
 
@@ -1411,15 +1755,6 @@ const EstadoTrafico = () => {
             </button>
           </div>
         )}
-
-        <button
-          onClick={() => setShowRutaModal(true)}
-          className="fab fab-primary"
-          title="Iniciar viaje"
-          aria-label="Iniciar viaje"
-        >
-          <span className="fab-icon">🚗</span>
-        </button>
 
         {showRutaModal && (
           <div className="modal-overlay">

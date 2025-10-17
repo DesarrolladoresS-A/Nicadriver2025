@@ -756,246 +756,227 @@ const Inicio = () => {
           </div>
 
           <div className="card rounded-2xl shadow-lg overflow-hidden">
-            {/* Controles del mapa */}
-            <div className="transport-controls">
-              {/* Filtros principales */}
-              <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <div className="flex items-center space-x-4">
-                  <span className="text-sm font-medium text-card-foreground">Filtros:</span>
+            {/* Controles del mapa - Responsivos */}
+            <div className="transport-controls p-4 md:p-6">
+              {/* Filtros principales - Responsivos */}
+              <div className="space-y-4 mb-6">
+                {/* Primera fila - Filtros principales */}
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <span className="text-sm font-medium text-card-foreground whitespace-nowrap">Filtros:</span>
 
-                  {/* Filtro por tipo */}
-                  <select
-                    value={filtroTipo}
-                    onChange={(e) => {
-                      setFiltroTipo(e.target.value);
-                      aplicarFiltros();
-                    }}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm"
-                  >
-                    <option value="Todas">Todos los tipos</option>
-                    {obtenerTiposUnicos().map(tipo => (
-                      <option key={tipo} value={tipo}>{tipo}</option>
-                    ))}
-                  </select>
-
-                  {/* Filtro por empresa */}
-                  <select
-                    value={filtroEmpresa}
-                    onChange={(e) => {
-                      setFiltroEmpresa(e.target.value);
-                      aplicarFiltros();
-                    }}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm"
-                  >
-                    <option value="Todas">Todas las empresas</option>
-                    {obtenerEmpresasUnicas().map(empresa => (
-                      <option key={empresa} value={empresa}>{empresa}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={toggleParadas}
-                    className={`btn btn-sm ${paradasVisibles ? 'btn-default' : 'btn-outline'}`}
-                  >
-                    <i data-lucide="map-pin" className="w-4 h-4 mr-1"></i>
-                    Paradas
-                  </button>
-                  <button
-                    onClick={toggleTransitLayer}
-                    className={`btn btn-sm ${transitLayerVisible ? 'btn-default' : 'btn-outline'}`}
-                  >
-                    <i data-lucide="layers" className="w-4 h-4 mr-1"></i>
-                    Google Transit
-                  </button>
-                  <button
-                    onClick={resetMapa}
-                    className="btn btn-outline btn-sm"
-                  >
-                    <i data-lucide="refresh-cw" className="w-4 h-4 mr-1"></i>
-                    Reset
-                  </button>
-                </div>
-              </div>
-
-              {/* Selector de rutas individuales */}
-              <div className="mb-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium text-card-foreground mr-2">Rutas:</span>
-                  {rutasTransporte.map((ruta) => (
-                    <button
-                      key={ruta.id}
-                      onClick={() => toggleRutaMapa(ruta.id)}
-                      className={`route-filter-btn ${rutasVisiblesMapa[ruta.id] ? 'active' : ''}`}
-                      style={{
-                        backgroundColor: rutasVisiblesMapa[ruta.id] ? ruta.color : 'transparent',
-                        borderColor: ruta.color,
-                        color: rutasVisiblesMapa[ruta.id] ? 'white' : ruta.color
-                      }}
-                    >
-                      {ruta.numero}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Leyenda mejorada para Google Maps */}
-              <div className="flex flex-wrap items-center gap-4 text-sm">
-                <div className="legend-item">
-                  <div className="legend-color bg-blue-500"></div>
-                  <span>Rutas Manuales</span>
-                </div>
-                <div className="legend-item">
-                  <div className="legend-color bg-red-500"></div>
-                  <span>Terminal Principal</span>
-                </div>
-                <div className="legend-item">
-                  <div className="legend-color bg-blue-500"></div>
-                  <span>Paradas</span>
-                </div>
-                <div className="legend-item">
-                  <div className="w-3 h-3 border-2 border-blue-500 rounded"></div>
-                  <span>Google Maps Transit</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Mapa interactivo con Google Maps */}
-            <div className="relative bg-muted">
-              <div className="p-4">
-                <div className="transport-map-container">
-                  {mapError ? (
-                    <div className="map-error-container">
-                      <div className="error-icon">⚠️</div>
-                      <h3 className="error-title">Error del Mapa</h3>
-                      <p className="error-message">{mapError}</p>
-                      <div className="error-solutions">
-                        <h4>Soluciones:</h4>
-                        <ol>
-                          <li>Crear archivo <code>.env</code> en la raíz del proyecto</li>
-                          <li>Agregar: <code>VITE_GOOGLE_MAPS_API_KEY=tu_clave_real_aqui</code></li>
-                          <li>Obtener clave desde <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud Console</a></li>
-                          <li>Habilitar Maps JavaScript API y Places API</li>
-                          <li>Verificar que la clave tenga permisos para tu dominio</li>
-                        </ol>
-                        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                          <strong>Debug Info:</strong>
-                          <br />
-                          API Key: {import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? 'Presente' : 'Faltante'}
-                          <br />
-                          Error: {mapError}
-                        </div>
-                      </div>
-                    </div>
-                  ) : isMapLoading ? (
-                    <div className="map-loading-container">
-                      <div className="loading-spinner"></div>
-                      <p>Cargando mapa...</p>
-                    </div>
-                  ) : (
-                    <LoadScript
-                      googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'demo-key'}
-                      libraries={['places']}
-                      onError={onError}
-                    >
-                      <GoogleMap
-                        mapContainerStyle={mapContainerStyle}
-                        center={center}
-                        zoom={mapZoom}
-                        onLoad={onLoad}
-                        onUnmount={onUnmount}
-                        options={mapOptions}
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                      {/* Filtro por tipo */}
+                      <select
+                        value={filtroTipo}
+                        onChange={(e) => {
+                          setFiltroTipo(e.target.value);
+                          aplicarFiltros();
+                        }}
+                        className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full sm:w-auto min-w-[140px]"
                       >
-                        {/* Capa de transporte público de Google */}
-                        {transitLayerVisible && <TransitLayer />}
+                        <option value="Todas">Todos los tipos</option>
+                        {obtenerTiposUnicos().map(tipo => (
+                          <option key={tipo} value={tipo}>{tipo}</option>
+                        ))}
+                      </select>
 
-                        {/* Rutas manuales de Managua */}
+                      {/* Filtro por empresa */}
+                      <select
+                        value={filtroEmpresa}
+                        onChange={(e) => {
+                          setFiltroEmpresa(e.target.value);
+                          aplicarFiltros();
+                        }}
+                        className="px-3 py-2 border border-gray-300 rounded-md text-sm w-full sm:w-auto min-w-[160px]"
+                      >
+                        <option value="Todas">Todas las empresas</option>
+                        {obtenerEmpresasUnicas().map(empresa => (
+                          <option key={empresa} value={empresa}>{empresa}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Botones de control - Responsivos */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={toggleParadas}
+                      className={`btn btn-sm ${paradasVisibles ? 'btn-default' : 'btn-outline'} flex-1 sm:flex-none`}
+                    >
+                      <i data-lucide="map-pin" className="w-4 h-4 mr-1"></i>
+                      <span className="hidden sm:inline">Paradas</span>
+                    </button>
+                    <button
+                      onClick={() => setMostrarTodasLasRutas(!mostrarTodasLasRutas)}
+                      className={`btn btn-sm ${mostrarTodasLasRutas ? 'btn-default' : 'btn-outline'} flex-1 sm:flex-none`}
+                    >
+                      <i data-lucide="layers" className="w-4 h-4 mr-1"></i>
+                      <span className="hidden sm:inline">Todas</span>
+                    </button>
+                    <button
+                      onClick={resetMapa}
+                      className="btn btn-outline btn-sm flex-1 sm:flex-none"
+                    >
+                      <i data-lucide="refresh-cw" className="w-4 h-4 mr-1"></i>
+                      <span className="hidden sm:inline">Reset</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Selector de rutas individuales - Responsivo */}
+                <div className="mb-4">
+                  <div className="space-y-3">
+                    <span className="text-sm font-medium text-card-foreground block">Rutas:</span>
+                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-2">
+                      {rutasTransporte.map((ruta) => (
+                        <button
+                          key={ruta.id}
+                          onClick={() => destacarRuta(ruta.id)}
+                          className={`route-filter-btn text-xs sm:text-sm px-2 py-1 rounded-md font-medium transition-all duration-200 ${rutasVisibles[ruta.id] ? 'active' : ''
+                            } ${rutaDestacada === ruta.id ? 'ring-2 ring-blue-500' : ''}`}
+                          style={{
+                            backgroundColor: rutasVisibles[ruta.id] ? ruta.color : 'transparent',
+                            borderColor: ruta.color,
+                            color: rutasVisibles[ruta.id] ? 'white' : ruta.color,
+                            opacity: mostrarTodasLasRutas || rutasVisibles[ruta.id] ? 1 : 0.3
+                          }}
+                        >
+                          {ruta.numero}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Leyenda mejorada - Responsiva */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs sm:text-sm">
+                  <div className="legend-item flex items-center gap-2">
+                    <div className="legend-color bg-blue-500 w-3 h-3 rounded-full"></div>
+                    <span>Paradas de Bus</span>
+                  </div>
+                  <div className="legend-item flex items-center gap-2">
+                    <div className="legend-color bg-red-500 w-3 h-3 rounded-full"></div>
+                    <span>Terminales</span>
+                  </div>
+                  <div className="legend-item flex items-center gap-2">
+                    <div className="legend-dot bg-green-500 animate-pulse w-3 h-3 rounded-full"></div>
+                    <span>Rutas Activas</span>
+                  </div>
+                  <div className="legend-item flex items-center gap-2">
+                    <div className="w-3 h-3 border-2 border-blue-500 rounded-full"></div>
+                    <span>Ruta Destacada</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mapa interactivo - Responsivo */}
+              <div className="relative bg-muted">
+                <div className="p-2 sm:p-4">
+                  <div className="transport-map-container h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]">
+                    <MapContainer
+                      center={userPosition}
+                      zoom={mapaZoom}
+                      style={{
+                        height: '100%',
+                        width: '100%'
+                      }}
+                      className="w-full h-full rounded-lg"
+                    >
+                      <LayersControl position="topright">
+                        <BaseLayer checked name="Mapa Estilo Oscuro">
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+                            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                          />
+                        </BaseLayer>
+                        <BaseLayer name="Mapa Satelital">
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+                            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                          />
+                        </BaseLayer>
+                        <BaseLayer name="Mapa Claro">
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          />
+                        </BaseLayer>
+
+                        {/* Rutas de transporte */}
                         {rutasTransporte.map((ruta) => (
-                          rutasVisiblesMapa[ruta.id] && (
-                            <Polyline
-                              key={ruta.id}
-                              path={ruta.recorrido.map(coord => ({
-                                lat: coord[0],
-                                lng: coord[1]
-                              }))}
-                              options={{
-                                strokeColor: ruta.color,
-                                strokeOpacity: 0.8,
-                                strokeWeight: 4,
-                                clickable: false,
-                                geodesic: true
-                              }}
-                            />
+                          rutasVisibles[ruta.id] && (
+                            <Overlay key={ruta.id} name={`Ruta ${ruta.numero}`} checked>
+                              <Polyline
+                                positions={ruta.recorrido}
+                                color={ruta.color}
+                                weight={rutaDestacada === ruta.id ? 8 : 5}
+                                opacity={rutaDestacada === ruta.id ? 1 : 0.9}
+                                className="route-polyline"
+                                dashArray={rutaDestacada === ruta.id ? "0" : "5, 5"}
+                                eventHandlers={{
+                                  click: () => destacarRuta(ruta.id)
+                                }}
+                              />
+                            </Overlay>
                           )
                         ))}
 
-                        {/* Marcadores de paradas principales */}
-                        {paradasVisibles && paradasPrincipales.map((parada) => (
-                          <Marker
-                            key={parada.id}
-                            position={{ lat: parada.coordenadas[0], lng: parada.coordenadas[1] }}
-                            onClick={() => setSelectedMarker(parada)}
-                            icon={{
-                              url: parada.id === 'parada-1'
-                                ? 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
-                                : 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-                              scaledSize: new window.google.maps.Size(30, 30)
-                            }}
-                          />
-                        ))}
-
-                        {/* InfoWindow para mostrar información de paradas */}
-                        {selectedMarker && (
-                          <InfoWindow
-                            position={{
-                              lat: selectedMarker.coordenadas[0],
-                              lng: selectedMarker.coordenadas[1]
-                            }}
-                            onCloseClick={() => setSelectedMarker(null)}
-                          >
-                            <div className="stop-popup">
-                              <h3 className="font-bold text-lg mb-2">{selectedMarker.nombre}</h3>
-                              <div className="mb-2">
-                                <strong>Rutas disponibles:</strong>
-                              </div>
-                              <ul className="routes-list">
-                                {selectedMarker.rutas.map((ruta, index) => (
-                                  <li key={index} className="text-sm">{ruta}</li>
-                                ))}
-                              </ul>
-                              {selectedMarker.id === 'parada-1' && (
-                                <div className="terminal-info mt-2 p-2 bg-blue-50 rounded">
-                                  <strong>Terminal Principal:</strong> Punto de conexión para todas las rutas
-                                </div>
-                              )}
-                            </div>
-                          </InfoWindow>
+                        {/* Paradas de buses */}
+                        {paradasVisibles && (
+                          <Overlay name="Paradas de Bus" checked>
+                            {paradasPrincipales.map((parada) => (
+                              <Marker
+                                key={parada.id}
+                                position={parada.coordenadas}
+                                icon={parada.id === 'parada-1' ? busIcon : busStopIcon}
+                              >
+                                <Popup>
+                                  <div className="stop-popup">
+                                    <h3>{parada.nombre}</h3>
+                                    <div className="mb-2">
+                                      <strong>Rutas disponibles:</strong>
+                                    </div>
+                                    <ul className="routes-list">
+                                      {parada.rutas.map((ruta, index) => (
+                                        <li key={index}>{ruta}</li>
+                                      ))}
+                                    </ul>
+                                    {parada.id === 'parada-1' && (
+                                      <div className="terminal-info">
+                                        <strong>Terminal Principal:</strong> Punto de conexión para todas las rutas
+                                      </div>
+                                    )}
+                                  </div>
+                                </Popup>
+                              </Marker>
+                            ))}
+                          </Overlay>
                         )}
-                      </GoogleMap>
-                    </LoadScript>
-                  )}
+                      </LayersControl>
+                    </MapContainer>
+                  </div>
                 </div>
-              </div>
 
-              {/* Estadísticas del transporte */}
-              <div className="transport-stats">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="stat-item">
-                    <div className="stat-number">{rutasTransporte.length}</div>
-                    <div className="stat-label">Rutas Totales</div>
-                  </div>
-                  <div className="stat-item">
-                    <div className="stat-number">{rutasTransporte.filter(r => r.tipo === 'Urbana').length}</div>
-                    <div className="stat-label">Rutas Urbanas</div>
-                  </div>
-                  <div className="stat-item">
-                    <div className="stat-number">{rutasTransporte.filter(r => r.tipo === 'Interurbana').length}</div>
-                    <div className="stat-label">Rutas Interurbanas</div>
-                  </div>
-                  <div className="stat-item">
-                    <div className="stat-number">5:00 AM - 10:30 PM</div>
-                    <div className="stat-label">Horario Promedio</div>
+                {/* Estadísticas del transporte - Responsivas */}
+                <div className="transport-stats p-3 sm:p-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <div className="stat-item text-center p-3 bg-white/50 rounded-lg">
+                      <div className="stat-number text-lg sm:text-xl font-bold text-primary">{rutasTransporte.length}</div>
+                      <div className="stat-label text-xs sm:text-sm text-muted-foreground">Rutas Totales</div>
+                    </div>
+                    <div className="stat-item text-center p-3 bg-white/50 rounded-lg">
+                      <div className="stat-number text-lg sm:text-xl font-bold text-green-600">{rutasTransporte.filter(r => r.tipo === 'Urbana').length}</div>
+                      <div className="stat-label text-xs sm:text-sm text-muted-foreground">Rutas Urbanas</div>
+                    </div>
+                    <div className="stat-item text-center p-3 bg-white/50 rounded-lg">
+                      <div className="stat-number text-lg sm:text-xl font-bold text-blue-600">{rutasTransporte.filter(r => r.tipo === 'Interurbana').length}</div>
+                      <div className="stat-label text-xs sm:text-sm text-muted-foreground">Rutas Interurbanas</div>
+                    </div>
+                    <div className="stat-item text-center p-3 bg-white/50 rounded-lg">
+                      <div className="stat-number text-xs sm:text-sm font-bold text-orange-600">5:00 AM - 10:30 PM</div>
+                      <div className="stat-label text-xs sm:text-sm text-muted-foreground">Horario Promedio</div>
+                    </div>
                   </div>
                 </div>
               </div>
