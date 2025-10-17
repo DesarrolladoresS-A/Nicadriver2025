@@ -4,10 +4,6 @@ import { db } from '../database/firebaseconfig';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import GraficoBachesPie from '../components/estadisticas/GraficoBachesPie';
-import GraficoReportesDepartamento from '../components/estadisticas/GraficoReportesDepartamento';
-import GraficoReportesTendencia from '../components/estadisticas/GraficoReportesTendencia';
-import GraficoUsuariosDepartamento from '../components/estadisticas/GraficoUsuariosDepartamento';
 
 import '../styles/Administrador.css';
 
@@ -192,36 +188,10 @@ const Administrador = () => {
               </div>
             </div>
           </div>
-          <div className="div10 card-tile">
-            <div className="row g-3">
-              <div className="col-12 col-lg-6">
-                <div className="card h-100" style={{ border: '0', boxShadow: 'none' }}>
-                  <div className="card-body p-0">
-                    <GraficoBachesPie />
-                  </div>
-                </div>
-              </div>
-              <div className="col-12 col-lg-6">
-                <div className="card h-100" style={{ border: '0', boxShadow: 'none' }}>
-                  <div className="card-body p-0">
-                    <GraficoReportesDepartamento />
-                  </div>
-                </div>
-              </div>
-              <div className="col-12 col-lg-6">
-                <div className="card h-100" style={{ border: '0', boxShadow: 'none' }}>
-                  <div className="card-body p-0">
-                    <GraficoReportesTendencia />
-                  </div>
-                </div>
-              </div>
-              <div className="col-12 col-lg-6">
-                <div className="card h-100" style={{ border: '0', boxShadow: 'none' }}>
-                  <div className="card-body p-0">
-                    <GraficoUsuariosDepartamento />
-                  </div>
-                </div>
-              </div>
+          <div className="div10 card-tile d-flex align-items-center justify-content-center">
+            <div className="text-center">
+              <div className="fw-semibold mb-1">Cuadro 10</div>
+              <div className="text-muted small">Contenido a definir</div>
             </div>
           </div>
         </div>

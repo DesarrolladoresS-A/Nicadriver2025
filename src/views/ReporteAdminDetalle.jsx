@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { db } from '../database/firebaseconfig';
-import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import '../styles/ReporteAdminDetalle.css';
 import LoaderTractor from '../components/common/LoaderTractor';
 
@@ -35,18 +35,17 @@ export default function ReporteAdminDetalle() {
   const [loading, setLoading] = useState(!reporteState);
   const [minDelayDone, setMinDelayDone] = useState(false);
   const [error, setError] = useState('');
-  const [perfilUsuario, setPerfilUsuario] = useState(null);
-  const [perfilLoading, setPerfilLoading] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setMinDelayDone(true), 900);
-    // Siempre obtener el documento completo para asegurar campos de usuario
+    if (reporteState) return; // ya tenemos los datos por state
 
     let isMounted = true;
     const cargar = async () => {
       setLoading(true);
       setError('');
       try {
+        // Intentar en ambas colecciones
         const tryFetch = async (col) => {
           const ref = doc(db, col, id);
           const snap = await getDoc(ref);
@@ -61,8 +60,6 @@ export default function ReporteAdminDetalle() {
               detalles: d.descripcion,
               foto: d.foto,
               origen: col,
-              userUid: d.userUid || d.uid || null,
-              userEmail: d.userEmail || null,
               raw: d,
             };
           }
@@ -89,72 +86,6 @@ export default function ReporteAdminDetalle() {
     };
   }, [id, reporteState]);
 
-  useEffect(() => {
-    let active = true;
-    const cargarPerfil = async () => {
-      if (!reporte) return;
-      const uid = reporte.userUid || reporte.raw?.userUid || null;
-      const yaTiene = reporte.raw?.userNombre || reporte.raw?.userApellido || reporte.raw?.userCedula;
-      const emailDoc = reporte.userEmail || reporte.raw?.userEmail || null;
-      if (!uid && !yaTiene && !emailDoc) {
-        setPerfilUsuario(null);
-        return;
-      }
-      if (yaTiene) {
-        if (active) setPerfilUsuario({
-          nombres: reporte.raw?.userNombre || null,
-          apellidos: reporte.raw?.userApellido || null,
-          cedula: reporte.raw?.userCedula || null,
-          email: reporte.userEmail || reporte.raw?.userEmail || null,
-        });
-        return;
-      }
-      try {
-        setPerfilLoading(true);
-        if (uid) {
-          const ref = doc(db, 'users', uid);
-          const snap = await getDoc(ref);
-          if (!active) return;
-          if (snap.exists()) {
-            const d = snap.data();
-            setPerfilUsuario({
-              nombres: d.nombres || d.nombre || d.firstName || d.primerNombre || d.fullname || d.fullName || d.displayName || null,
-              apellidos: d.apellidos || d.apellido || d.lastName || d.segundoNombre || null,
-              cedula: d.cedula || d.cédula || d.dni || d.identificacion || d.identification || d.ci || d.numeroCedula || null,
-              email: d.email || reporte.userEmail || null,
-            });
-            return;
-          }
-        }
-        if (!uid && emailDoc) {
-          const q = query(collection(db, 'users'), where('email', '==', emailDoc));
-          const qs = await getDocs(q);
-          if (!active) return;
-          if (!qs.empty) {
-            const d = qs.docs[0].data();
-            setPerfilUsuario({
-              nombres: d.nombres || d.nombre || d.firstName || d.primerNombre || d.fullname || d.fullName || d.displayName || null,
-              apellidos: d.apellidos || d.apellido || d.lastName || d.segundoNombre || null,
-              cedula: d.cedula || d.cédula || d.dni || d.identificacion || d.identification || d.ci || d.numeroCedula || null,
-              email: d.email || emailDoc,
-            });
-          } else {
-            setPerfilUsuario({ email: emailDoc });
-          }
-        }
-        if (!uid && !emailDoc) {
-          setPerfilUsuario(null);
-        }
-      } catch (_) {
-        if (active) setPerfilUsuario({ email: reporte.userEmail || null });
-      } finally {
-        if (active) setPerfilLoading(false);
-      }
-    };
-    cargarPerfil();
-    return () => { active = false; };
-  }, [reporte]);
-
   const handleEstadoChange = async (nuevoEstado) => {
     try {
       if (!reporte?.id) return;
@@ -173,8 +104,6 @@ export default function ReporteAdminDetalle() {
   };
 
   const titulo = useMemo(() => reporte?.tipo || 'Detalle del reporte', [reporte]);
-  const [openMenu, setOpenMenu] = useState(false);
-  const estadoActual = String(reporte?.estado || '').toLowerCase();
 
   return (
     <div className="detalle-container">
@@ -219,48 +148,29 @@ export default function ReporteAdminDetalle() {
                 <span className="valor" title={reporte.ubicacion}>{reporte.ubicacion || 'Sin ubicación'}</span>
               </div>
               <div className="detalle-item">
-                <span className="label">Usuario</span>
-                <span className="valor">
-                  {perfilLoading ? 'Cargando...' : (
-                    (perfilUsuario?.nombres || perfilUsuario?.apellidos)
-                      ? `${perfilUsuario?.nombres || ''} ${perfilUsuario?.apellidos || ''}`.trim()
-                      : 'Desconocido'
-                  )}
-                </span>
-              </div>
-              <div className="detalle-item">
-                <span className="label">Correo</span>
-                <span className="valor">{perfilUsuario?.email || reporte.userEmail || reporte.raw?.userEmail || 'Sin correo'}</span>
-              </div>
-              <div className="detalle-item">
-                <span className="label">Cédula</span>
-                <span className="valor">{perfilUsuario?.cedula || 'Sin cédula'}</span>
+                <span className="label">Origen</span>
+                <span className="valor">{reporte.origen || 'reportes'}</span>
               </div>
             </div>
+
+            {/* Cambiar estado */}
+            <div className="detalle-acciones mt-3">
+              <label className="label mb-2">Cambiar estado</label>
+              <select
+                className="form-select estado-select"
+                value={String(reporte.estado || '').toLowerCase()}
+                onChange={(e) => handleEstadoChange(e.target.value)}
+              >
+                <option value="pendiente">Pendiente</option>
+                <option value="proceso">En proceso</option>
+                <option value="aceptado">Aceptado</option>
+                <option value="rechazado">Rechazado</option>
+              </select>
+            </div>
+
             <div className="detalle-descripcion">
               <span className="label">Detalles</span>
               <p>{reporte.detalles || 'Sin detalles'}</p>
-            </div>
-
-            <div className="detalle-acciones mt-3">
-              <label className="label mb-2">Cambiar estado</label>
-              <div className={`estado-dropdown ${openMenu ? 'open' : ''}`}>
-                <button
-                  type="button"
-                  className={`estado-button ${estadoActual}`}
-                  onClick={() => setOpenMenu((v) => !v)}
-                >
-                  {reporte.estado || 'Pendiente'} <i className="bi bi-caret-down-fill" style={{ marginLeft: 8 }}></i>
-                </button>
-                {openMenu && (
-                  <div className="estado-menu" onMouseLeave={() => setOpenMenu(false)}>
-                    <button className="estado-option pendiente" onClick={() => { setOpenMenu(false); handleEstadoChange('pendiente'); }}>Pendiente</button>
-                    <button className="estado-option proceso" onClick={() => { setOpenMenu(false); handleEstadoChange('proceso'); }}>En proceso</button>
-                    <button className="estado-option aceptado" onClick={() => { setOpenMenu(false); handleEstadoChange('aceptado'); }}>Aceptado</button>
-                    <button className="estado-option rechazado" onClick={() => { setOpenMenu(false); handleEstadoChange('rechazado'); }}>Rechazado</button>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>
