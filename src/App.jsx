@@ -14,7 +14,6 @@ import Contacto from "./views/Contacto";
 import Administrador from "./views/Administrador";
 import Graficos from "./views/Graficos";
 import ReporteAdminCards from './views/ReporteAdminCards';
-import Register from './views/Register';
 import ReporteAdminDetalle from './views/ReporteAdminDetalle';
 import { useEffect, useState } from 'react';
 import LoaderTractor from './components/common/LoaderTractor';
@@ -24,6 +23,7 @@ import Configuracion from "./views/Configuracion";
 import ControlDatos from "./views/ControlDatos";
 import Idiomas from "./views/Idiomas";
 import Apariencia from "./views/Apariencia";
+import RegisUser from "./views/RegisUser";
 
 function Layout() {
   const location = useLocation();
@@ -65,7 +65,7 @@ function Layout() {
             <Route path="/estadodetrafico" element={<EstadodeTrafico />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/regisuser" element={<RegisUser />} />
             <Route path="/graficos" element={<Graficos />} />
             <Route path="/reportes" element={<Reportes />} />
             <Route path="/reporteAdmin" element={<ReporteAdminCards />} />
