@@ -932,7 +932,7 @@ const EstadoTrafico = () => {
     <div className="trafico-page">
       <div className="trafico-hero">
         <div className="hero-content">
-          <h1 className="hero-title">Estado del Tráfico</h1>
+          <h1 className="hero-title">Mapa de Alertas y estado del tráfico</h1>
           <p className="hero-subtitle">Explora el tráfico en tiempo real y planifica tu ruta</p>
           {isTraveling && (
             <div className="travel-indicator">
