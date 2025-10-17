@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, LayersControl, Polyline, CircleMarker } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useState, useEffect, useCallback } from 'react';
+import { GoogleMap, LoadScript, TransitLayer, Marker, InfoWindow, Polyline } from '@react-google-maps/api';
 import { db } from '../database/firebaseconfig';
 import { collection, getDocs } from 'firebase/firestore';
 import jsPDF from 'jspdf';
@@ -12,22 +10,33 @@ import { MessageCircle } from "lucide-react"; //
 import '../styles/ChatButton.css';
 import ChatButton from '../components/chatbot/ChatButton';
 
-const { BaseLayer, Overlay } = LayersControl;
+// Configuración de Google Maps
+const mapContainerStyle = {
+  width: '100%',
+  height: '500px',
+  borderRadius: '12px',
+  overflow: 'hidden'
+};
 
-// Iconos personalizados para diferentes tipos de marcadores
-const busStopIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
+const center = {
+  lat: 12.1364,
+  lng: -86.2514
+};
 
-const busIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
+const mapOptions = {
+  disableDefaultUI: false,
+  zoomControl: true,
+  streetViewControl: false,
+  mapTypeControl: true,
+  fullscreenControl: true,
+  styles: [
+    {
+      featureType: 'poi',
+      elementType: 'labels',
+      stylers: [{ visibility: 'off' }]
+    }
+  ]
+};
 
 // Datos reales de rutas de transporte colectivo de Managua
 const rutasTransporte = [
@@ -335,6 +344,21 @@ const Inicio = () => {
   const [currentDocPage, setCurrentDocPage] = useState(1);
   const [docsPerPage] = useState(4);
 
+  // Estado para Google Maps
+  const [map, setMap] = useState(null);
+  const [transitLayerVisible, setTransitLayerVisible] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [mapZoom, setMapZoom] = useState(13);
+  const [mapError, setMapError] = useState(null);
+  const [isMapLoading, setIsMapLoading] = useState(true);
+  const [rutasVisiblesMapa, setRutasVisiblesMapa] = useState(() => {
+    const initialState = {};
+    rutasTransporte.forEach(ruta => {
+      initialState[ruta.id] = true;
+    });
+    return initialState;
+  });
+
   // Estado para el mapa de transporte
   const [userPosition] = useState({ lat: 12.1364, lng: -86.2514 });
   const [clima, setClima] = useState(null);
@@ -347,7 +371,6 @@ const Inicio = () => {
     return initialState;
   });
   const [paradasVisibles, setParadasVisibles] = useState(true);
-  const [mapaZoom, setMapaZoom] = useState(12);
 
   // Estado para el selector de rutas tipo Moovit
   const [rutaSeleccionada, setRutaSeleccionada] = useState(null);
@@ -388,6 +411,31 @@ const Inicio = () => {
     return () => clearInterval(timer);
   }, [images.length]);
 
+  // Verificar API key de Google Maps
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    console.log('API Key status:', apiKey ? 'Present' : 'Missing');
+
+    if (!apiKey || apiKey === 'tu_clave_de_api_aqui' || apiKey === 'demo-key') {
+      setMapError('Google Maps API Key no configurada correctamente');
+      setIsMapLoading(false);
+    } else {
+      // Si hay API key, intentar cargar el mapa
+      setIsMapLoading(true);
+      setMapError(null);
+
+      // Timeout para evitar carga infinita
+      const timeout = setTimeout(() => {
+        if (isMapLoading) {
+          setMapError('Timeout: El mapa tardó demasiado en cargar');
+          setIsMapLoading(false);
+        }
+      }, 10000); // 10 segundos
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isMapLoading]);
+
   // PDF de reporte
   const formatearFechaHora = (fechaHora) => {
     if (!fechaHora) return 'Sin fecha';
@@ -421,30 +469,63 @@ const Inicio = () => {
     }
   };
 
-  // Funciones para manejar el mapa de transporte
-  const toggleRuta = (rutaId) => {
-    setRutasVisibles(prev => ({
-      ...prev,
-      [rutaId]: !prev[rutaId]
-    }));
+  // Funciones para manejar Google Maps
+  const onLoad = useCallback((map) => {
+    console.log('Google Maps loaded successfully');
+    setMap(map);
+    setIsMapLoading(false);
+    setMapError(null);
+  }, []);
+
+  const onUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
+
+  const onError = useCallback((error) => {
+    console.error('Error cargando Google Maps:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? 'Present' : 'Missing'
+    });
+    setMapError(`Error cargando el mapa: ${error.message || 'Error desconocido'}`);
+    setIsMapLoading(false);
+  }, []);
+
+  const toggleTransitLayer = () => {
+    setTransitLayerVisible(!transitLayerVisible);
   };
 
   const toggleParadas = () => {
     setParadasVisibles(!paradasVisibles);
   };
 
+  const toggleRutaMapa = (rutaId) => {
+    setRutasVisiblesMapa(prev => ({
+      ...prev,
+      [rutaId]: !prev[rutaId]
+    }));
+  };
+
   const resetMapa = () => {
-    const initialState = {};
-    rutasTransporte.forEach(ruta => {
-      initialState[ruta.id] = true;
-    });
-    setRutasVisibles(initialState);
+    if (map) {
+      map.setZoom(13);
+      map.setCenter(center);
+    }
+    setTransitLayerVisible(false);
     setParadasVisibles(true);
-    setMapaZoom(12);
+    setSelectedMarker(null);
     setRutaDestacada(null);
     setMostrarTodasLasRutas(true);
     setFiltroTipo('Todas');
     setFiltroEmpresa('Todas');
+
+    // Restaurar todas las rutas
+    const initialState = {};
+    rutasTransporte.forEach(ruta => {
+      initialState[ruta.id] = true;
+    });
+    setRutasVisiblesMapa(initialState);
   };
 
   // Funciones para el selector de rutas tipo Moovit
@@ -556,11 +637,11 @@ const Inicio = () => {
                 Planifica tu viaje en transporte público, encuentra las mejores rutas de buses y navega por Managua de manera inteligente y eficiente.
               </p>
               <div className="hero-buttons flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button className="btn btn-secondary btn-lg">
+                <button className="btn btn-secondary btn-lg animate-float">
                   <i data-lucide="bus" className="w-5 h-5 mr-2"></i>
                   Ver Rutas de Buses
                 </button>
-                <button className="btn bg-yellow-400 text-blue-900 hover:bg-yellow-300 btn-lg">
+                <button className="btn bg-yellow-400 text-blue-900 hover:bg-yellow-300 btn-lg animate-float">
                   <i data-lucide="map-pin" className="w-5 h-5 mr-2"></i>
                   Encontrar Parada
                 </button>
@@ -573,6 +654,48 @@ const Inicio = () => {
                 alt="Modern city traffic and transportation"
                 className="rounded-2xl shadow-2xl w-full"
               />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Descarga App */}
+      <section className="py-12 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {/* Etiqueta */}
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Descarga NicaDriver</h2>
+
+          {/* Botón único de descarga */}
+          <button
+            onClick={descargarApp}
+            className="btn btn-primary btn-lg px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          >
+            <i data-lucide="download" className="w-6 h-6 mr-3"></i>
+            Descargar App Gratis
+          </button>
+
+          {/* Características destacadas */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="map" className="w-8 h-8 text-blue-600"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Rutas de Managua</h3>
+              <p className="text-muted-foreground text-sm">Consulta todas las rutas de buses de Managua con paradas y horarios actualizados</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="bell" className="w-8 h-8 text-green-600"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Notificaciones Inteligentes</h3>
+              <p className="text-muted-foreground text-sm">Recibe alertas sobre retrasos, cambios de ruta y condiciones del tráfico</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="navigation" className="w-8 h-8 text-purple-600"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Navegación en Tiempo Real</h3>
+              <p className="text-muted-foreground text-sm">Mapas actualizados y tráfico en vivo para una mejor experiencia de viaje</p>
             </div>
           </div>
         </div>
@@ -600,8 +723,8 @@ const Inicio = () => {
             </div>
 
             <div className="card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="w-16 h-16 bg-accent rounded-xl flex items-center justify-center mb-6">
-                <i data-lucide="eye" className="w-8 h-8 text-accent-foreground"></i>
+              <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center mb-6">
+                <i data-lucide="eye" className="w-8 h-8 text-white"></i>
               </div>
               <h3 className="text-2xl font-bold text-card-foreground mb-4">Visión</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -619,146 +742,6 @@ const Inicio = () => {
               </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Selector de Rutas tipo Moovit */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Planifica tu Viaje</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Selecciona una ruta para ver todas sus paradas, horarios y detalles del recorrido
-            </p>
-          </div>
-
-          {/* Selector de rutas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {rutasTransporte.map((ruta) => (
-              <div
-                key={ruta.id}
-                onClick={() => seleccionarRuta(ruta)}
-                className="route-card cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105"
-                style={{ borderLeft: `4px solid ${ruta.color}` }}
-              >
-                <div className="p-4 bg-white rounded-lg shadow-md">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                        style={{ backgroundColor: ruta.color }}
-                      >
-                        {ruta.numero}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg text-gray-800">{ruta.nombre}</h3>
-                        <p className="text-sm text-gray-600">{ruta.precio}</p>
-                      </div>
-                    </div>
-                    <i data-lucide="chevron-right" className="w-5 h-5 text-gray-400"></i>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                    <div className="flex items-center space-x-1">
-                      <i data-lucide="clock" className="w-4 h-4"></i>
-                      <span>{ruta.horario}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <i data-lucide="refresh-cw" className="w-4 h-4"></i>
-                      <span>{ruta.frecuencia}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Detalles de la ruta seleccionada */}
-          {mostrarDetallesRuta && rutaSeleccionada && (
-            <div className="route-details-card mb-8">
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                {/* Header de la ruta */}
-                <div
-                  className="p-6 text-white"
-                  style={{ backgroundColor: rutaSeleccionada.color }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-2xl font-bold">
-                        {rutaSeleccionada.numero}
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold">{rutaSeleccionada.nombre}</h3>
-                        <p className="text-lg opacity-90">{rutaSeleccionada.precio}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={cerrarDetallesRuta}
-                      className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all"
-                    >
-                      <i data-lucide="x" className="w-5 h-5"></i>
-                    </button>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <i data-lucide="clock" className="w-4 h-4"></i>
-                      <span>Horario: {rutaSeleccionada.horario}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <i data-lucide="refresh-cw" className="w-4 h-4"></i>
-                      <span>Frecuencia: {rutaSeleccionada.frecuencia}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <i data-lucide="map-pin" className="w-4 h-4"></i>
-                      <span>{rutaSeleccionada.paradasDetalladas.length} paradas</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Búsqueda de paradas */}
-                <div className="p-6 border-b border-gray-200">
-                  <div className="relative">
-                    <i data-lucide="search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <input
-                      type="text"
-                      placeholder="Buscar parada..."
-                      value={buscarParada}
-                      onChange={(e) => setBuscarParada(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                {/* Lista de paradas */}
-                <div className="max-h-96 overflow-y-auto">
-                  {filtrarParadas(buscarParada).map((parada, index) => (
-                    <div key={index} className="flex items-center p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-4">
-                        <span className="text-sm font-medium text-gray-600">{index + 1}</span>
-                      </div>
-                      <div className="flex-grow">
-                        <h4 className="font-medium text-gray-800">{parada.nombre}</h4>
-                        <p className="text-sm text-gray-600">Tiempo estimado: {parada.tiempo}</p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <button className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors">
-                          <i data-lucide="map-pin" className="w-4 h-4"></i>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-
-                  {filtrarParadas(buscarParada).length === 0 && buscarParada && (
-                    <div className="p-8 text-center text-gray-500">
-                      <i data-lucide="search-x" className="w-12 h-12 mx-auto mb-4 text-gray-300"></i>
-                      <p>No se encontraron paradas con ese nombre</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
@@ -820,11 +803,11 @@ const Inicio = () => {
                     Paradas
                   </button>
                   <button
-                    onClick={() => setMostrarTodasLasRutas(!mostrarTodasLasRutas)}
-                    className={`btn btn-sm ${mostrarTodasLasRutas ? 'btn-default' : 'btn-outline'}`}
+                    onClick={toggleTransitLayer}
+                    className={`btn btn-sm ${transitLayerVisible ? 'btn-default' : 'btn-outline'}`}
                   >
                     <i data-lucide="layers" className="w-4 h-4 mr-1"></i>
-                    Todas las Rutas
+                    Google Transit
                   </button>
                   <button
                     onClick={resetMapa}
@@ -843,14 +826,12 @@ const Inicio = () => {
                   {rutasTransporte.map((ruta) => (
                     <button
                       key={ruta.id}
-                      onClick={() => destacarRuta(ruta.id)}
-                      className={`route-filter-btn ${rutasVisibles[ruta.id] ? 'active' : ''
-                        } ${rutaDestacada === ruta.id ? 'ring-2 ring-blue-500' : ''}`}
+                      onClick={() => toggleRutaMapa(ruta.id)}
+                      className={`route-filter-btn ${rutasVisiblesMapa[ruta.id] ? 'active' : ''}`}
                       style={{
-                        backgroundColor: rutasVisibles[ruta.id] ? ruta.color : 'transparent',
+                        backgroundColor: rutasVisiblesMapa[ruta.id] ? ruta.color : 'transparent',
                         borderColor: ruta.color,
-                        color: rutasVisibles[ruta.id] ? 'white' : ruta.color,
-                        opacity: mostrarTodasLasRutas || rutasVisibles[ruta.id] ? 1 : 0.3
+                        color: rutasVisiblesMapa[ruta.id] ? 'white' : ruta.color
                       }}
                     >
                       {ruta.numero}
@@ -859,112 +840,141 @@ const Inicio = () => {
                 </div>
               </div>
 
-              {/* Leyenda mejorada */}
+              {/* Leyenda mejorada para Google Maps */}
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 <div className="legend-item">
                   <div className="legend-color bg-blue-500"></div>
-                  <span>Paradas de Bus</span>
+                  <span>Rutas Manuales</span>
                 </div>
                 <div className="legend-item">
                   <div className="legend-color bg-red-500"></div>
-                  <span>Terminales</span>
+                  <span>Terminal Principal</span>
                 </div>
                 <div className="legend-item">
-                  <div className="legend-dot bg-green-500 animate-pulse"></div>
-                  <span>Rutas Activas</span>
+                  <div className="legend-color bg-blue-500"></div>
+                  <span>Paradas</span>
                 </div>
                 <div className="legend-item">
                   <div className="w-3 h-3 border-2 border-blue-500 rounded"></div>
-                  <span>Ruta Destacada</span>
+                  <span>Google Maps Transit</span>
                 </div>
               </div>
             </div>
 
-            {/* Mapa interactivo */}
+            {/* Mapa interactivo con Google Maps */}
             <div className="relative bg-muted">
               <div className="p-4">
                 <div className="transport-map-container">
-                  <MapContainer
-                    center={userPosition}
-                    zoom={mapaZoom}
-                    style={{
-                      height: '100%',
-                      width: '100%'
-                    }}
-                    className="w-full h-full"
-                  >
-                    <LayersControl position="topright">
-                      <BaseLayer checked name="Mapa Estilo Oscuro">
-                        <TileLayer
-                          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-                          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                        />
-                      </BaseLayer>
-                      <BaseLayer name="Mapa Satelital">
-                        <TileLayer
-                          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-                          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                        />
-                      </BaseLayer>
-                      <BaseLayer name="Mapa Claro">
-                        <TileLayer
-                          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
-                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-                      </BaseLayer>
+                  {mapError ? (
+                    <div className="map-error-container">
+                      <div className="error-icon">⚠️</div>
+                      <h3 className="error-title">Error del Mapa</h3>
+                      <p className="error-message">{mapError}</p>
+                      <div className="error-solutions">
+                        <h4>Soluciones:</h4>
+                        <ol>
+                          <li>Crear archivo <code>.env</code> en la raíz del proyecto</li>
+                          <li>Agregar: <code>VITE_GOOGLE_MAPS_API_KEY=tu_clave_real_aqui</code></li>
+                          <li>Obtener clave desde <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud Console</a></li>
+                          <li>Habilitar Maps JavaScript API y Places API</li>
+                          <li>Verificar que la clave tenga permisos para tu dominio</li>
+                        </ol>
+                        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                          <strong>Debug Info:</strong>
+                          <br />
+                          API Key: {import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? 'Presente' : 'Faltante'}
+                          <br />
+                          Error: {mapError}
+                        </div>
+                      </div>
+                    </div>
+                  ) : isMapLoading ? (
+                    <div className="map-loading-container">
+                      <div className="loading-spinner"></div>
+                      <p>Cargando mapa...</p>
+                    </div>
+                  ) : (
+                    <LoadScript
+                      googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'demo-key'}
+                      libraries={['places']}
+                      onError={onError}
+                    >
+                      <GoogleMap
+                        mapContainerStyle={mapContainerStyle}
+                        center={center}
+                        zoom={mapZoom}
+                        onLoad={onLoad}
+                        onUnmount={onUnmount}
+                        options={mapOptions}
+                      >
+                        {/* Capa de transporte público de Google */}
+                        {transitLayerVisible && <TransitLayer />}
 
-                      {/* Rutas de transporte */}
-                      {rutasTransporte.map((ruta) => (
-                        rutasVisibles[ruta.id] && (
-                          <Overlay key={ruta.id} name={`Ruta ${ruta.numero}`} checked>
+                        {/* Rutas manuales de Managua */}
+                        {rutasTransporte.map((ruta) => (
+                          rutasVisiblesMapa[ruta.id] && (
                             <Polyline
-                              positions={ruta.recorrido}
-                              color={ruta.color}
-                              weight={rutaDestacada === ruta.id ? 8 : 5}
-                              opacity={rutaDestacada === ruta.id ? 1 : 0.9}
-                              className="route-polyline"
-                              dashArray={rutaDestacada === ruta.id ? "0" : "5, 5"}
-                              eventHandlers={{
-                                click: () => destacarRuta(ruta.id)
+                              key={ruta.id}
+                              path={ruta.recorrido.map(coord => ({
+                                lat: coord[0],
+                                lng: coord[1]
+                              }))}
+                              options={{
+                                strokeColor: ruta.color,
+                                strokeOpacity: 0.8,
+                                strokeWeight: 4,
+                                clickable: false,
+                                geodesic: true
                               }}
                             />
-                          </Overlay>
-                        )
-                      ))}
+                          )
+                        ))}
 
-                      {/* Paradas de buses */}
-                      {paradasVisibles && (
-                        <Overlay name="Paradas de Bus" checked>
-                          {paradasPrincipales.map((parada) => (
-                            <Marker
-                              key={parada.id}
-                              position={parada.coordenadas}
-                              icon={parada.id === 'parada-1' ? busIcon : busStopIcon}
-                            >
-                              <Popup>
-                                <div className="stop-popup">
-                                  <h3>{parada.nombre}</h3>
-                                  <div className="mb-2">
-                                    <strong>Rutas disponibles:</strong>
-                                  </div>
-                                  <ul className="routes-list">
-                                    {parada.rutas.map((ruta, index) => (
-                                      <li key={index}>{ruta}</li>
-                                    ))}
-                                  </ul>
-                                  {parada.id === 'parada-1' && (
-                                    <div className="terminal-info">
-                                      <strong>Terminal Principal:</strong> Punto de conexión para todas las rutas
-                                    </div>
-                                  )}
+                        {/* Marcadores de paradas principales */}
+                        {paradasVisibles && paradasPrincipales.map((parada) => (
+                          <Marker
+                            key={parada.id}
+                            position={{ lat: parada.coordenadas[0], lng: parada.coordenadas[1] }}
+                            onClick={() => setSelectedMarker(parada)}
+                            icon={{
+                              url: parada.id === 'parada-1'
+                                ? 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                                : 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                              scaledSize: new window.google.maps.Size(30, 30)
+                            }}
+                          />
+                        ))}
+
+                        {/* InfoWindow para mostrar información de paradas */}
+                        {selectedMarker && (
+                          <InfoWindow
+                            position={{
+                              lat: selectedMarker.coordenadas[0],
+                              lng: selectedMarker.coordenadas[1]
+                            }}
+                            onCloseClick={() => setSelectedMarker(null)}
+                          >
+                            <div className="stop-popup">
+                              <h3 className="font-bold text-lg mb-2">{selectedMarker.nombre}</h3>
+                              <div className="mb-2">
+                                <strong>Rutas disponibles:</strong>
+                              </div>
+                              <ul className="routes-list">
+                                {selectedMarker.rutas.map((ruta, index) => (
+                                  <li key={index} className="text-sm">{ruta}</li>
+                                ))}
+                              </ul>
+                              {selectedMarker.id === 'parada-1' && (
+                                <div className="terminal-info mt-2 p-2 bg-blue-50 rounded">
+                                  <strong>Terminal Principal:</strong> Punto de conexión para todas las rutas
                                 </div>
-                              </Popup>
-                            </Marker>
-                          ))}
-                        </Overlay>
-                      )}
-                    </LayersControl>
-                  </MapContainer>
+                              )}
+                            </div>
+                          </InfoWindow>
+                        )}
+                      </GoogleMap>
+                    </LoadScript>
+                  )}
                 </div>
               </div>
 
@@ -989,72 +999,6 @@ const Inicio = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Descarga App */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Descarga NicaDriver</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            La aplicación móvil oficial para planificar tus viajes en transporte público de Managua
-          </p>
-
-          {/* Botón único de descarga */}
-          <div className="mb-8">
-            <button
-              onClick={descargarApp}
-              className="btn btn-primary btn-lg px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <i data-lucide="download" className="w-6 h-6 mr-3"></i>
-              Descargar App Gratis
-            </button>
-          </div>
-
-          {/* Descripción de compatibilidad */}
-          <div className="bg-white rounded-xl p-6 shadow-lg max-w-2xl mx-auto mb-8">
-            <div className="flex items-center justify-center space-x-6 mb-4">
-              <div className="flex items-center space-x-2">
-                <i data-lucide="smartphone" className="w-5 h-5 text-green-600"></i>
-                <span className="font-medium text-gray-700">Android</span>
-              </div>
-              <div className="w-px h-6 bg-gray-300"></div>
-              <div className="flex items-center space-x-2">
-                <i data-lucide="smartphone" className="w-5 h-5 text-blue-600"></i>
-                <span className="font-medium text-gray-700">iOS</span>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600">
-              Compatible con dispositivos Android 6.0+ e iOS 12.0+. La app detecta automáticamente tu dispositivo y te lleva a la tienda correspondiente.
-            </p>
-          </div>
-
-          {/* Features de descarga */}
-          <div className="grid md:grid-cols-3 gap-8 text-left">
-            <div className="card p-6 rounded-xl shadow-lg bg-white">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <i data-lucide="map-pin" className="w-6 h-6 text-blue-600"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-card-foreground mb-2">Rutas en Tiempo Real</h3>
-              <p className="text-muted-foreground">Consulta todas las rutas de buses de Managua con paradas y horarios actualizados</p>
-            </div>
-
-            <div className="card p-6 rounded-xl shadow-lg bg-white">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <i data-lucide="bell" className="w-6 h-6 text-green-600"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-card-foreground mb-2">Notificaciones Inteligentes</h3>
-              <p className="text-muted-foreground">Recibe alertas sobre cambios en rutas, horarios y servicios cerca de ti</p>
-            </div>
-
-            <div className="card p-6 rounded-xl shadow-lg bg-white">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <i data-lucide="navigation" className="w-6 h-6 text-purple-600"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-card-foreground mb-2">Navegación Offline</h3>
-              <p className="text-muted-foreground">Funciona sin conexión a internet, perfecto para áreas con señal limitada</p>
             </div>
           </div>
         </div>
