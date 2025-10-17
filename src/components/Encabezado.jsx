@@ -471,7 +471,7 @@ const Encabezado = () => {
                                             }}
                                           />
                                         ))
-                                      )}
+                                      )
                                     )}
                                     {activeTab === 'status' && (
                                       latestReports.filter((r) => (r.estado || 'pendiente').toLowerCase() !== 'pendiente').length === 0 ? (
