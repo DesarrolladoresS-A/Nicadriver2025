@@ -262,7 +262,7 @@
 }
 
 /* Optional: keep same visual height */
-.div9 .card-tile, .div10 .card-tile { min-height: 220px; }
+.div9 .card-tile, .div10 .card-tile { min-height: 0; }
 
 .div12 {
   grid-column: span 2 / span 2;
@@ -466,17 +466,22 @@
 .kpi4-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-auto-rows: 1fr;
+  align-items: stretch;
+  gap: 10px;
 }
 
 .kpi4-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
   border-radius: 12px;
+  height: 100%;
+  box-shadow: none;
+  overflow: hidden;
 }
 
 .kpi4-icon {
@@ -491,7 +496,7 @@
 .kpi4-icon.secondary,
 .kpi4-icon.info,
 .kpi4-icon.success,
-.kpi4-icon.danger { background: transparent; color: #000; border: 1px solid #d1d5db; }
+.kpi4-icon.danger { background: rgba(255,255,255,.35); color: #0f172a; border: 0; }
 
 .kpi4-meta { display:flex; flex-direction:column; }
 .kpi4-label { font-size: .9rem; color: #000; font-weight: 600; }
@@ -503,31 +508,27 @@
 
 /* KPI variants inside box 9 */
 .kpi4-card.nuevos {
-  background: #e0ecff; /* soft blue */
-  border-color: #bfdbfe;
+  background: linear-gradient(180deg, #e6efff 0%, #d9e6ff 100%);
 }
-.kpi4-card.nuevos .kpi4-icon { background: #c7d2fe; color: #1e3a8a; border: 1px solid #93c5fd; }
+.kpi4-card.nuevos .kpi4-icon { background: rgba(255,255,255,.45); color: #1e3a8a; }
 .kpi4-card.nuevos .kpi4-label { color: #1d4ed8; }
 
 .kpi4-card.proceso {
-  background: #fef3c7; /* soft amber */
-  border-color: #fde68a;
+  background: linear-gradient(180deg, #fff3d6 0%, #fde9b0 100%);
 }
-.kpi4-card.proceso .kpi4-icon { background: #fde68a; color: #92400e; border: 1px solid #f59e0b; }
+.kpi4-card.proceso .kpi4-icon { background: rgba(255,255,255,.45); color: #92400e; }
 .kpi4-card.proceso .kpi4-label { color: #b45309; }
 
 .kpi4-card.aceptado {
-  background: #dcfce7; /* soft green */
-  border-color: #bbf7d0;
+  background: linear-gradient(180deg, #e6fff4 0%, #d1fae5 100%);
 }
-.kpi4-card.aceptado .kpi4-icon { background: #bbf7d0; color: #14532d; border: 1px solid #34d399; }
+.kpi4-card.aceptado .kpi4-icon { background: rgba(255,255,255,.45); color: #14532d; }
 .kpi4-card.aceptado .kpi4-label { color: #166534; }
 
 .kpi4-card.rechazado {
-  background: #fee2e2; /* soft red */
-  border-color: #fecaca;
+  background: linear-gradient(180deg, #ffe7e7 0%, #ffd6d6 100%);
 }
-.kpi4-card.rechazado .kpi4-icon { background: #fecaca; color: #7f1d1d; border: 1px solid #f87171; }
+.kpi4-card.rechazado .kpi4-icon { background: rgba(255,255,255,.45); color: #7f1d1d; }
 .kpi4-card.rechazado .kpi4-label { color: #991b1b; }
 
 /* Override: icons in KPI cards should be black; keep state backgrounds/borders */
