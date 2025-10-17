@@ -637,11 +637,11 @@ const Inicio = () => {
                 Planifica tu viaje en transporte público, encuentra las mejores rutas de buses y navega por Managua de manera inteligente y eficiente.
               </p>
               <div className="hero-buttons flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button className="btn btn-secondary btn-lg">
+                <button className="btn btn-secondary btn-lg animate-float">
                   <i data-lucide="bus" className="w-5 h-5 mr-2"></i>
                   Ver Rutas de Buses
                 </button>
-                <button className="btn bg-yellow-400 text-blue-900 hover:bg-yellow-300 btn-lg">
+                <button className="btn bg-yellow-400 text-blue-900 hover:bg-yellow-300 btn-lg animate-float">
                   <i data-lucide="map-pin" className="w-5 h-5 mr-2"></i>
                   Encontrar Parada
                 </button>
