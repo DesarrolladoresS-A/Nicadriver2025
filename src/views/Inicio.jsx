@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, LayersControl, Polyline, CircleMarker } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import React, { useState, useEffect, useCallback } from 'react';
+import { GoogleMap, LoadScript, TransitLayer, Marker, InfoWindow, Polyline } from '@react-google-maps/api';
 import { db } from '../database/firebaseconfig';
 import { collection, getDocs } from 'firebase/firestore';
 import jsPDF from 'jspdf';
@@ -12,22 +10,33 @@ import { MessageCircle } from "lucide-react"; //
 import '../styles/ChatButton.css';
 import ChatButton from '../components/chatbot/ChatButton';
 
-const { BaseLayer, Overlay } = LayersControl;
+// Configuración de Google Maps
+const mapContainerStyle = {
+  width: '100%',
+  height: '500px',
+  borderRadius: '12px',
+  overflow: 'hidden'
+};
 
-// Iconos personalizados para diferentes tipos de marcadores
-const busStopIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
+const center = {
+  lat: 12.1364,
+  lng: -86.2514
+};
 
-const busIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
+const mapOptions = {
+  disableDefaultUI: false,
+  zoomControl: true,
+  streetViewControl: false,
+  mapTypeControl: true,
+  fullscreenControl: true,
+  styles: [
+    {
+      featureType: 'poi',
+      elementType: 'labels',
+      stylers: [{ visibility: 'off' }]
+    }
+  ]
+};
 
 // Datos reales de rutas de transporte colectivo de Managua
 const rutasTransporte = [
@@ -335,6 +344,21 @@ const Inicio = () => {
   const [currentDocPage, setCurrentDocPage] = useState(1);
   const [docsPerPage] = useState(4);
 
+  // Estado para Google Maps
+  const [map, setMap] = useState(null);
+  const [transitLayerVisible, setTransitLayerVisible] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [mapZoom, setMapZoom] = useState(13);
+  const [mapError, setMapError] = useState(null);
+  const [isMapLoading, setIsMapLoading] = useState(true);
+  const [rutasVisiblesMapa, setRutasVisiblesMapa] = useState(() => {
+    const initialState = {};
+    rutasTransporte.forEach(ruta => {
+      initialState[ruta.id] = true;
+    });
+    return initialState;
+  });
+
   // Estado para el mapa de transporte
   const [userPosition] = useState({ lat: 12.1364, lng: -86.2514 });
   const [clima, setClima] = useState(null);
@@ -347,7 +371,6 @@ const Inicio = () => {
     return initialState;
   });
   const [paradasVisibles, setParadasVisibles] = useState(true);
-  const [mapaZoom, setMapaZoom] = useState(12);
 
   // Estado para el selector de rutas tipo Moovit
   const [rutaSeleccionada, setRutaSeleccionada] = useState(null);
@@ -388,6 +411,31 @@ const Inicio = () => {
     return () => clearInterval(timer);
   }, [images.length]);
 
+  // Verificar API key de Google Maps
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    console.log('API Key status:', apiKey ? 'Present' : 'Missing');
+
+    if (!apiKey || apiKey === 'tu_clave_de_api_aqui' || apiKey === 'demo-key') {
+      setMapError('Google Maps API Key no configurada correctamente');
+      setIsMapLoading(false);
+    } else {
+      // Si hay API key, intentar cargar el mapa
+      setIsMapLoading(true);
+      setMapError(null);
+
+      // Timeout para evitar carga infinita
+      const timeout = setTimeout(() => {
+        if (isMapLoading) {
+          setMapError('Timeout: El mapa tardó demasiado en cargar');
+          setIsMapLoading(false);
+        }
+      }, 10000); // 10 segundos
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isMapLoading]);
+
   // PDF de reporte
   const formatearFechaHora = (fechaHora) => {
     if (!fechaHora) return 'Sin fecha';
@@ -421,30 +469,63 @@ const Inicio = () => {
     }
   };
 
-  // Funciones para manejar el mapa de transporte
-  const toggleRuta = (rutaId) => {
-    setRutasVisibles(prev => ({
-      ...prev,
-      [rutaId]: !prev[rutaId]
-    }));
+  // Funciones para manejar Google Maps
+  const onLoad = useCallback((map) => {
+    console.log('Google Maps loaded successfully');
+    setMap(map);
+    setIsMapLoading(false);
+    setMapError(null);
+  }, []);
+
+  const onUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
+
+  const onError = useCallback((error) => {
+    console.error('Error cargando Google Maps:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ? 'Present' : 'Missing'
+    });
+    setMapError(`Error cargando el mapa: ${error.message || 'Error desconocido'}`);
+    setIsMapLoading(false);
+  }, []);
+
+  const toggleTransitLayer = () => {
+    setTransitLayerVisible(!transitLayerVisible);
   };
 
   const toggleParadas = () => {
     setParadasVisibles(!paradasVisibles);
   };
 
+  const toggleRutaMapa = (rutaId) => {
+    setRutasVisiblesMapa(prev => ({
+      ...prev,
+      [rutaId]: !prev[rutaId]
+    }));
+  };
+
   const resetMapa = () => {
-    const initialState = {};
-    rutasTransporte.forEach(ruta => {
-      initialState[ruta.id] = true;
-    });
-    setRutasVisibles(initialState);
+    if (map) {
+      map.setZoom(13);
+      map.setCenter(center);
+    }
+    setTransitLayerVisible(false);
     setParadasVisibles(true);
-    setMapaZoom(12);
+    setSelectedMarker(null);
     setRutaDestacada(null);
     setMostrarTodasLasRutas(true);
     setFiltroTipo('Todas');
     setFiltroEmpresa('Todas');
+
+    // Restaurar todas las rutas
+    const initialState = {};
+    rutasTransporte.forEach(ruta => {
+      initialState[ruta.id] = true;
+    });
+    setRutasVisiblesMapa(initialState);
   };
 
   // Funciones para el selector de rutas tipo Moovit
