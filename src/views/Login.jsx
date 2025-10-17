@@ -130,8 +130,8 @@ const Login = () => {
 
             <div className="auth-footer">
               <span>¿No tienes una cuenta? </span>
-              <button type="button" className="link" onClick={() => navigate('/regisuser')}>
-                Registrar usuario
+              <button type="button" className="link" onClick={() => navigate('/register')}>
+                Crear cuenta
               </button>
             </div>
           </div>
