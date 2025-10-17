@@ -556,11 +556,11 @@ const Inicio = () => {
                 Planifica tu viaje en transporte público, encuentra las mejores rutas de buses y navega por Managua de manera inteligente y eficiente.
               </p>
               <div className="hero-buttons flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <button className="btn btn-secondary btn-lg">
+                <button className="btn btn-secondary btn-lg animate-float">
                   <i data-lucide="bus" className="w-5 h-5 mr-2"></i>
                   Ver Rutas de Buses
                 </button>
-                <button className="btn bg-yellow-400 text-blue-900 hover:bg-yellow-300 btn-lg">
+                <button className="btn bg-yellow-400 text-blue-900 hover:bg-yellow-300 btn-lg animate-float">
                   <i data-lucide="map-pin" className="w-5 h-5 mr-2"></i>
                   Encontrar Parada
                 </button>
@@ -573,6 +573,48 @@ const Inicio = () => {
                 alt="Modern city traffic and transportation"
                 className="rounded-2xl shadow-2xl w-full"
               />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Descarga App */}
+      <section className="py-12 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {/* Etiqueta */}
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Descarga NicaDriver</h2>
+
+          {/* Botón único de descarga */}
+          <button
+            onClick={descargarApp}
+            className="btn btn-primary btn-lg px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          >
+            <i data-lucide="download" className="w-6 h-6 mr-3"></i>
+            Descargar App Gratis
+          </button>
+
+          {/* Características destacadas */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="map" className="w-8 h-8 text-blue-600"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Rutas de Managua</h3>
+              <p className="text-muted-foreground text-sm">Consulta todas las rutas de buses de Managua con paradas y horarios actualizados</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="bell" className="w-8 h-8 text-green-600"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Notificaciones Inteligentes</h3>
+              <p className="text-muted-foreground text-sm">Recibe alertas sobre retrasos, cambios de ruta y condiciones del tráfico</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="navigation" className="w-8 h-8 text-purple-600"></i>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Navegación en Tiempo Real</h3>
+              <p className="text-muted-foreground text-sm">Mapas actualizados y tráfico en vivo para una mejor experiencia de viaje</p>
             </div>
           </div>
         </div>
@@ -600,8 +642,8 @@ const Inicio = () => {
             </div>
 
             <div className="card rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300">
-              <div className="w-16 h-16 bg-accent rounded-xl flex items-center justify-center mb-6">
-                <i data-lucide="eye" className="w-8 h-8 text-accent-foreground"></i>
+              <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center mb-6">
+                <i data-lucide="eye" className="w-8 h-8 text-white"></i>
               </div>
               <h3 className="text-2xl font-bold text-card-foreground mb-4">Visión</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -619,146 +661,6 @@ const Inicio = () => {
               </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Selector de Rutas tipo Moovit */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Planifica tu Viaje</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Selecciona una ruta para ver todas sus paradas, horarios y detalles del recorrido
-            </p>
-          </div>
-
-          {/* Selector de rutas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {rutasTransporte.map((ruta) => (
-              <div
-                key={ruta.id}
-                onClick={() => seleccionarRuta(ruta)}
-                className="route-card cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105"
-                style={{ borderLeft: `4px solid ${ruta.color}` }}
-              >
-                <div className="p-4 bg-white rounded-lg shadow-md">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                        style={{ backgroundColor: ruta.color }}
-                      >
-                        {ruta.numero}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg text-gray-800">{ruta.nombre}</h3>
-                        <p className="text-sm text-gray-600">{ruta.precio}</p>
-                      </div>
-                    </div>
-                    <i data-lucide="chevron-right" className="w-5 h-5 text-gray-400"></i>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                    <div className="flex items-center space-x-1">
-                      <i data-lucide="clock" className="w-4 h-4"></i>
-                      <span>{ruta.horario}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <i data-lucide="refresh-cw" className="w-4 h-4"></i>
-                      <span>{ruta.frecuencia}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Detalles de la ruta seleccionada */}
-          {mostrarDetallesRuta && rutaSeleccionada && (
-            <div className="route-details-card mb-8">
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                {/* Header de la ruta */}
-                <div
-                  className="p-6 text-white"
-                  style={{ backgroundColor: rutaSeleccionada.color }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-2xl font-bold">
-                        {rutaSeleccionada.numero}
-                      </div>
-                      <div>
-                        <h3 className="text-2xl font-bold">{rutaSeleccionada.nombre}</h3>
-                        <p className="text-lg opacity-90">{rutaSeleccionada.precio}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={cerrarDetallesRuta}
-                      className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all"
-                    >
-                      <i data-lucide="x" className="w-5 h-5"></i>
-                    </button>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <i data-lucide="clock" className="w-4 h-4"></i>
-                      <span>Horario: {rutaSeleccionada.horario}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <i data-lucide="refresh-cw" className="w-4 h-4"></i>
-                      <span>Frecuencia: {rutaSeleccionada.frecuencia}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <i data-lucide="map-pin" className="w-4 h-4"></i>
-                      <span>{rutaSeleccionada.paradasDetalladas.length} paradas</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Búsqueda de paradas */}
-                <div className="p-6 border-b border-gray-200">
-                  <div className="relative">
-                    <i data-lucide="search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                    <input
-                      type="text"
-                      placeholder="Buscar parada..."
-                      value={buscarParada}
-                      onChange={(e) => setBuscarParada(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                {/* Lista de paradas */}
-                <div className="max-h-96 overflow-y-auto">
-                  {filtrarParadas(buscarParada).map((parada, index) => (
-                    <div key={index} className="flex items-center p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-4">
-                        <span className="text-sm font-medium text-gray-600">{index + 1}</span>
-                      </div>
-                      <div className="flex-grow">
-                        <h4 className="font-medium text-gray-800">{parada.nombre}</h4>
-                        <p className="text-sm text-gray-600">Tiempo estimado: {parada.tiempo}</p>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <button className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors">
-                          <i data-lucide="map-pin" className="w-4 h-4"></i>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-
-                  {filtrarParadas(buscarParada).length === 0 && buscarParada && (
-                    <div className="p-8 text-center text-gray-500">
-                      <i data-lucide="search-x" className="w-12 h-12 mx-auto mb-4 text-gray-300"></i>
-                      <p>No se encontraron paradas con ese nombre</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
@@ -989,72 +891,6 @@ const Inicio = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Descarga App */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Descarga NicaDriver</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            La aplicación móvil oficial para planificar tus viajes en transporte público de Managua
-          </p>
-
-          {/* Botón único de descarga */}
-          <div className="mb-8">
-            <button
-              onClick={descargarApp}
-              className="btn btn-primary btn-lg px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <i data-lucide="download" className="w-6 h-6 mr-3"></i>
-              Descargar App Gratis
-            </button>
-          </div>
-
-          {/* Descripción de compatibilidad */}
-          <div className="bg-white rounded-xl p-6 shadow-lg max-w-2xl mx-auto mb-8">
-            <div className="flex items-center justify-center space-x-6 mb-4">
-              <div className="flex items-center space-x-2">
-                <i data-lucide="smartphone" className="w-5 h-5 text-green-600"></i>
-                <span className="font-medium text-gray-700">Android</span>
-              </div>
-              <div className="w-px h-6 bg-gray-300"></div>
-              <div className="flex items-center space-x-2">
-                <i data-lucide="smartphone" className="w-5 h-5 text-blue-600"></i>
-                <span className="font-medium text-gray-700">iOS</span>
-              </div>
-            </div>
-            <p className="text-sm text-gray-600">
-              Compatible con dispositivos Android 6.0+ e iOS 12.0+. La app detecta automáticamente tu dispositivo y te lleva a la tienda correspondiente.
-            </p>
-          </div>
-
-          {/* Features de descarga */}
-          <div className="grid md:grid-cols-3 gap-8 text-left">
-            <div className="card p-6 rounded-xl shadow-lg bg-white">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <i data-lucide="map-pin" className="w-6 h-6 text-blue-600"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-card-foreground mb-2">Rutas en Tiempo Real</h3>
-              <p className="text-muted-foreground">Consulta todas las rutas de buses de Managua con paradas y horarios actualizados</p>
-            </div>
-
-            <div className="card p-6 rounded-xl shadow-lg bg-white">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                <i data-lucide="bell" className="w-6 h-6 text-green-600"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-card-foreground mb-2">Notificaciones Inteligentes</h3>
-              <p className="text-muted-foreground">Recibe alertas sobre cambios en rutas, horarios y servicios cerca de ti</p>
-            </div>
-
-            <div className="card p-6 rounded-xl shadow-lg bg-white">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                <i data-lucide="navigation" className="w-6 h-6 text-purple-600"></i>
-              </div>
-              <h3 className="text-lg font-semibold text-card-foreground mb-2">Navegación Offline</h3>
-              <p className="text-muted-foreground">Funciona sin conexión a internet, perfecto para áreas con señal limitada</p>
             </div>
           </div>
         </div>
