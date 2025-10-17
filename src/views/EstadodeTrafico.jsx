@@ -5,10 +5,7 @@ import {
   TrafficLayer,
   Marker,
   InfoWindow,
-  DirectionsService,
   DirectionsRenderer,
-  Polyline,
-  Autocomplete
 } from '@react-google-maps/api';
 import {
   collection,
@@ -24,6 +21,7 @@ import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import '../styles/EstadodeTrafico.css';
 import { GOOGLE_PLACES_CONFIG, getPlaceIcon, getPlaceTypeDescription, filterSuggestions } from '../config/googlePlacesConfig';
+import locations from '../data/nicaragua_locations.json';
 
 const containerStyle = {
   width: '100%',
@@ -54,6 +52,17 @@ const ciudadesNicaragua = [
   { nombre: 'Matagalpa', lat: 12.9256, lng: -85.9175 },
   { nombre: 'Estelí', lat: 13.091, lng: -86.3538 },
 ];
+
+// Lista local basada en dataset JSON (departamentos, ciudades y pueblos)
+const nicaraguaCitiesList = Array.isArray(locations)
+  ? locations.map(({ name, type, lat, lng }) => ({ nombre: name, type, lat, lng }))
+  : [];
+
+// Helper para comparar sin acentos y sin distinguir mayúsculas
+const normalizeString = (s = '') => s
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '');
 
 // Moved outside the component to prevent recreation on each render
 const libraries = ['places', 'geometry'];
@@ -114,12 +123,15 @@ const EstadoTrafico = () => {
   const [nextTurn, setNextTurn] = useState(null);
   const [distanceToNextTurn, setDistanceToNextTurn] = useState(null);
   const [estimatedArrival, setEstimatedArrival] = useState(null);
-  const [autocomplete, setAutocomplete] = useState(null);
+  // const [autocomplete, setAutocomplete] = useState(null);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showSafetyAlert, setShowSafetyAlert] = useState(false);
   const [safetyAlertStep, setSafetyAlertStep] = useState(0);
   const [searchTimeout, setSearchTimeout] = useState(null);
+  const [routePois, setRoutePois] = useState([]);
+  const [showRoutePois, setShowRoutePois] = useState(true);
+  const [poisLoading, setPoisLoading] = useState(false);
 
   // Manejar errores del mapa
   useEffect(() => {
@@ -309,7 +321,7 @@ const EstadoTrafico = () => {
       const estaEnRuta = isPointOnPath(
         clickedLocation,
         rutaPath,
-        0.0002
+        40
       );
 
       setClickEnRuta(estaEnRuta);
@@ -410,7 +422,7 @@ const EstadoTrafico = () => {
   };
 
   const handleBuscarRuta = async () => {
-    if (!destino) {
+    if (!destino || (typeof destino === 'string' && destino.trim() === '')) {
       Swal.fire({
         icon: 'warning',
         title: 'Destino requerido',
@@ -420,25 +432,22 @@ const EstadoTrafico = () => {
       return;
     }
 
+    // Asegurar origen válido: si no hay geolocalización, usar centro por defecto y continuar
+    let origin = userLocation && userLocation.lat && userLocation.lng
+      ? { lat: parseFloat(userLocation.lat), lng: parseFloat(userLocation.lng) }
+      : { ...defaultCenter };
     if (!userLocation || !userLocation.lat || !userLocation.lng) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Ubicación no disponible',
-        text: 'No se pudo obtener su ubicación actual. Usando ubicación predeterminada.',
+        icon: 'info',
+        title: 'Usando ubicación predeterminada',
+        text: 'No se pudo obtener su ubicación actual. Se usará Managua como origen.',
         confirmButtonText: 'Continuar'
       });
       setUserLocation(defaultCenter);
-      return;
     }
 
     try {
       const directionsService = new window.google.maps.DirectionsService();
-
-      // Ensure origin is a valid LatLngLiteral
-      const origin = {
-        lat: parseFloat(userLocation.lat),
-        lng: parseFloat(userLocation.lng)
-      };
 
       // Ensure destination is a string (address) or a valid LatLngLiteral
       let destination = destino;
@@ -514,6 +523,9 @@ const EstadoTrafico = () => {
 
     // Iniciar seguimiento del viaje
     startTravelTracking();
+
+    // Buscar POIs en la ruta
+    fetchRoutePOIs(directions);
   };
 
   const handleCancelarRuta = () => {
@@ -553,10 +565,21 @@ const EstadoTrafico = () => {
 
   // Función para manejar la selección de sugerencias
   const handleSuggestionSelect = async (suggestion) => {
+    // Manejar sugerencias locales (ciudades/departamentos)
+    if (suggestion._source === 'local' && suggestion._coords) {
+      const { lat, lng } = suggestion._coords;
+      setDestino(`${lat}, ${lng}`);
+      setShowSuggestions(false);
+      if (mapRef.current && typeof mapRef.current.panTo === 'function') {
+        mapRef.current.panTo({ lat, lng });
+      }
+      return;
+    }
+
     setDestino(suggestion.description);
     setShowSuggestions(false);
 
-    // Obtener detalles del lugar seleccionado
+    // Obtener detalles del lugar (Google Places)
     try {
       const service = new window.google.maps.places.PlacesService(document.createElement('div'));
       service.getDetails({
@@ -564,11 +587,13 @@ const EstadoTrafico = () => {
         ...GOOGLE_PLACES_CONFIG.placeDetailsOptions
       }, (place, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK && place) {
-          // Si el lugar tiene coordenadas, las usamos para el destino
           if (place.geometry && place.geometry.location) {
             const lat = place.geometry.location.lat();
             const lng = place.geometry.location.lng();
             setDestino(`${lat}, ${lng}`);
+            if (mapRef.current && typeof mapRef.current.panTo === 'function') {
+              mapRef.current.panTo({ lat, lng });
+            }
           }
         }
       });
@@ -583,6 +608,21 @@ const EstadoTrafico = () => {
     setDestino(value);
 
     if (value.length >= GOOGLE_PLACES_CONFIG.filters.minInputLength) {
+      // Sugerencias locales: nombres que empiezan con el input
+      const localMatches = nicaraguaCitiesList
+        .filter(c => normalizeString(c.nombre).includes(normalizeString(value)))
+        .slice(0, 15)
+        .map(c => ({
+          _source: 'local',
+          _coords: { lat: c.lat, lng: c.lng },
+          description: `${c.nombre}, Nicaragua`,
+          structured_formatting: {
+            main_text: c.nombre,
+            secondary_text: c.type === 'department' ? 'Departamento en Nicaragua' : 'Ciudad en Nicaragua'
+          },
+          types: [c.type === 'department' ? 'administrative_area_level_1' : 'locality']
+        }));
+
       // Debounce para evitar demasiadas llamadas a la API
       clearTimeout(searchTimeout);
       const timeout = setTimeout(() => {
@@ -592,15 +632,21 @@ const EstadoTrafico = () => {
         const searchOptions = {
           input: value,
           componentRestrictions: { country: 'ni' },
-          types: ['(regions)', 'establishment', 'geocode'],
-          ...GOOGLE_PLACES_CONFIG.autocompleteOptions
+          types: ['(regions)', 'establishment', 'geocode']
         };
 
         service.getPlacePredictions(searchOptions, (predictions, status) => {
           if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-            // Usar la función de filtrado de la configuración
+            // Filtrar y combinar con locales evitando duplicados por main_text
             const filteredSuggestions = filterSuggestions(predictions);
-            setSearchSuggestions(filteredSuggestions);
+            const dedupe = new Set(localMatches.map(s => s.structured_formatting?.main_text || s.description));
+            const googleList = filteredSuggestions.filter(s => {
+              const key = s.structured_formatting?.main_text || s.description;
+              if (dedupe.has(key)) return false;
+              dedupe.add(key);
+              return true;
+            });
+            setSearchSuggestions([...localMatches, ...googleList]);
             setShowSuggestions(true);
           } else if (status === window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
             // Si no hay resultados, intentar con una búsqueda más amplia
@@ -612,16 +658,34 @@ const EstadoTrafico = () => {
 
             service.getPlacePredictions(broadSearchOptions, (broadPredictions, broadStatus) => {
               if (broadStatus === window.google.maps.places.PlacesServiceStatus.OK && broadPredictions) {
-                setSearchSuggestions(broadPredictions.slice(0, 5));
+                const broadFiltered = broadPredictions.slice(0, 5);
+                const dedupe2 = new Set(localMatches.map(s => s.structured_formatting?.main_text || s.description));
+                const googleBroad = broadFiltered.filter(s => {
+                  const key = s.structured_formatting?.main_text || s.description;
+                  if (dedupe2.has(key)) return false;
+                  dedupe2.add(key);
+                  return true;
+                });
+                setSearchSuggestions([...localMatches, ...googleBroad]);
                 setShowSuggestions(true);
               } else {
-                setSearchSuggestions([]);
-                setShowSuggestions(false);
+                if (localMatches.length > 0) {
+                  setSearchSuggestions(localMatches);
+                  setShowSuggestions(true);
+                } else {
+                  setSearchSuggestions([]);
+                  setShowSuggestions(false);
+                }
               }
             });
           } else {
-            setSearchSuggestions([]);
-            setShowSuggestions(false);
+            if (localMatches.length > 0) {
+              setSearchSuggestions(localMatches);
+              setShowSuggestions(true);
+            } else {
+              setSearchSuggestions([]);
+              setShowSuggestions(false);
+            }
           }
         });
       }, 300); // Debounce de 300ms
@@ -886,6 +950,79 @@ const EstadoTrafico = () => {
     setEstimatedArrival(arrivalTime);
   };
 
+  // Helper: muestrear puntos de la ruta para consultar POIs cercanos
+  const samplePathPoints = (path, count = 12) => {
+    if (!Array.isArray(path) || path.length === 0) return [];
+    const step = Math.max(1, Math.floor(path.length / count));
+    const out = [];
+    for (let i = 0; i < path.length; i += step) {
+      const p = path[i];
+      out.push({ lat: p.lat(), lng: p.lng() });
+    }
+    // incluir último punto
+    const last = path[path.length - 1];
+    if (last) out.push({ lat: last.lat(), lng: last.lng() });
+    return out;
+  };
+
+  // Buscar POIs a lo largo de la ruta usando Places Nearby Search
+  const fetchRoutePOIs = async (dir) => {
+    try {
+      if (!dir?.routes?.[0]?.overview_path || !window.google?.maps?.places?.PlacesService) {
+        setRoutePois([]);
+        return;
+      }
+      setPoisLoading(true);
+      const path = dir.routes[0].overview_path;
+      const points = samplePathPoints(path, 12);
+      const service = new window.google.maps.places.PlacesService(document.createElement('div'));
+      const types = ['gas_station','restaurant','hospital','police','bank','atm','parking'];
+
+      const resultsMap = new Map();
+
+      const nearbyAtPoint = (center, type) => new Promise((resolve) => {
+        service.nearbySearch({ location: center, radius: 1500, type }, (res, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK && Array.isArray(res)) {
+            resolve(res);
+          } else {
+            resolve([]);
+          }
+        });
+      });
+
+      // Consultas en serie para no saturar la cuota
+      for (const pt of points) {
+        for (const t of types) {
+          /* eslint-disable no-await-in-loop */
+          const res = await nearbyAtPoint(pt, t);
+          for (const place of res) {
+            if (!resultsMap.has(place.place_id)) {
+              resultsMap.set(place.place_id, {
+                id: place.place_id,
+                name: place.name,
+                types: place.types || [t],
+                location: {
+                  lat: place.geometry?.location?.lat(),
+                  lng: place.geometry?.location?.lng()
+                }
+              });
+            }
+            if (resultsMap.size >= 60) break;
+          }
+          if (resultsMap.size >= 60) break;
+        }
+        if (resultsMap.size >= 60) break;
+      }
+
+      setRoutePois(Array.from(resultsMap.values()));
+    } catch (e) {
+      console.warn('Error buscando POIs en ruta:', e);
+      setRoutePois([]);
+    } finally {
+      setPoisLoading(false);
+    }
+  };
+
   // Mostrar estados de carga y error
   if (isMapLoading) {
     return (
@@ -966,7 +1103,6 @@ const EstadoTrafico = () => {
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                 autoComplete="off"
               />
-              <div className="search-icon">🔍</div>
 
               {showSuggestions && searchSuggestions.length > 0 && (
                 <div className="suggestions-dropdown">
@@ -979,10 +1115,17 @@ const EstadoTrafico = () => {
                       key={index}
                       className="suggestion-item"
                       onClick={() => handleSuggestionSelect(suggestion)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f0f8ff';
+                        e.currentTarget.style.transform = 'translateX(5px)';
+                        e.currentTarget.style.transition = 'all 120ms ease-out';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '';
+                        e.currentTarget.style.transform = '';
+                      }}
                     >
-                      <div className="suggestion-icon">
-                        {getPlaceIcon(suggestion.types)}
-                      </div>
+                      <div className="suggestion-icon">{getPlaceIcon(suggestion.types)}</div>
                       <div className="suggestion-text">
                         <div className="suggestion-main">
                           {suggestion.structured_formatting?.main_text || suggestion.description}
@@ -1009,6 +1152,7 @@ const EstadoTrafico = () => {
                 </div>
               )}
             </div>
+          </div>
 
             <div className="search-buttons">
               <button onClick={handleBuscarRuta} className="search-button primary">
@@ -1056,7 +1200,7 @@ const EstadoTrafico = () => {
                   <Marker
                     position={selectedLocation}
                     icon={{
-                      path: google.maps.SymbolPath.CIRCLE,
+                      path: window.google.maps.SymbolPath.CIRCLE,
                       scale: clickEnRuta ? 8 : 6,
                       fillColor: clickEnRuta ? '#FF0000' : '#FFFF00',
                       fillOpacity: 1,
@@ -1081,9 +1225,9 @@ const EstadoTrafico = () => {
                     <div className="info-window-content">
                       <h4 className="info-window-title">{selectedReporte.tipo}</h4>
                       <p className="info-window-description">{selectedReporte.descripcion}</p>
-                      {selectedReporte.imagenUrl && (
+                      {(selectedReporte.imagenUrl || selectedReporte.imagenBase64) && (
                         <img
-                          src={selectedReporte.imagenUrl}
+                          src={selectedReporte.imagenUrl || selectedReporte.imagenBase64}
                           alt="Incidente"
                           className="info-window-image"
                         />
@@ -1143,6 +1287,15 @@ const EstadoTrafico = () => {
                   </InfoWindow>
                 )}
                 {directions && <DirectionsRenderer directions={directions} />}
+
+                {showRoutePois && routePois.map(poi => (
+                  <Marker
+                    key={poi.id}
+                    position={poi.location}
+                    icon={undefined}
+                    label={poi.name?.slice(0, 1) || '•'}
+                  />
+                ))}
               </GoogleMap>
             </div>
           </div>
@@ -1728,7 +1881,7 @@ const EstadoTrafico = () => {
           </div>
         )}
       </div>
-    </div>
+
   );
 };
 
